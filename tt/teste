@@ -1,0 +1,13 @@
+vet=[]
+cont=0
+vet=[0]*8
+print(vet)
+while cont!=30:
+    for i in range(0,8):
+        if cont==30:
+            break
+        else:
+            vet[i]+=1
+            cont+=1
+            print(cont)
+print(vet)
