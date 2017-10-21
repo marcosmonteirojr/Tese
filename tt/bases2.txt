@@ -1,4 +1,6 @@
-Adult
-Wine
-Blood
+adult
 Banana
+Blood
+CTG
+Diabetes
+Ecoli

@@ -1,5 +1,5 @@
-import subprocess
-import csv
+import subprocess, os, sys
+import csv, Marff
 
 
 
@@ -105,10 +105,13 @@ def calcula_media(pasta, nome_base, i, nclas, d):
                 for col in row:
                     if (cont <= nclas and colnum == 1):
                         f1 += (float(col))
+                        print(f1)
+                        print('\n')
                         cont += 1
                         if(nclas!=2):
                             if cont == nclas:
                                 f1 = f1 / d
+                                print(f1)
                                 media.append(f1)
                                 cont=0
                                 f1 = 0
@@ -154,7 +157,7 @@ def diretorios(tipo,nome_base):
         pasta = ('/media/marcos/Data/Tese/ComplexidadeBags/'+nome_base+'/')
 
     elif tipo==2:
-        pasta =('/media/marcos/Data/Tese/ComplexidadeDist/'+nome_base+'/')
+        pasta =('/media/marcos/Data/Tese/ComplexidadeDistancias/'+nome_base+'/')
 
     elif tipo ==3:
         pasta = ('/media/marcos/Data/Tese/ComplexidadeAg/'+nome_base+'/')
@@ -163,26 +166,44 @@ def diretorios(tipo,nome_base):
                             stdout=subprocess.PIPE, shell=True)
     (cont_arq, err) = proc.communicate()
     cont_arq = int(cont_arq)  # retorna o numeros de arquivos na pasta
-    print(cont_arq)
+    #print(cont_arq)
     return pasta, cont_arq
 
 
 
-def main():
-    nome_base = 'Adult'
-    nclas=2
-    d=1
-    pasta, cont_arq = diretorios(2,nome_base)
 
-    print(cont_arq)
-    for i in range(1,21):
-        cria_resumo(pasta=pasta, i=i, out=cont_arq, nome_base=nome_base)
-        cria_csv(pasta=pasta,i=i,nome_base=nome_base)
-        calcula_media(pasta=pasta, nome_base=nome_base, i=i, nclas=nclas,d=d)
+nome_base = sys.argv[1]
 
 
+pasta, cont_arq = diretorios(2,nome_base)
+print(pasta + "/" + nome_base + str(1) + "/Complexidade" + nome_base + str(1) + ".arff")
+dataset=Marff.abre_arff('/media/marcos/Data/Tese/Bases/Teste/1/Teste'+nome_base+str(1)+".arff")
+num_classes=Marff.retorna_classes_existentes(dataset)
+print(num_classes[0])
+
+
+if (num_classes[0]>2):
+    nclas = num_classes[0]
+    print(nclas)
+    n=nclas-1
+    cont=0
+    for i in range(n, 0, -1):
+        cont=cont+i
+
+    d = cont
+else:
+    nclas = num_classes[0]
+    d = 1
+print(d)
+print(cont_arq)
+for i in range(1,21):
+    cria_resumo(pasta=pasta, i=i, out=cont_arq, nome_base=nome_base)
+    cria_csv(pasta=pasta,i=i,nome_base=nome_base)
+    calcula_media(pasta=pasta, nome_base=nome_base, i=i, nclas=nclas,d=d)
+    os.system(
+        "rm "+pasta + nome_base+str(i) + "/" + "*.log")
+    #print("/media/marcos/Data/Tese/Complexidade" + pasta + nome_base + "/" )
 
 
 
-if __name__ == '__main__':
-    main()
+

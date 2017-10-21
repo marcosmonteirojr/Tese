@@ -1,13 +1,9 @@
-vet=[]
-cont=0
-vet=[0]*8
-print(vet)
-while cont!=30:
-    for i in range(0,8):
-        if cont==30:
-            break
-        else:
-            vet[i]+=1
-            cont+=1
-            print(cont)
-print(vet)
+import Marff as m
+
+teste=m.abre_arff('/media/marcos/Data/Tese/Distancias/1/Wine/VizinhosWine0.arff')
+print(teste['attributes'][-1])
+test=[2,3,4]
+x=[str(i) for i in test]
+
+teste['attributes'][-1]=('Class',x)
+print(teste['attributes'][-1])

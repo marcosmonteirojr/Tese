@@ -1,4 +1,4 @@
-import arff, os, numpy
+import arff, os, sys, numpy as np
 from scipy.spatial import distance
 import Marff as marff
 #
@@ -14,9 +14,14 @@ caminho_resultados= "/media/marcos/Data/Tese/Distancias/"#caminho para saida res
 
 dcol = "/home/marcos/Documents/Tese/dcol/DCoL-v1.1/Source/dcol"
 
-nome_b = 'Adult'#nome da base
-arquivo_t = "Testeadult" #nome dos arquivos
-arquivo_v = 'Validaadult' #nome dos arquivos valida
+nome_b = sys.argv[1]#nome da base
+#nome_b="Wine"
+arquivo_t = "Teste"+nome_b #nome dos arquivos
+arquivo_v = 'Valida'+nome_b #nome dos arquivos valida
+
+# nome_b = 'Wine'#nome da base
+# arquivo_t = "TesteWine" #nome dos arquivos
+# arquivo_v = 'ValidaWine' #nome dos arquivos valida
 num_vizinhos=30
 
 
@@ -108,15 +113,20 @@ def lista_vizinhos(num_viz, num_c):
     return vet
 
 
-   # global nome_base,k,nome_b#nome_base serve para abrir os arquivos, nome_b para dar nome ao novos arquivos
+print(nome_b)
 dataset, dataset2 = cria_pasta(1)
 X_teste, y_teste, X_valida, y_valida, teste, validacao = abre_arff(dataset, dataset2)
 num_classes, todas_as_classes = marff.retorna_classes_existentes(teste)
 get_vizinhos = num_vizinhos / num_classes
 lista_n_vizinhos = lista_vizinhos(num_vizinhos,num_classes)
-print(lista_n_vizinhos)
+todas_as_classes.sort()
+x=[str(i) for i in todas_as_classes]
+teste['attributes'][-1]=('Class',x)
+
+#print(nome_b)
+
 #csv=open("Vizinhaca_"+nome_b+".csv",'w')
-#csv.write('Instancia teste;;lable_teste;instancias validacao;;lables_validacao;distancias;;argsort\n')
+#csv.write('Instancia teste;;label_teste;instancias validacao;;labels_validacao;distancias;;argsort\n')
 # for xx in range(num_classes):
 #     lista_n_vizinhos.append(get_vizinhos)
 
@@ -124,7 +134,9 @@ for i in range(1, 21):
 
     dataset, dataset2 = cria_pasta(i)
     X_teste, y_teste, X_valida, y_valida, teste, validacao = abre_arff(dataset, dataset2)
-
+    todas_as_classes.sort()
+    x = [str(i) for i in todas_as_classes]
+    teste['attributes'][-1] = ('Class', x)
 
     for l in range(len(X_teste)):
         dados = dict()
@@ -135,9 +147,8 @@ for i in range(1, 21):
         for j in X_valida:
             c = distance.euclidean(X_teste[l], j)
             lista_distancias.append(c)
-        indices_ordenados = numpy.argsort(lista_distancias)
+        indices_ordenados = np.argsort(lista_distancias)
         cont=0
-        #print('{};\n'.format(y_valida[j]))
         for yy in X_valida:
             lista_c.append(yy[:])
         for k in indices_ordenados:
@@ -149,40 +160,15 @@ for i in range(1, 21):
                 cont+=1
             if cont==num_vizinhos:
                 break
-
         vizinhos = 'Vizinhos' + nome_b + str(l)
         cria_arff(teste, dados, vizinhos)
 
         #csv.write('{d[0]};{d[1]};{d[2]}'.format(d=teste['data'][0]))
         #for zz in range(len(X_valida)):
-          #  print(validacao['data'][zz])
-            #csv.write(';;;{d[0]};{d[1]};{d[2]};{c};;{g}\n'.format(d=validacao['data'][zz],c=lista_distancias[zz],g=indices_ordenados[zz]))
+        #print(validacao['data'][zz])
+        #csv.write(';;;{d[0]};{d[1]};{d[2]};{c};;{g}\n'.format(d=validacao['data'][zz],c=lista_distancias[zz],g=indices_ordenados[zz]))
         #print(*X_valida[0],sep=';')
         #print('{d[0]}{d[1]};{};{};{};\n'.format(d=X_teste[l], y_teste[l], X_valida, y_valida))
         #exit(0)
 
 
-
-        # if num_classes==2:
-        #     os.system(dcol+enderecoin+distancias+".arff"+enderecoout+str(k)+" -F 1 -N 2")
-        # else:
-        #     os.system(dcol + enderecoin + distancias + ".arff" + enderecoout + str(k) + " -d -F 1 -N 2")
-        # k=k+1
-
-
-
-
-#
-                # print(
-                # 'Instancia teste {} , classe0 {}, classe validacao {}, cont{}'
-                # '\n'.format(q, todas_as_classes[0], j[-1], cont_class))
-                # else:
-
-
-                # distancias='Distancias'+nome_b+str(k)
-                # cria_arff(teste, dados, distancias)
-                # if num_classes==2:
-                #     os.system(dcol+enderecoin+distancias+".arff"+enderecoout+str(k)+" -F 1 -N 2")
-                # else:
-                #     os.system(dcol + enderecoin + distancias + ".arff" + enderecoout + str(k) + " -d -F 1 -N 2")
-                # k=k+1
