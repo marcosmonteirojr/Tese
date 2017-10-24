@@ -4,7 +4,7 @@ import sys
 nome_base = sys.argv[1]
 
 #nome_base = 'Wine'
-pasta='Distancias'
+pasta='Ag'
 #num_class=2
 repeticoes=21
 temp=""
@@ -58,6 +58,7 @@ for j in range(1, repeticoes):
         else:
             distancias='/Individuo'+nome_base+str(i)
         if num_class==2:
-            os.system(dcol+enderecoin+distancias+".arff"+enderecoout+str(k)+" -F 1 -N 2")
+            (os.system(dcol+enderecoin+distancias+".arff"+enderecoout+str(k)+" -F 1 -N 2"))
+
         else:
             os.system(dcol + enderecoin + distancias + ".arff" + enderecoout + str(k) + " -d -F 1 -N 2")

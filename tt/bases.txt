@@ -1,4 +1,4 @@
-adult
+Adult
 Banana
 Blood
 CTG
@@ -9,7 +9,7 @@ German
 Glass
 Haberman
 Heart
-LDP
+LPD
 Image
 Laryngeal1
 Laryngeal3

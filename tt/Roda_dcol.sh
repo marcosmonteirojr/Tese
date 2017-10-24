@@ -1,6 +1,3 @@
 #!/bin/bash
 
-while read i;
-do
-	~/anaconda3/envs/tese/bin/python ./ManipulaColex.py $i
-done < bases2.txt
+for i in `seq 1 100`; do if [ -e "nomedabase"$i".arff" ]; then echo ""; else echo $i; done
