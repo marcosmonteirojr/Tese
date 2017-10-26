@@ -82,3 +82,5 @@ for j in range(1, repeticoes):
 now=datetime.now()
 csv.write(str(now.day)+'/'+str(now.month)+'/'+str(now.year)+'-'+str(now.hour)+':'+str(now.minute)+'\n\n')
 csv.closed
+
+

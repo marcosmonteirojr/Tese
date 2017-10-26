@@ -170,6 +170,9 @@ for i in range(1, 21):
 now=datetime.now()
 csv.write(str(now.day)+'/'+str(now.month)+'/'+str(now.year)+'-'+str(now.hour)+':'+str(now.minute)+'\n\n')
 csv.closed
+
+
+
         #for zz in range(len(X_valida)):
         #print(validacao['data'][zz])
         #csv.write(';;;{d[0]};{d[1]};{d[2]};{c};;{g}\n'.format(d=validacao['data'][zz],c=lista_distancias[zz],g=indices_ordenados[zz]))
