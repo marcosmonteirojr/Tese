@@ -1,6 +1,0 @@
-Adult
-Banana
-Blood
-CTG
-Diabetes
-Ecoli

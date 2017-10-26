@@ -2,5 +2,5 @@
 
 while read i; 
 do
-	~/anaconda3/envs/tese2/bin/python ./Vizinhos_por_lable.py $i
-done < bases2.txt
+	~/anaconda3/envs/tese2/bin/python ./ManipulaColex.py $i
+done < Bases/bases5.txt

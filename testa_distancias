@@ -1,0 +1,129 @@
+import arff, os, sys, numpy
+from scipy.spatial import distance
+
+#
+'''abre arquivos valida e teste, calcula as distancias, cria bags com a distancia e calcula a complexidade'''
+
+
+
+caminho_vi="/media/marcos/Data/Tese/ComplexidadeDist/" #caminho geral
+caminho_te="/media/marcos/Data/Tese/Bases/Teste/"#caminho teste
+caminho_va='/media/marcos/Data/Tese/Bases/Validacao/'#caminho calidacao
+caminho_in_dcol=" -i /media/marcos/Data/Tese/Distancias/ResultadosDistanciasValidaTeste/"#caminho entrada dcol
+caminho_resultados= "/media/marcos/Data/Tese/Distancias/ResultadosDistanciasValidaTeste/"#caminho para saida resultados
+
+
+
+dcol = "/home/marcos/Documents/Tese/dcol/DCoL-v1.1/Source/dcol"
+
+#nome_b = sys.argv[1]#nome da base
+nome_b="Wine"
+arquivo_t = "Teste"+nome_b #nome dos arquivos
+arquivo_v = 'Valida'+nome_b #nome dos arquivos valida
+#numclasse = 2
+num_visinhos=30
+csv=open("Vizinhaca_"+nome_b+".csv",'w')
+csv.write("Nome da base;Iteracao;Numero_da_instancia_teste;Instancia_teste \n")
+
+
+
+
+def euclidean4(vector1, vector2):
+    """
+
+    @:param vector1: dados a serem medidos
+    @:param vector2: dados a serem medidos
+    @:return: distancia
+    """
+
+    dist = distance.euclidean(vector1, vector2)
+   
+
+    return dist
+
+def cria_arff(info, data, nome):
+    """
+    cria um arquivo arff no E:
+    @:param info: descricao da base/ relacao
+    @:param data: dados da base
+    @:param nome: do arquivo a ser gerado
+    :return:
+    """
+    obj = {
+        'description': info['description'],
+        'relation': info['relation'],
+        'attributes': info['attributes'],
+        'data': data['data'],
+
+    }
+    arq1=arff.dumps(obj)
+    arq=open('/media/marcos/Data/Tese/Distancias/ResultadosDistanciasValidaTeste/'+nome_base+'/'+nome+'.arff','w')
+    arq.write(arq1)
+    arq.close()
+
+def distancia_maxima(data, data2, pos, dist):
+    """compara data[pos] com todos data2 1 a um retorna a distancia escolhida
+        @:param data: base extraida do arrf
+        @:param data2: base a ser medida (arff)
+        @:param pos: posicao a ser comparada
+        @:param dist: posicao do vetor que fica a distancia
+
+    """
+    distancias = []#retornoda distancia
+    vetor = (data['data'][pos])
+    vetor = (vetor[:-1])
+    #print(vetor)
+    for j in data2['data']:  # percorre a base valida
+        vetor2 = (j[:-1])  # elimina a ultima coluna
+        c = euclidean4(vetor, vetor2)  # calcula as distancias
+        #print(c)
+        distancias.append(c)  # salva em um array as distancias
+    distancias.sort() #ordena
+    #print(distancias)
+    return distancias[dist] #retorna o valor da distancia na posisao desejada
+def cria_pasta(i):
+
+    global dataset,dataset2, dcol,enderecoin, enderecoout
+
+    dataset = arff.load(open(caminho_te + str(i)+'/' + arquivo_t + str(i) + '.arff'))
+    dataset2 = arff.load(open(caminho_va + str(i)+'/' + arquivo_v + str(i) + '.arff'))
+
+def retorna_classes_existentes(dataset):
+    classes=[]
+    cont=0
+    for i in dataset['data']:
+        tmp=i[-1]
+        if(tmp not in classes):
+           classes.append(tmp)
+           cont+=1
+    return cont
+
+
+
+#print(nome_b)
+for i in range(1,21):
+    nome_base = nome_b+str(i)
+    cria_pasta(i)
+    k = 0
+
+    for q in range(len(dataset['data'])):#range tamnho da base
+        dados = dict()
+        dados['data'] = list()
+        valor=(distancia_maxima(dataset, dataset2, q, num_visinhos))
+        for j in dataset2['data']:
+            vetor2 = (j[:-1])
+            instancia_teste=j
+            c=euclidean4(dataset['data'][q][:-1], vetor2)
+
+            if c<valor:
+                dados['data'].append(j)
+        a=retorna_classes_existentes(dataset)
+        b=retorna_classes_existentes(dados)
+
+        if(a!=b):
+          csv.write("{};{};{};{}\n".format(nome_b,i,q,dataset['data'][q]))
+
+csv.close()
+
+
+

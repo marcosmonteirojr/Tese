@@ -1,8 +1,10 @@
 import subprocess, os, sys
 import csv, Marff
+from datetime import datetime
 
 
 
+nome_base = sys.argv[1]
 def cria_resumo(pasta,i,out,nome_base):
 
     """
@@ -25,14 +27,13 @@ def cria_resumo(pasta,i,out,nome_base):
         (arq1.readline())
         (arq1.readline())
         if (j==0):  # filtra o heder e cria um cmo ' F1 e N2"
-            arq2.write(arq1.readline())
-            arq2.write(arq1.readline())
-            arq2.write(arq1.readline())
-            arq2.write(arq1.readline())
+            for y in range(nclas+1):
+                arq2.write(arq1.readline())
         arq1.readline()
-        arq2.write(arq1.readline())  # salva valores de F1 e N2, cuidar com a qntidade de classes
-        arq2.write(arq1.readline())
-        arq2.write(arq1.readline())
+        for p in range(nclas):
+            arq2.write(arq1.readline())  # salva valores de F1 e N2, cuidar com a qntidade de classes
+        #arq2.write(arq1.readline())
+        #arq2.write(arq1.readline())
         arq2.write("\n")
         arq1.close()
 
@@ -106,12 +107,14 @@ def calcula_media(pasta, nome_base, i, nclas, d):
                     if (cont <= nclas and colnum == 1):
                         f1 += (float(col))
                         print(f1)
-                        print('\n')
+                        #print('\n')
                         cont += 1
                         if(nclas!=2):
                             if cont == nclas:
                                 f1 = f1 / d
-                                print(f1)
+                                #
+
+                                # print(f1)
                                 media.append(f1)
                                 cont=0
                                 f1 = 0
@@ -172,30 +175,34 @@ def diretorios(tipo,nome_base):
 
 
 
-nome_base = sys.argv[1]
 
+csv=open("Resumos.csv",'a')
+now=datetime.now()
+csv.write('Data e hora;Base;Tipo;Termino\n')
+csv.write(str(now.day)+'/'+str(now.month)+'/'+str(now.year)+'-'+str(now.hour)+':'+str(now.minute)+';{}\n'.format(nome_base))
 
-pasta, cont_arq = diretorios(2,nome_base)
-print(pasta + "/" + nome_base + str(1) + "/Complexidade" + nome_base + str(1) + ".arff")
+pasta, cont_arq = diretorios(3,nome_base)
+#print(pasta + "/" + nome_base + str(1) + "/Complexidade" + nome_base + str(1) + ".arff")
 dataset=Marff.abre_arff('/media/marcos/Data/Tese/Bases/Teste/1/Teste'+nome_base+str(1)+".arff")
 num_classes=Marff.retorna_classes_existentes(dataset)
-print(num_classes[0])
+#print(num_classes[0])
 
 
 if (num_classes[0]>2):
     nclas = num_classes[0]
-    print(nclas)
-    n=nclas-1
-    cont=0
-    for i in range(n, 0, -1):
-        cont=cont+i
+   # print(nclas)
+    #n=nclas-1
+   # cont=0
+   # for i in range(n, 0, -1):
+        #cont=cont+i
 
-    d = cont
+    d = nclas
 else:
     nclas = num_classes[0]
     d = 1
+print(nclas)
 print(d)
-print(cont_arq)
+#print(cont_arq)
 for i in range(1,21):
     cria_resumo(pasta=pasta, i=i, out=cont_arq, nome_base=nome_base)
     cria_csv(pasta=pasta,i=i,nome_base=nome_base)
@@ -203,6 +210,7 @@ for i in range(1,21):
     os.system(
         "rm "+pasta + nome_base+str(i) + "/" + "*.log")
     #print("/media/marcos/Data/Tese/Complexidade" + pasta + nome_base + "/" )
+
 
 
 

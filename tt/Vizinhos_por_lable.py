@@ -1,5 +1,6 @@
 import arff, os, sys, numpy as np
 from scipy.spatial import distance
+from datetime import datetime
 import Marff as marff
 #
 '''abre arquivos valida e teste, calcula as distancias, cria bags com a distancia e calcula a complexidade'''
@@ -119,14 +120,18 @@ X_teste, y_teste, X_valida, y_valida, teste, validacao = abre_arff(dataset, data
 num_classes, todas_as_classes = marff.retorna_classes_existentes(teste)
 get_vizinhos = num_vizinhos / num_classes
 lista_n_vizinhos = lista_vizinhos(num_vizinhos,num_classes)
+print(lista_n_vizinhos)
 todas_as_classes.sort()
 x=[str(i) for i in todas_as_classes]
 teste['attributes'][-1]=('Class',x)
 
 #print(nome_b)
 
-#csv=open("Vizinhaca_"+nome_b+".csv",'w')
-#csv.write('Instancia teste;;label_teste;instancias validacao;;labels_validacao;distancias;;argsort\n')
+csv=open("Vizinhacas.csv",'a')
+now=datetime.now()
+csv.write('Base;Data e hora;Numero de vizinhos; Numeros de bootstraps; Termino\n')
+csv.write(str(now.day)+'/'+str(now.month)+'/'+str(now.year)+'-'+str(now.hour)+':'+str(now.minute)+';'+nome_b+';'+num_vizinhos+';'+len(X_teste)+'\n')
+
 # for xx in range(num_classes):
 #     lista_n_vizinhos.append(get_vizinhos)
 
@@ -162,8 +167,9 @@ for i in range(1, 21):
                 break
         vizinhos = 'Vizinhos' + nome_b + str(l)
         cria_arff(teste, dados, vizinhos)
-
-        #csv.write('{d[0]};{d[1]};{d[2]}'.format(d=teste['data'][0]))
+now=datetime.now()
+csv.write(str(now.day)+'/'+str(now.month)+'/'+str(now.year)+'-'+str(now.hour)+':'+str(now.minute)+'\n\n')
+csv.closed
         #for zz in range(len(X_valida)):
         #print(validacao['data'][zz])
         #csv.write(';;;{d[0]};{d[1]};{d[2]};{c};;{g}\n'.format(d=validacao['data'][zz],c=lista_distancias[zz],g=indices_ordenados[zz]))

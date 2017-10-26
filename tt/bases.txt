@@ -1,4 +1,4 @@
-Adult
+adult
 Banana
 Blood
 CTG
@@ -15,7 +15,6 @@ Laryngeal1
 Laryngeal3
 Lithuanian
 Liver
-Magic
 Mammo
 Monk
 Phoneme
@@ -24,7 +23,8 @@ Thyroid
 Vehicle
 Vertebral
 WBC
-WDVG
 Weaning
 Wine
 Yonosphere
+Magic
+WDVG
