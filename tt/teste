@@ -1,9 +1,0 @@
-import Marff as m
-
-teste=m.abre_arff('/media/marcos/Data/Tese/Distancias/1/Wine/VizinhosWine0.arff')
-print(teste['attributes'][-1])
-test=[2,3,4]
-x=[str(i) for i in test]
-
-teste['attributes'][-1]=('Class',x)
-print(teste['attributes'][-1])

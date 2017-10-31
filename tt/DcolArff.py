@@ -2,10 +2,10 @@ import Marff
 import os, subprocess
 from datetime import datetime
 import sys
-#nome_base = sys.argv[1]
+nome_base = sys.argv[1]
 
-nome_base = 'Adult'
-pasta='Ag'
+#nome_base = 'WDVG'
+pasta='Distancias'
 repeticoes=21
 temp=""
 numero_individuos=101
@@ -82,5 +82,3 @@ for j in range(1, repeticoes):
 now=datetime.now()
 csv.write(str(now.day)+'/'+str(now.month)+'/'+str(now.year)+'-'+str(now.hour)+':'+str(now.minute)+'\n\n')
 csv.closed
-
-
