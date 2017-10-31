@@ -1,5 +1,5 @@
 #encontrar arquivos faltantes
-##!/usr/bin/env bash
+!/usr/bin/env bash
 #Dir=/media/marcos/Data/Tese/Bags/16/
 #while read i;
 #do
@@ -30,14 +30,22 @@
 #done
 #done
 ########################################################3
-Dir=/media/marcos/Data/Tese/Distancias/
-while read i;
-do
-    for j in `seq 1 20`;
+Dir=/media/marcos/Data/Tese/Bags/16/
+#while read i;
+#do
+#    for j in `seq 1 20`;
+#    do
+#            rm "$Dir"$j"/"$i"/"*".arff.2"*
+#            echo $i;
+#
+#
+#done
+#done< bases6.txt
+
+for j in `seq 0 21`;
     do
-            rm "$Dir"$j"/"$i"/"*".arff.2"*
-            echo $i;
+     mv "$Dir""Adult"$j".arff" "$Dir""IndividuoAdult"$j".arff"
+     echo $i;
 
 
 done
-done< bases6.txt

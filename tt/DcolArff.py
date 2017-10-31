@@ -2,13 +2,14 @@ import Marff
 import os, subprocess
 from datetime import datetime
 import sys
-nome_base = sys.argv[1]
+#nome_base = 'Adult'
 
-#nome_base = 'WDVG'
-pasta='Distancias'
+nome_base = 'WDVG'
+pasta='Ag'
 repeticoes=21
 temp=""
 numero_individuos=101
+
 caminho='/media/marcos/Data/Tese/Complexidade'
 caminho_in='/media/marcos/Data/Tese/'
 

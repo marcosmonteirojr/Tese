@@ -2,5 +2,5 @@
 
 while read i; 
 do
-	~/anaconda3/envs/tese2/bin/python ./GraficoComplex.py $i
-done < Bases/bases2.txt
+	~/anaconda3/envs/tese2/bin/python ./GeraGrafico.py $i
+done < bases.txt

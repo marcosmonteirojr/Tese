@@ -1,4 +1,4 @@
-adult
+Adult
 Banana
 Blood
 CTG
@@ -26,5 +26,4 @@ WBC
 Weaning
 Wine
 Yonosphere
-Magic
 WDVG

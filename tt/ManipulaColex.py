@@ -4,7 +4,7 @@ from datetime import datetime
 
 
 
-nome_base = "Adult"
+nome_base = "WDVG"
 
 
 def cria_resumo(pasta,i,out,nome_base):
@@ -93,12 +93,14 @@ def calcula_media(pasta, nome_base, i, nclas, d):
    
     
     arq5 = open(pasta + nome_base+str(i) + '/' + nome_base + '_medias.txt',
-                'w')  # salva um arquivo com as medias, varia de acordo com o numero de classes
+                'w')
+    # salva um arquivo com as medias, varia de acordo com o numero de classes
+    print(pasta + nome_base+str(i) + '/' + nome_base + '_resumo2.csv')
     with open(pasta + nome_base+str(i) + '/' + nome_base + '_resumo2.csv','r') as csvfile:
-        reader = csv.reader(csvfile)
+        spamreader = csv.reader(csvfile, delimiter=',')
 
 
-        for row in reader:
+        for row in spamreader:
 
             if rownum == 0:
                 None
@@ -178,12 +180,12 @@ def diretorios(tipo,nome_base):
 
 
 
-csv=open("Resumos.csv",'a')
-now=datetime.now()
-csv.write('Data e hora;Base;Tipo;Termino\n')
-csv.write(str(now.day)+'/'+str(now.month)+'/'+str(now.year)+'-'+str(now.hour)+':'+str(now.minute)+';{}\n'.format(nome_base))
+#csv=open("Resumos.csv",'a')
+#now=datetime.now()
+#csv.write('Data e hora;Base;Tipo;Termino\n')
+#csv.write(str(now.day)+'/'+str(now.month)+'/'+str(now.year)+'-'+str(now.hour)+':'+str(now.minute)+';{}\n'.format(nome_base))
 
-pasta, cont_arq = diretorios(1,nome_base)
+pasta, cont_arq = diretorios(3,nome_base)
 #print(pasta + "/" + nome_base + str(1) + "/Complexidade" + nome_base + str(1) + ".arff")
 dataset=Marff.abre_arff('/media/marcos/Data/Tese/Bases/Teste/1/Teste'+nome_base+str(1)+".arff")
 num_classes=Marff.retorna_classes_existentes(dataset)

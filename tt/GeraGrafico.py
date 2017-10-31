@@ -1,14 +1,14 @@
-import matplotlib.pyplot as plt
-import numpy as np
-from matplotlib.offsetbox import AnchoredOffsetbox, TextArea, DrawingArea, HPacker
+
 from matplotlib import pyplot as plt
 from mpl_toolkits.axes_grid.anchored_artists import AnchoredText
-import csv
+import csv, sys
 
 
 
 
-nome_base='Adult'
+nome_base=sys.argv[1]
+#nome_base='WDVG'
+print(nome_base)
 def arquivo(i):
     data3 = []
     data4 = []
@@ -82,19 +82,23 @@ def dsoc(nome_base):
 
         for linha in spamreader:
             if(linha[0]==nome_base+"A"):
-                AG1=linha[:]
+                AG=linha[:]
             if (linha[0] == nome_base + "B"):
                 bagging=linha[:]
     AG = AG[1:]
     bagging = bagging[1:]
-    print(bagging)
+    #print(bagging)
 
 def resultado_dsoc(f):
+    if nome_base=='Banana':
+        loc=4
+    else:
+        loc=1
     t = "Dsoc\n" \
         "BAG: " + bagging[f] + "\n" + "GA: " + AG[f]
     at = AnchoredText(t,
                       prop=dict(size=8), frameon=True,
-                      loc=3,
+                      loc=loc,
                       )
     at.patch.set_boxstyle("round,pad=0.,rounding_size=0.2")
     return at
@@ -259,7 +263,7 @@ def Graficos_axs():
 
 def Graficos():
     dsoc(nome_base)
-    fig = plt.figure(figsize=(640, 800), dpi=100)
+    fig = plt.figure(figsize=(15,8),dpi=100)
     fig.subplots_adjust(hspace=0.4, wspace=0.4)
     for i in range(1, 7):
         ax = fig.add_subplot(2, 3, i)
@@ -270,15 +274,17 @@ def Graficos():
         ax.set_title(nome_base + str(i))
         ax.set_xlabel("N2")
         ax.set_ylabel("F1")
-        ax.legend([bag, dist, ag], ["BAG. ", "KNhood. ", "G.A. "],loc=2)
+        if(i==1):
+            ax.legend((bag, dist, ag), ("BAG. ", "KNhood. ", "G.A. "),loc=2,bbox_to_anchor=(-0.5,1), prop={'size':7})
         at = resultado_dsoc(i)
         ax.add_artist(at)
 
         j = i + 1
 
-    plt.show()
-    exit(0)
-    fig = plt.figure(figsize=(640,800), dpi=100)
+    fig.savefig("Graficos/"+nome_base+"1.png")
+
+
+    fig = plt.figure(figsize=(15, 8), dpi=100)
     fig.subplots_adjust(hspace=0.4, wspace=0.4)
 
 
@@ -293,17 +299,19 @@ def Graficos():
         ax.set_title(nome_base + str(j))
         ax.set_xlabel("N2")
         ax.set_ylabel("F1")
-        ax.legend([bag, dist, ag], ["BAG. ", "KNhood. ", "G.A. "],loc=2)
+        if (j == 7):
+            ax.legend((bag, dist, ag), ("BAG. ", "KNhood. ", "G.A. "), loc=2, bbox_to_anchor=(-0.5, 1),
+                      prop={'size': 7})
         at=resultado_dsoc(j)
         ax.add_artist(at)
-        print(j)
+        #print(j)
         j+=1
 
         #ax.text(0.5, 0.5, str((2, 3, i)),
                #fontsize=18, ha='center')
-    plt.show()
+    fig.savefig("Graficos/"+nome_base + "2.png")
 
-    fig = plt.figure(figsize=(640, 800), dpi=100)
+    fig = plt.figure(figsize=(15, 8), dpi=100)
     fig.subplots_adjust(hspace=0.4, wspace=0.4)
 
     for i in range(1, 7):
@@ -314,7 +322,9 @@ def Graficos():
         ax.scatter(data3, data4, alpha=0.6, marker="+")
         ax.scatter(data5, data6, alpha=0.6)
         ax.set_title(nome_base + str(j))
-        ax.legend([bag, dist, ag], ["BAG. ", "KNhood. ", "G.A. "],loc=2)
+        if (j == 13):
+            ax.legend((bag, dist, ag), ("BAG. ", "KNhood. ", "G.A. "), loc=2, bbox_to_anchor=(-0.5, 1),
+                      prop={'size': 7})
         ax.set_xlabel("N2")
         ax.set_ylabel("F1")
         at = resultado_dsoc(j)
@@ -322,8 +332,9 @@ def Graficos():
         j+=1
         #ax.text(0.5, 0.5, str((2, 3, i)),
                #fontsize=18, ha='center')
-    plt.show()
-    fig = plt.figure(figsize=(640, 800), dpi=100)
+    fig.savefig("Graficos/"+nome_base + "3.png")
+
+    fig = plt.figure(figsize=(15, 8), dpi=100)
     fig.subplots_adjust(hspace=0.4, wspace=0.4)
 
     for i in range(1, 3):
@@ -334,7 +345,10 @@ def Graficos():
         ax.scatter(data3, data4, alpha=0.6, marker="+")
         ax.scatter(data5, data6, alpha=0.6)
         ax.set_title(nome_base + str(j))
-        ax.legend([bag, dist, ag], ["BAG. ", "KNhood. ", "G.A. "],loc=2)
+        #ax.legend([bag, dist, ag], ["BAG. ", "KNhood. ", "G.A. "],loc=2)
+        if (j == 19):
+            ax.legend((bag, dist, ag), ("BAG. ", "KNhood. ", "G.A. "), loc=2, bbox_to_anchor=(-0.5, 1),
+                      prop={'size': 7})
         ax.set_xlabel("N2")
         ax.set_ylabel("F1")
         at = resultado_dsoc(j)
@@ -342,7 +356,9 @@ def Graficos():
         j+=1
         #ax.text(0.5, 0.5, str((2, 3, i)),
                #fontsize=18, ha='center')
-    plt.show()
+    fig.savefig("Graficos/"+nome_base + "4.png")
+
+
 # fig, axs = plt.subplots(2, 1)
 #
 # cont += 1
