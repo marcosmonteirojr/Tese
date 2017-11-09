@@ -15,8 +15,8 @@ caminho_resultados= "/media/marcos/Data/Tese/Distancias/"#caminho para saida res
 
 dcol = "/home/marcos/Documents/Tese/dcol/DCoL-v1.1/Source/dcol"
 
-nome_b = sys.argv[1]#nome da base
-#nome_b="Wine"
+#nome_b = sys.argv[1]#nome da base
+nome_b= 'Glass'
 arquivo_t = "Teste"+nome_b #nome dos arquivos
 arquivo_v = 'Valida'+nome_b #nome dos arquivos valida
 
@@ -95,13 +95,15 @@ def abre_arff(dataset, dataset2):
     X_valida, y_valida = marff.retorna_instacias(validacao)
     return X_teste, y_teste, X_valida, y_valida, teste, validacao
 
-def lista_vizinhos(num_viz, num_c):
+def lista_vizinhos(num_viz, num_c, elementos_p_classes=None, total_elementos=None):
     '''
 
     :param num_viz: numero de vizinhos
     :param num_c: numero de classes
     :return: lista com o numero de elementos dividido
     '''
+
+
     cont=0
     vet=[0]*num_c
     while cont != num_viz:
@@ -111,44 +113,59 @@ def lista_vizinhos(num_viz, num_c):
             else:
                 vet[i] += 1
                 cont += 1
+    if elementos_p_classes != None and total_elementos!=None:
+
+        for j in range(len(vet)):
+            x=elementos_p_classes[j]/total_elementos
+            vet[j]=(x*num_viz)
+            if(vet[j]<1):
+                vet[j]=1
+            vet[j]=int(round(vet[j],0))
     return vet
 
 
-print(nome_b)
+#(nome_b)
 dataset, dataset2 = cria_pasta(1)
 X_teste, y_teste, X_valida, y_valida, teste, validacao = abre_arff(dataset, dataset2)
-num_classes, todas_as_classes = marff.retorna_classes_existentes(teste)
-get_vizinhos = num_vizinhos / num_classes
-lista_n_vizinhos = lista_vizinhos(num_vizinhos,num_classes)
+num_classes, todas_as_classes, elementos_p_classes, total_elementos = marff.retorna_classes_existentes(teste)
+#get_vizinhos = num_vizinhos / num_classes
+print(todas_as_classes, elementos_p_classes,total_elementos)
+
+lista_n_vizinhos = lista_vizinhos(num_vizinhos,num_classes,elementos_p_classes,total_elementos)
 print(lista_n_vizinhos)
-todas_as_classes.sort()
+#todas_as_classes.sort()
+'''colocar as classes de 0 a N'''
 x=[str(i) for i in todas_as_classes]
 teste['attributes'][-1]=('Class',x)
 
 #print(nome_b)
 
-csv=open("Vizinhacas.csv",'a')
+#csv=open("Vizinhacas2.csv",'a')
 now=datetime.now()
-csv.write('Base;Data e hora;Numero de vizinhos; Numeros de bootstraps; Termino\n')
-csv.write(str(now.day)+'/'+str(now.month)+'/'+str(now.year)+'-'+str(now.hour)+':'+str(now.minute)+';'+nome_b+';'+num_vizinhos+';'+len(X_teste)+'\n')
+#csv.write('Base;Data e hora;Numero de vizinhos; Numeros de bootstraps; Termino\n')
+#csv.write(str(now.day)+'/'+str(now.month)+'/'+str(now.year)+'-'+str(now.hour)+':'+str(now.minute)+';'+nome_b+';'+str(num_vizinhos)+';'+str(len(X_teste))+'\n')
 
 # for xx in range(num_classes):
 #     lista_n_vizinhos.append(get_vizinhos)
-
+lista_teste=[]
+lista_teste2=[]
+for p in range(len(X_teste)):
+    lista_teste2.append(p)
 for i in range(1, 21):
 
     dataset, dataset2 = cria_pasta(i)
     X_teste, y_teste, X_valida, y_valida, teste, validacao = abre_arff(dataset, dataset2)
-    todas_as_classes.sort()
+    #todas_as_classes.sort()
     x = [str(i) for i in todas_as_classes]
     teste['attributes'][-1] = ('Class', x)
-
+    lista_teste = []
     for l in range(len(X_teste)):
         dados = dict()
         dados['data'] = list()
         lista_distancias=[]
         lista_c=[]
-        lista_n_vizinhos = lista_vizinhos(num_vizinhos, num_classes)
+        lista_n_vizinhos = lista_vizinhos(num_vizinhos, num_classes,elementos_p_classes,total_elementos)
+
         for j in X_valida:
             c = distance.euclidean(X_teste[l], j)
             lista_distancias.append(c)
@@ -156,6 +173,7 @@ for i in range(1, 21):
         cont=0
         for yy in X_valida:
             lista_c.append(yy[:])
+
         for k in indices_ordenados:
             x=y_valida[k]
             if(lista_n_vizinhos[x]!=0):
@@ -163,13 +181,23 @@ for i in range(1, 21):
                 lista_c[k].append(y_valida[k])
                 dados['data'].append(lista_c[k])
                 cont+=1
+                cont1 = lista_n_vizinhos.count(0)
+                #print(len(indices_ordenados))
+            if (cont1 == num_classes):
+                lista_teste.append(l)
+                if(lista_teste==lista_teste2):
+                    print(nome_b, lista_n_vizinhos, l, i)
+
             if cont==num_vizinhos:
+
+                #print(lista_n_vizinhos)
                 break
-        vizinhos = 'Vizinhos' + nome_b + str(l)
-        cria_arff(teste, dados, vizinhos)
+
+        #vizinhos = 'Vizinhos' + nome_b + str(l)
+        #cria_arff(teste, dados, vizinhos)
 now=datetime.now()
-csv.write(str(now.day)+'/'+str(now.month)+'/'+str(now.year)+'-'+str(now.hour)+':'+str(now.minute)+'\n\n')
-csv.closed
+#csv.write(str(now.day)+'/'+str(now.month)+'/'+str(now.year)+'-'+str(now.hour)+':'+str(now.minute)+'\n\n')
+#csv.closed
 
 
 

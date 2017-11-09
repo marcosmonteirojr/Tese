@@ -4,7 +4,7 @@ from datetime import datetime
 
 
 
-nome_base = "WDVG"
+nome_base = "Wine"
 
 
 def cria_resumo(pasta,i,out,nome_base):
@@ -204,8 +204,7 @@ if (num_classes[0]>2):
 else:
     nclas = num_classes[0]
     d = 1
-print(nclas)
-print(d)
+
 #print(cont_arq)
 for i in range(1,21):
     cria_resumo(pasta=pasta, i=i, out=cont_arq, nome_base=nome_base)

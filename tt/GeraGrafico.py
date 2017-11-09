@@ -6,8 +6,8 @@ import csv, sys
 
 
 
-nome_base=sys.argv[1]
-#nome_base='WDVG'
+nome_base='Yonosphere'
+#nome_base='Wine'
 print(nome_base)
 def arquivo(i):
     data3 = []
@@ -43,7 +43,7 @@ def arquivo(i):
         if b[0] == 'F1' or b[1] == 'inf':
             None
         else:
-            # print(b[1])
+            print(b[1])
             data3.append(b[0])
             data4.append(b[1])
             data3 = [float(w) for w in data3]
@@ -94,13 +94,15 @@ def resultado_dsoc(f):
         loc=4
     else:
         loc=1
+
     t = "Dsoc\n" \
-        "BAG: " + bagging[f] + "\n" + "GA: " + AG[f]
+        "BAG: " + bagging[f]+ "\nGA: " + AG[f]
     at = AnchoredText(t,
                       prop=dict(size=8), frameon=True,
                       loc=loc,
                       )
     at.patch.set_boxstyle("round,pad=0.,rounding_size=0.2")
+
     return at
 
 def Graficos_axs():
@@ -263,45 +265,59 @@ def Graficos_axs():
 
 def Graficos():
     dsoc(nome_base)
-    fig = plt.figure(figsize=(15,8),dpi=100)
-    fig.subplots_adjust(hspace=0.4, wspace=0.4)
-    for i in range(1, 7):
-        ax = fig.add_subplot(2, 3, i)
+    fig = plt.figure(figsize=(8,13),dpi=150)
+    #fig.subplots()
+    fig.subplots_adjust(hspace=0.4, wspace=0.2)
+
+    #fig = plt.figure(figsize=(23, 18), dpi=150)
+    #fig.subplots_adjust(hspace=0.3, wspace=0.2, )
+    for i in range(1, 9):
+
+        ax = fig.add_subplot(4, 2, i, )
         data2, data1, data4, data3, data6, data5 = arquivo(i)
         bag=ax.scatter(data1, data2, alpha=0.6, marker="v")
         dist=ax.scatter(data3, data4, alpha=0.6, marker="+")
         ag=ax.scatter(data5, data6, alpha=0.6)
-        ax.set_title(nome_base + str(i))
+        if (nome_base == 'Yonosphere'):
+            ax.set_title('Ionosphere' + str(i))
+        else:
+            ax.set_title(nome_base + str(i))
         ax.set_xlabel("N2")
         ax.set_ylabel("F1")
-        if(i==1):
-            ax.legend((bag, dist, ag), ("BAG. ", "KNhood. ", "G.A. "),loc=2,bbox_to_anchor=(-0.5,1), prop={'size':7})
+        #if(i==1):
+            #ax.legend((bag, dist, ag), ("BAG. ", "KNhood. ", "G.A. "),loc=2,bbox_to_anchor=(-0.5,1), prop={'size':7})
         at = resultado_dsoc(i)
         ax.add_artist(at)
 
         j = i + 1
 
-    fig.savefig("Graficos/"+nome_base+"1.png")
+    if (nome_base == 'Yonosphere'):
+
+        fig.savefig("Graficos/Ionosphere1.png")
+    else:
+        fig.savefig("Graficos/" + nome_base  +"1.png")
+
+    fig = plt.figure(figsize=(8, 13), dpi=150)
+    fig.subplots_adjust(hspace=0.4, wspace=0.2)
 
 
-    fig = plt.figure(figsize=(15, 8), dpi=100)
-    fig.subplots_adjust(hspace=0.4, wspace=0.4)
+    for i in range(1, 9):
 
-
-    for i in range(1, 7):
-
-        ax = fig.add_subplot(2, 3, i)
+        ax = fig.add_subplot(4, 2, i)
 
         data2, data1, data4, data3, data6, data5 = arquivo(j)
         ax.scatter(data1, data2, alpha=0.6, marker="v")
         ax.scatter(data3, data4, alpha=0.6, marker="+")
         ax.scatter(data5, data6, alpha=0.6)
-        ax.set_title(nome_base + str(j))
+        if (nome_base == 'Yonosphere'):
+            ax.set_title('Ionosphere' + str(j))
+        else:
+            ax.set_title(nome_base + str(j))
         ax.set_xlabel("N2")
         ax.set_ylabel("F1")
-        if (j == 7):
-            ax.legend((bag, dist, ag), ("BAG. ", "KNhood. ", "G.A. "), loc=2, bbox_to_anchor=(-0.5, 1),
-                      prop={'size': 7})
+        #if (j == 7):
+            #ax.legend((bag, dist, ag), ("BAG. ", "KNhood. ", "G.A. "), loc=2, bbox_to_anchor=(-0.5, 1),
+                     # prop={'size': 7})
         at=resultado_dsoc(j)
         ax.add_artist(at)
         #print(j)
@@ -309,22 +325,29 @@ def Graficos():
 
         #ax.text(0.5, 0.5, str((2, 3, i)),
                #fontsize=18, ha='center')
-    fig.savefig("Graficos/"+nome_base + "2.png")
+    if(nome_base=='Yonosphere'):
 
-    fig = plt.figure(figsize=(15, 8), dpi=100)
-    fig.subplots_adjust(hspace=0.4, wspace=0.4)
+         fig.savefig("Graficos/Ionosphere2.png")
+    else:
+        fig.savefig("Graficos/" + nome_base + "2.png")
 
-    for i in range(1, 7):
+    fig = plt.figure(figsize=(9, 6.8), dpi=150)
+    fig.subplots_adjust(hspace=0.4, wspace=0.2)
 
-        ax = fig.add_subplot(2, 3, i)
+    for i in range(1, 5):
+
+        ax = fig.add_subplot(2, 2, i)
         data2, data1, data4, data3, data6, data5 = arquivo(j)
         ax.scatter(data1, data2, alpha=0.6, marker="v")
         ax.scatter(data3, data4, alpha=0.6, marker="+")
         ax.scatter(data5, data6, alpha=0.6)
-        ax.set_title(nome_base + str(j))
-        if (j == 13):
-            ax.legend((bag, dist, ag), ("BAG. ", "KNhood. ", "G.A. "), loc=2, bbox_to_anchor=(-0.5, 1),
-                      prop={'size': 7})
+        if(nome_base=='Yonosphere'):
+            ax.set_title('Ionosphere' + str(j))
+        else:
+            ax.set_title(nome_base + str(j))
+       # if (j == 13):
+           # ax.legend((bag, dist, ag), ("BAG. ", "KNhood. ", "G.A. "), loc=2, bbox_to_anchor=(-0.5, 1),
+                #      prop={'size': 7})
         ax.set_xlabel("N2")
         ax.set_ylabel("F1")
         at = resultado_dsoc(j)
@@ -332,8 +355,12 @@ def Graficos():
         j+=1
         #ax.text(0.5, 0.5, str((2, 3, i)),
                #fontsize=18, ha='center')
-    fig.savefig("Graficos/"+nome_base + "3.png")
+    if (nome_base == 'Yonosphere'):
 
+        fig.savefig("Graficos/Ionosphere3.png")
+    else:
+        fig.savefig("Graficos/" + nome_base + "3.png")
+    exit(0)
     fig = plt.figure(figsize=(15, 8), dpi=100)
     fig.subplots_adjust(hspace=0.4, wspace=0.4)
 

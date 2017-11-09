@@ -4,7 +4,7 @@ from datetime import datetime
 import sys
 #nome_base = 'Adult'
 
-nome_base = 'WDVG'
+nome_base = 'Adult'
 pasta='Ag'
 repeticoes=21
 temp=""
@@ -17,7 +17,7 @@ caminho_in='/media/marcos/Data/Tese/'
 """Cria pastas de acordo com o numero de repeticoes, calcula a complexidade e salva na pasta criada"""
 
 dcol = "/media/marcos/Data/Tese/dcol/DCoL-v1.1/Source/dcol"
-csv=open("Dcol.csv",'a')
+csv=open("Dcol2.csv",'a')
 now=datetime.now()
 csv.write('Data e hora;Base;Tipo;Termino\n')
 csv.write(str(now.day)+'/'+str(now.month)+'/'+str(now.year)+'-'+str(now.hour)+':'+str(now.minute)+';{};{};\n'.format(nome_base,pasta))
@@ -57,7 +57,7 @@ for j in range(1, repeticoes):
     if (nome_base != temp):
             temp = nome_base
             dataset= Marff.abre_arff(dataset)
-            num_class, classes = Marff.retorna_classes_existentes(dataset)
+            num_class, classes, *_ = Marff.retorna_classes_existentes(dataset)
             #print("numero de classes: ")
             #print (classes)
     if (pasta == 'Distancias'):
@@ -75,7 +75,10 @@ for j in range(1, repeticoes):
             distancias='/Individuo'+nome_base+str(i)
             k = i-1
         if num_class==2:
-            (os.system(dcol+enderecoin+distancias+".arff"+enderecoout+str(k)+" -F 1 -N 2"))
+            cmd = dcol+enderecoin+distancias+".arff"+enderecoout+str(k)+" -F 1 -N 2"
+            print(cmd)
+            exit(0)
+            os.system(cmd)
 
         else:
             os.system(dcol + enderecoin + distancias + ".arff" + enderecoout + str(k) + " -d -F 1 -N 2")

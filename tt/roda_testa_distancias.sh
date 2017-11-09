@@ -2,5 +2,5 @@
 
 while read i; 
 do
-	~/anaconda3/envs/tese2/bin/python ./GeraGrafico.py $i
-done < bases.txt
+	~/anaconda3/envs/tese2/bin/python ./Vizinhos_por_lable.py $i
+done < Bases/bases6.txt
