@@ -1,76 +1,82 @@
-import numpy as np
-from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+from math import sqrt
 import Marff
 from scipy.spatial import distance
-base=Marff.abre_arff('/media/marcos/Data/Tese/Ag/1/IndividuoAdult1.arff')
+
+base=Marff.abre_arff('/media/marcos/Data/Tese/Ag/1/IndividuoBanana2.arff')
 X,y=Marff.retorna_instacias(base)
-#print(X[0])
 
-i1 = []
-i2 = []
-fisher=[]
-g=[]
-gg=[]
-n2=[]
-n22=[]
-inter=0
-intra=0
-# for i in range(len(y)):
-#     if y[i]==y[0]:
-#         i1.append(X[i])
-#     else:
-#         i2.append((X[i]))
 
-# for j in range(len(i1)):
-#     for k in range(len(i2)):
-#         v=(abs((np.mean(i1[j]) - np.mean(i2[k]))**2)/((np.var(i1[j]) + np.var(i2[k]))))
-#         #print(v)
-#         fisher.append(v)
-#print(max(fisher))
+def retorna_range(X):
+    '''
+    retona listas com o maior, menor atributo e o range
+    :@param X: array de instancias
+    :@return: listRange, listMax, listMin
+    '''
+    listMax=[]
+    listMin=[]
+    listRange=[]
+    cont=0
 
-dist=0
+    while cont<len(X[0]):
+        for i in range(len(X)):
+            if(i==0):
+                Min=X[i][cont]
+                Max=X[i][cont]
+                auxMin = 9999999
+                auxMax = 0
+            else:
+                auxMin=X[i][cont]
+                auxMax=X[i][cont]
+            if(auxMin<Min):
+                Min=auxMin
+            if (auxMax > Max):
+                Max = auxMax
+        cont+=1
+        listMax.append(Max)
+        listMin.append(Min)
+        listRange.append(Max-Min)
+    #print(listMin, listMax, listRange)
+    return listRange, listMax, listMin
 
-for j in range(len(X)):
-    min_intra = 999999999
-    min_inter = 999999999
-    for k in range(len(X)):
-        if(X[j]==X[k]):
-            continue
-        else:
 
-           dist=distance.euclidean(X[j],X[k],)
-        if y[j]!=y[k] and dist<min_inter:
-            min_inter=dist
-        if y[j]==y[k] and dist<min_intra:
-            min_intra=dist
-    inter+=min_inter
-    intra+=min_intra
-    print(inter, intra)
-print(intra/inter)
 
-# for j in range(len(X)):
-#     min_intra = []
-#     min_inter = []
-#     for k in range(len(X)):
-#         if(X[j]==X[k]):
-#             continue
-#         else:
-#            dist=distance.euclidean(X[j],X[k])
-#         if y[j]!=y[k]:
-#             min_inter.append(dist)
-#         if y[j]==y[k]:
-#             min_intra.append(dist)
-#     a=min(min_inter)
-#     b=min(min_intra)
-#     c=max(min_inter)
-#     d=max(min_intra)
-#
-#     a=a-c
-#     b=b-d
-#
-#     inter+=a
-#     intra += b
-#     print(inter, intra)
-# print(intra/inter)
-#print(sum(n2))
 
+
+def N2 (X, x_range):
+    '''
+     Retorna N2 para 2 classes
+    :@param X: array de instancias
+    :@param x_range: array de range
+    :@return: N2, intraClass, interClass
+    '''
+    inter = []
+    intra = []
+    for j in range(len(X)):
+        min_intra = 99999
+        min_inter = 99999
+        for k in range(len(X)):
+            if(j==k):
+                continue
+            else:
+                a=X[j]
+                b=X[k]
+                dist=sqrt(sum(((a - b)/x_range) ** 2 for a, b, x_range in zip(a, b, x_range)))
+                if(dist==0):
+                    if y[j] != y[k]:
+                        min_inter = dist
+                    if y[j] == y[k]:
+                        min_intra = dist
+                if y[j]!=y[k] and dist<min_inter:
+                    min_inter=dist
+                if y[j]==y[k] and dist<min_intra:
+                    min_intra=dist
+        inter.append(min_inter)
+        intra.append(min_intra)
+    N2=sum(intra)/sum(inter)
+    return N2, inter, intra
+
+x_range,*_=retorna_range(X)
+
+kkkk,*_=N2(X,x_range)
+
+print(kkkk)
