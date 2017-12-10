@@ -2,9 +2,10 @@ from math import sqrt
 import Marff
 from scipy.spatial import distance
 
-base=Marff.abre_arff('/media/marcos/Data/Tese/Ag/1/IndividuoBanana2.arff')
+base=Marff.abre_arff('/media/marcos/Data/Tese/Ag/1/IndividuoWine1.arff')
 X,y=Marff.retorna_instacias(base)
-
+num_classes,classes,*_=Marff.retorna_classes_existentes(base)
+print(classes)
 
 def retorna_range(X):
     '''
@@ -42,10 +43,12 @@ def retorna_range(X):
 
 
 
-def N2 (X, x_range):
+def N2 (X, y, x_range):
     '''
      Retorna N2 para 2 classes
+
     :@param X: array de instancias
+    :@param y: vetor de classes
     :@param x_range: array de range
     :@return: N2, intraClass, interClass
     '''
@@ -64,8 +67,10 @@ def N2 (X, x_range):
                 if(dist==0):
                     if y[j] != y[k]:
                         min_inter = dist
+                       # min_intra=1
                     if y[j] == y[k]:
                         min_intra = dist
+                        #min_inter=1
                 if y[j]!=y[k] and dist<min_inter:
                     min_inter=dist
                 if y[j]==y[k] and dist<min_intra:
@@ -75,8 +80,72 @@ def N2 (X, x_range):
     N2=sum(intra)/sum(inter)
     return N2, inter, intra
 
+
+def Nn2 (X, y, x_range):
+    '''
+     Retorna N2 para 2 classes
+
+    :@param X: array de instancias
+    :@param y: vetor de classes
+    :@param x_range: array de range
+    :@return: N2, intraClass, interClass
+    '''
+    inter = []
+    intra = []
+    lista1 = []
+    lista2 = []
+    cont = 0
+
+    for i in range(len(X)):
+        if classes[cont] == y[i]:
+            lista1.append(X[i])
+        else:
+            lista2.append(X[i])
+
+    for j in range(len(lista1)):
+
+        min_inter = 99999
+        for k in range(len(lista2)):
+            if(j==k):
+                continue
+            else:
+                a=lista1[j]
+                b=lista2[k]
+
+                dist=sqrt(sum(((a - b)/x_range) ** 2 for a, b, x_range in zip(a, b, x_range)))
+                if(dist==0):
+                   min_inter = dist
+                if dist<min_inter:
+                    min_inter=dist
+        inter.append(min_inter)
+    for l in range(len(lista1)):
+        min_intra = 99999
+        for m in range(len(lista1)):
+            if (l == m):
+                continue
+            else:
+                a = lista1[l]
+                b = lista1[m]
+                dist = sqrt(sum(((a - b) / x_range) ** 2 for a, b, x_range in zip(a, b, x_range)))
+                if (dist == 0):
+                   # if y[j] != y[k]:
+                        min_intra = dist
+
+                if dist < min_intra:
+                    min_intra = dist
+        intra.append(min_intra)
+    N2=sum(intra)/sum(inter)
+    return N2, inter, intra
+
+
+
+
+
+#for i in y:print(*lista1, *y, sep='\n')
+
+
 x_range,*_=retorna_range(X)
 
-kkkk,*_=N2(X,x_range)
+kkkk,inter,intra=Nn2(X,y,x_range)
 
-print(kkkk)
+print(inter)

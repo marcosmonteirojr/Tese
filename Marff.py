@@ -12,10 +12,14 @@ def abre_arff(caminho):
     return base
 
 def retorna_classes_existentes(dataset):
-    """
-    :param dataset: pass
-    :return:
-    """
+    '''
+
+    :rtype: object
+    :@param dataset: arff aberto
+    :@return: n_classes, classes, elementos_p_classes, total_elementos
+    '''
+
+
     classes=[]#vetor com as classes
     num_class=0
     elem_p_classes=[]
