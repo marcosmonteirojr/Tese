@@ -124,8 +124,8 @@ def main():
                # else:
 
 
-            #distancias='Distancias'+nome_b+str(k)
-            #cria_arff(teste, dados, distancias)
+            distancias='Distancias'+nome_b+str(k)
+            cria_arff(teste, dados, distancias)
             # if num_classes==2:
             #     os.system(dcol+enderecoin+distancias+".arff"+enderecoout+str(k)+" -F 1 -N 2")
             # else:

@@ -193,8 +193,8 @@ for i in range(1, 21):
                 #print(lista_n_vizinhos)
                 break
 
-        #vizinhos = 'Vizinhos' + nome_b + str(l)
-        #cria_arff(teste, dados, vizinhos)
+        vizinhos = 'Vizinhos' + nome_b + str(l)
+        cria_arff(teste, dados, vizinhos)
 now=datetime.now()
 #csv.write(str(now.day)+'/'+str(now.month)+'/'+str(now.year)+'-'+str(now.hour)+':'+str(now.minute)+'\n\n')
 #csv.closed

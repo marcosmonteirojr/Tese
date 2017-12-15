@@ -52,25 +52,26 @@ def retorna_instacias(dataset):
     for i in dataset['data']:
         y.append(i[-1])
         X.append(i[:-1])
+
     return X,y
 
-def cria_arff(dataset, instancias, nome, pasta):
-    """
-    cria um arquivo arff no E:
-    @:param dataset: descricao da base/ relacao
-    @:param instancias: instancias
-    @:param nome: do arquivo a ser gerado
-    @:param pasta: local para salvar
-    :return:
-    """
-    obj = {
-        'description': dataset['description'],
-        'relation': dataset['relation'],
-        'attributes': dataset['attributes'],
-        'data': instancias['data'],
+def cria_arff(info, data, nome):
+        """
+        cria um arquivo arff no E:
+        @:param info: descricao da base/ relacao
+        @:param data: dados da base
+        @:param nome: do arquivo a ser gerado
+        :return:
+        """
+        obj = {
+            'description': info['description'],
+            'relation': info['relation'],
+            'attributes': info['attributes'],
+            'data': data['data'],
 
-    }
-    arq1=arff.dumps(obj)
-    arq=open(pasta+nome+'.arff','w')
-    arq.write(arq1)
-    arq.close()
+        }
+        #print(obj)
+        arq1 = arff.dumps(obj)
+        arq = open(nome+'.arff','w')
+        arq.write(arq1)
+        arq.close()
