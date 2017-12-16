@@ -19,7 +19,6 @@ def retorna_classes_existentes(dataset):
     :@return: n_classes, classes, elementos_p_classes, total_elementos
     '''
 
-
     classes=[]#vetor com as classes
     num_class=0
     elem_p_classes=[]
@@ -55,14 +54,18 @@ def retorna_instacias(dataset):
 
     return X,y
 
-def cria_arff(info, data, nome):
+def cria_arff(info, data, classes,pasta, nome):
+
         """
         cria um arquivo arff no E:
         @:param info: descricao da base/ relacao
         @:param data: dados da base
+        @:param classes: classes da base
         @:param nome: do arquivo a ser gerado
         :return:
         """
+        f = [str(k) for k in classes]
+        info['attributes'][-1] = ('Class', f)
         obj = {
             'description': info['description'],
             'relation': info['relation'],
@@ -72,6 +75,6 @@ def cria_arff(info, data, nome):
         }
         #print(obj)
         arq1 = arff.dumps(obj)
-        arq = open(nome+'.arff','w')
+        arq = open(pasta+nome+'.arff','w')
         arq.write(arq1)
         arq.close()
