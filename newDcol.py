@@ -1,6 +1,6 @@
 import subprocess, numpy
 
-caminho = "/media/marcos/Data/Tese/Bags/1/IndividuoWine1.arff"
+#caminho = "/media/marcos/Data/Tese/Bags/1/IndividuoWine1.arff"
 dcol = "/media/marcos/Data/Tese/dcol/DCoL-v1.1/Source/dcol ./dcol"
 
 
@@ -40,6 +40,7 @@ def retorna_complexidade(caminho, complexidades, num_classes=2, media=False):
         numpy.average(N4) if N4 else "Erro N4"
     else:
         return round(F1,6) if F1 else "Erro F1", numpy.round(N2,6) if N2 else "Erro N2", N4 if N4 else "Erro N4"
+
 
 
 #F1, N2, *_ = retorna_complexidade(caminho, num_classes=3, complexidades="-F 1 -N 2", media=True)
