@@ -148,8 +148,8 @@ def fitness_andre(individuo):
     X, y, *_ = abre_individuos(ind)
     perc = perceptron.Perceptron()
     perc.fit(X, y)
-   # print(len(dist_medias))
-    out = float(perc.score(X_val, y_val) + dist_medias[ind])
+    #print(len(dist_medias))
+    out = float(perc.score(X_val, y_val) + dist_medias[ind-1])
     # print(out)
     return out,
 
@@ -174,7 +174,7 @@ def fitness_moga(individuo):
 
 def cruza(indi, indi2):
 
-    print("individuo1 {} e individuo2 {}".format(indi,indi2))
+    print("cruzamento entre: individuo1 {} e individuo2 {}".format(indi,indi2))
 
     #exit(0)
     global nome_base, geracao, repeticao, caminho_todas, n
@@ -212,11 +212,12 @@ def cruza(indi, indi2):
 
     nome = "/Individuo" + nome_base + str(n)
     n=n+1
-    nome2 = "/Individuo" + nome_base + str(n)
+    indi[0]=n
+    #nome2 = "/Individuo" + nome_base + str(n)
     arff.cria_arff(base, X3, todas_as_classes, pasta, nome)
-    arff.cria_arff(base, X4, todas_as_classes, pasta, nome2)
-    n=n+1
-
+    #arff.cria_arff(base, X4, todas_as_classes, pasta, nome2)
+    k=n+1
+    indi2[0]=k
 
     return creator.Individual(indi), creator.Individual(indi2)
 
@@ -257,23 +258,20 @@ geracao = 1
 
 num_classes = 2
 
-
 dist_medias = []
 X_val = []
 y_val = []
 
 abre_validacao()
 _ = retorna_complexidades()
-n=1
+n=0
 
 #####################################################################################################################################
 
 verbose = True
 
 nr_generation = 30
-#qt_selection = 1  # (elitismo)
-#nr_children_generation = 100
-proba_crossover = 0.9
+proba_crossover = 0.99
 proba_mutation = 0.01
 # current_ind = 14
 
@@ -287,9 +285,12 @@ seq = 0
 
 
 def sequencia():
-    global seq
+    global seq, geracao
     seq += 1
-    return seq
+
+    seq1 = str(geracao)+'-'+str(seq)
+    #print(seq1)
+    return seq1
 
 toolbox.register("attr_item", sequencia)
 
@@ -298,10 +299,10 @@ toolbox.register("individual", tools.initRepeat, creator.Individual,
 
 toolbox.register("population", tools.initRepeat, list, toolbox.individual)
 
-toolbox.register("evaluate", fitness_moga)
+toolbox.register("evaluate", fitness_andre)
 toolbox.register("mate", cruza)
 toolbox.register("mutate", mutacao)
-toolbox.register("select", tools.selRoulette)
+toolbox.register("select", tools.selBest)
 # toolbox.register("select", tools.selRoulette)
 
 
@@ -315,12 +316,10 @@ hof = tools.ParetoFront()
 # stats.register("min", np.min, axis=0)
 # stats.register("max", np.max, axis=0)
 
-if (verbose == True):
-    print("Iniciando GA")
-    # sys.stdout.flush()
+# sys.stdout.flush()
 
 
-def the_function(population, gen):
+def the_function(population, gen, offspring):
     global geracao, dist_medias, X_val, y_val, n
     pasta = caminho_todas + str(repeticao) + "/" + str(geracao)
     pasta2 = caminho_todas + str(repeticao) + "/" + str(geracao+1)
@@ -329,19 +328,20 @@ def the_function(population, gen):
     y_val = []
 
     geracao = gen
-    print(population)
+    print('Eletismo: ',population)
+    print('Populacao: ', offspring)
+    print(len(offspring))
     for i in population:
        os.system("cp "+pasta+"/Individuo" + nome_base + str(i[0]) + '.arff '+pasta2+"/Individuo" + nome_base + str(n)+'.arff')
        n=n+1
-    n = 1
+    n = 0
     exit(0)
 
     abre_validacao()
     _ = retorna_complexidades()
 
 
-
-algorithms.eaMuCommaLambda(pop, toolbox, 4, 55, proba_crossover, proba_mutation, nr_generation, generation_function=the_function)
+algorithms.eaMuCommaLambda(pop, toolbox, 4, 96, proba_crossover, proba_mutation, nr_generation, generation_function=the_function)
 
 
 
