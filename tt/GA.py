@@ -211,8 +211,9 @@ def cruza(indi, indi2):
         os.system("mkdir -p " + pasta)
 
     nome = "/Individuo" + nome_base + str(n)
-    n=n+1
+
     indi[0]=n
+    n = n + 1
     #nome2 = "/Individuo" + nome_base + str(n)
     arff.cria_arff(base, X3, todas_as_classes, pasta, nome)
     #arff.cria_arff(base, X4, todas_as_classes, pasta, nome2)
@@ -236,16 +237,13 @@ def mutacao(individuo):
     while y[inst] != y[inst2 - 1]:
         inst = random.randint(0, len(y) - 1)
         inst2 = random.randint(0, len(y) - 1)
-
-
-    # print(gera)
     pasta = caminho_todas + str(repeticao) + "/" + str(geracao+1)
     print('mutacaooooo', individuo, ind2)
     for j in range(len(y)):
         X['data'][j].append(y[j])
     nome = "/Individuo" + nome_base + str(n)
     arff.cria_arff(base, X, todas_as_classes, pasta, nome)
-    individuo[0] = ind
+    individuo[0] = n
     n=n+1
     return individuo,
 
@@ -264,7 +262,7 @@ y_val = []
 
 abre_validacao()
 _ = retorna_complexidades()
-n=0
+n=1
 
 #####################################################################################################################################
 
@@ -285,12 +283,10 @@ seq = 0
 
 
 def sequencia():
-    global seq, geracao
+    global seq
     seq += 1
-
-    seq1 = str(geracao)+'-'+str(seq)
-    #print(seq1)
-    return seq1
+    #print(seq)
+    return seq
 
 toolbox.register("attr_item", sequencia)
 
@@ -334,8 +330,8 @@ def the_function(population, gen, offspring):
     for i in population:
        os.system("cp "+pasta+"/Individuo" + nome_base + str(i[0]) + '.arff '+pasta2+"/Individuo" + nome_base + str(n)+'.arff')
        n=n+1
-    n = 0
-    exit(0)
+    n = 1
+    #exit(0)
 
     abre_validacao()
     _ = retorna_complexidades()
