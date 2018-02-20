@@ -168,7 +168,7 @@ def fitness_moga(individuo):
     perc.fit(X, y)
 
     out = float(perc.score(X_val, y_val))
-    out2=float(dist_medias[indi-1])
+    out2 = float(dist_medias[indi-1])
     return out, out2,
 
 
@@ -247,6 +247,47 @@ def mutacao(individuo):
     n=n+1
     return individuo,
 
+def selMaquinhos(population, offspring):
+    global n
+    pasta = caminho_todas + str(repeticao) + "/" + str(geracao)
+    pasta2 = caminho_todas + str(repeticao) + "/" + str(geracao + 1)
+    print('Eletismo: ', population)
+    print('Populacao: ', offspring)
+    print(len(offspring))
+    for i in population:
+        os.system(
+            "cp " + pasta + "/Individuo" + nome_base + str(i[0]) + '.arff ' + pasta2 + "/Individuo" + nome_base + str(
+                n) + '.arff')
+        n = n + 1
+    return offspring+(population)[:4]
+
+seq = 0
+
+def sequencia():
+    global seq
+    seq += 1
+    print(seq)
+    return seq
+
+def the_function(population, gen, offspring):
+    global X_val,y_val, dist_medias, n
+    dist_medias = []
+    X_val = []
+    y_val = []
+
+    geracao = gen
+    # print('Eletismo: ',population)
+    # print('Populacao: ', offspring)
+    # print(len(offspring))
+    # for i in population:
+    #    os.system("cp "+pasta+"/Individuo" + nome_base + str(i[0]) + '.arff '+pasta2+"/Individuo" + nome_base + str(n)+'.arff')
+    #    n=n+1
+    n = 1
+    #exit(0)
+
+    abre_validacao()
+    _ = retorna_complexidades()
+
 
 caminho_todas = "/media/marcos/Data/Tese/AG/"
 caminho_valida = "/media/marcos/Data/Tese/Bases/Validacao/"
@@ -279,15 +320,6 @@ creator.create("Fitness", base.Fitness, weights=(1.0,))
 creator.create("Individual", list, fitness=creator.Fitness)
 toolbox = base.Toolbox()
 
-seq = 0
-
-
-def sequencia():
-    global seq
-    seq += 1
-    #print(seq)
-    return seq
-
 toolbox.register("attr_item", sequencia)
 
 toolbox.register("individual", tools.initRepeat, creator.Individual,
@@ -298,11 +330,12 @@ toolbox.register("population", tools.initRepeat, list, toolbox.individual)
 toolbox.register("evaluate", fitness_andre)
 toolbox.register("mate", cruza)
 toolbox.register("mutate", mutacao)
-toolbox.register("select", tools.selBest)
+toolbox.register("select", tools.selRoulette)
 # toolbox.register("select", tools.selRoulette)
 
 
 pop = toolbox.population(n=100)
+
 
 hof = tools.ParetoFront()
 # stats = tools.Statistics(lambda ind: ind.fitness.values)
@@ -315,80 +348,13 @@ hof = tools.ParetoFront()
 # sys.stdout.flush()
 
 
-def the_function(population, gen, offspring):
-    global geracao, dist_medias, X_val, y_val, n
-    pasta = caminho_todas + str(repeticao) + "/" + str(geracao)
-    pasta2 = caminho_todas + str(repeticao) + "/" + str(geracao+1)
-    dist_medias = []
-    X_val = []
-    y_val = []
-
-    geracao = gen
-    print('Eletismo: ',population)
-    print('Populacao: ', offspring)
-    print(len(offspring))
-    for i in population:
-       os.system("cp "+pasta+"/Individuo" + nome_base + str(i[0]) + '.arff '+pasta2+"/Individuo" + nome_base + str(n)+'.arff')
-       n=n+1
-    n = 1
-    #exit(0)
-
-    abre_validacao()
-    _ = retorna_complexidades()
 
 
-algorithms.eaMuCommaLambda(pop, toolbox, 4, 96, proba_crossover, proba_mutation, nr_generation, generation_function=the_function)
+
+algorithms.eaMuPlusLambda(pop, toolbox, 100, 100, proba_crossover, proba_mutation, nr_generation, generation_function=the_function, select_function=selMaquinhos)
 
 
 
 
 
 
-#
-
-
-
-
-#################################################################################
-# funcao sem uso
-
-# def fitness_andre(caminho, valida_caminho, nome_base):
-#
-#     perc = perceptron.Perceptron()
-#
-#     acuracia = list()
-#     complexidades = list()
-#     for i in range(1,101):
-#
-#         c=caminho +"/Individuo"+nome_base+str(i)+".arff"
-#
-#         base = arff.abre_arff(c)
-#         base_valida=arff.abre_arff(valida_caminho)
-#
-#         X_val, y_val=arff.retorna_instacias(base_valida)
-#         X, y = arff.retorna_instacias(base)
-#         num_classes,*_=arff.retorna_classes_existentes(base)
-#
-#         perc.fit(X, y)
-#         acuracia.append(perc.score(X_val, y_val))
-#
-#         F1,N2,*_=newDcol.retorna_complexidade(c,complexidades="-F 1 -N 2", num_classes=num_classes, media=True)
-#         teste=[F1,N2]
-#         complexidades.append(teste)
-#
-#     dist_medias = list()
-#     for j in range(len(complexidades)):
-#         dist=0
-#         for l in range(len(complexidades)):
-#
-#             if(j==l):
-#                 continue
-#             else:
-#                 a=complexidades[j]
-#                 b=complexidades [l]
-#                 dist+=sqrt(sum(((a - b)) ** 2 for a, b in zip(a, b)))
-#         dist_medias.append(dist/100)
-#
-#     print(dist_medias)
-#     print(complexidades)
-#     print(acuracia)
