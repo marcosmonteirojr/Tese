@@ -1,3 +1,5 @@
+from deap.tools.selection import selBest
+
 import Marff as arff, newDcol, random, os
 from math import sqrt
 from sklearn.linear_model import perceptron
@@ -36,7 +38,7 @@ geracao     # tipo: int
             # conteudo: geracao(destino pasta)
             # utilizada em: retorna_complexidades, abre_individuos, cruza, mutacao
             # atribuida: (fora)
-            # alterada por: nenhuma
+            # alterada por: nenhuma, 
 
 num_classes # tipo: int
             # conteudo: numero de classes da base em uso
@@ -104,7 +106,7 @@ def abre_individuos(individuo):
     return X, y, base, todas_as_classes
 
 
-def retorna_complexidades():
+def retorna_complexidades(tipo, populacao=None):
     '''
     retorna a complexidade F1 e N2 baseado no nome da base e a repeticao, altera a variavel dist_media
     :param: num_classes # numero de classes e obtido pela fucao abre arquivos
@@ -112,31 +114,57 @@ def retorna_complexidades():
     '''
     global nome_base, repeticao, num_classes, dist_medias, geracao, caminho_todas
     complexidades = list()
-    for i in range(1, 101):
-        c = caminho_todas + str(repeticao) + "/" + str(geracao) + "/Individuo" + nome_base + str(i) + ".arff"
-        F1, N2, *_ = newDcol.retorna_complexidade(c, complexidades="-F 1 -N 2", num_classes=num_classes, media=True)
-        cpx = [F1, N2]
-        complexidades.append(cpx)
-    # print(complexidades)
-    dist_medias = list()
-    for j in range(len(complexidades)):
-        dist = 0
-        for l in range(len(complexidades)):
-            if (j == l):
-                continue
-            else:
-                a = complexidades[j]
-                b = complexidades[l]
-                dist += sqrt(sum(((a - b)) ** 2 for a, b in zip(a, b)))
-        dist_medias.append(dist / 100)
-    # print(dist_medias)
 
+
+
+
+
+
+
+
+
+    if(tipo==1):
+        dist_medias = list()
+        for i in range(1, 101):
+            c = caminho_todas + str(repeticao) + "/" + str(geracao) + "/Individuo" + nome_base + str(i) + ".arff"
+            F1, N2, *_ = newDcol.retorna_complexidade(c, complexidades="-F 1 -N 2", num_classes=num_classes, media=True)
+            cpx = [F1, N2]
+            complexidades.append(cpx)
+        for j in range(len(complexidades)):
+            dist = 0
+            for l in range(len(complexidades)):
+                if (j == l):
+                    continue
+                else:
+                    a = complexidades[j]
+                    b = complexidades[l]
+                    dist += sqrt(sum(((a - b)) ** 2 for a, b in zip(a, b)))
+            dist_medias.append(dist / 100)
+    if(tipo==2):
+        for i in range(101, 201):
+            c = caminho_todas + str(repeticao) + "/" + str(geracao) + "/Individuo" + nome_base + str(i) + ".arff"
+            F1, N2, *_ = newDcol.retorna_complexidade(c, complexidades="-F 1 -N 2", num_classes=num_classes, media=True)
+            cpx = [F1, N2]
+            complexidades.append(cpx)
+        for j in range(len(complexidades)):
+            dist = 0
+            for l in range(len(complexidades)):
+                if (j == l):
+                    continue
+                else:
+                    a = complexidades[j]
+                    b = complexidades[l]
+                    dist += sqrt(sum(((a - b)) ** 2 for a, b in zip(a, b)))
+            dist_medias.append(dist / 100)
+    print(complexidades)
     return complexidades
 
 
 def fitness_andre(individuo):
+    global fit_andre
     ind = individuo[0]
-    #print(individuo)
+
+    print('fitness', ind)
 
     '''
     Funcao de fitness, retorna a acuracia e a distancia do bag requerido
@@ -150,7 +178,8 @@ def fitness_andre(individuo):
     perc.fit(X, y)
     #print(len(dist_medias))
     out = float(perc.score(X_val, y_val) + dist_medias[ind-1])
-    # print(out)
+    fit_andre.append(out)
+    #print('out', fit_andre)
     return out,
 
 
@@ -175,14 +204,13 @@ def fitness_moga(individuo):
 def cruza(indi, indi2):
 
     print("cruzamento entre: individuo1 {} e individuo2 {}".format(indi,indi2))
-
+    #print('cruza')
     #exit(0)
     global nome_base, geracao, repeticao, caminho_todas, n
     # random.seed(64)
 
     inicio = 0
     fim = 0
-    # diferenca=0
     X3 = dict()
     X4 = dict()
     X3['data'] = list()
@@ -201,24 +229,23 @@ def cruza(indi, indi2):
         else:
             X3['data'].append(X2[i])
             X4['data'].append(X[i])
-
     for j in range(len(y)):
         X3['data'][j].append(y[j])
-        X4['data'][j].append(y[j])
-
-    pasta = caminho_todas + str(repeticao) + "/" + str(geracao+1)
+#        X4['data'][j].append(y[j])
+    pasta = caminho_todas + str(repeticao) + "/" + str(geracao)
     if (os.path.exists(pasta) == False):
         os.system("mkdir -p " + pasta)
-
     nome = "/Individuo" + nome_base + str(n)
-
     indi[0]=n
-    n = n + 1
-    #nome2 = "/Individuo" + nome_base + str(n)
+
     arff.cria_arff(base, X3, todas_as_classes, pasta, nome)
+    n = n + 1
+    print(n)
     #arff.cria_arff(base, X4, todas_as_classes, pasta, nome2)
     k=n+1
     indi2[0]=k
+    if(n==201):
+        _=retorna_complexidades(2)
 
     return creator.Individual(indi), creator.Individual(indi2)
 
@@ -237,7 +264,7 @@ def mutacao(individuo):
     while y[inst] != y[inst2 - 1]:
         inst = random.randint(0, len(y) - 1)
         inst2 = random.randint(0, len(y) - 1)
-    pasta = caminho_todas + str(repeticao) + "/" + str(geracao+1)
+    pasta = caminho_todas + str(repeticao) + "/" + str(geracao)
     print('mutacaooooo', individuo, ind2)
     for j in range(len(y)):
         X['data'][j].append(y[j])
@@ -245,65 +272,79 @@ def mutacao(individuo):
     arff.cria_arff(base, X, todas_as_classes, pasta, nome)
     individuo[0] = n
     n=n+1
+    print(n)
+    if (n == 201):
+        _ = retorna_complexidades(2)
     return individuo,
 
-def selMaquinhos(population, offspring):
-    global n
-    pasta = caminho_todas + str(repeticao) + "/" + str(geracao)
-    pasta2 = caminho_todas + str(repeticao) + "/" + str(geracao + 1)
-    print('Eletismo: ', population)
-    print('Populacao: ', offspring)
-    print(len(offspring))
-    for i in population:
-        os.system(
-            "cp " + pasta + "/Individuo" + nome_base + str(i[0]) + '.arff ' + pasta2 + "/Individuo" + nome_base + str(
-                n) + '.arff')
-        n = n + 1
-    return offspring+(population)[:4]
+# def selMarquinhos(population, offspring):
+#     global n, fit_andre
+#
+#     print('sel')
+#     pasta = caminho_todas + str(repeticao) + "/" + str(geracao)
+#     pasta2 = caminho_todas + str(repeticao) + "/" + str(geracao + 1)
+#    # print('Eletismo: ', population)
+#     #print('Populacao: ', offspring)
+#     print((population))
+#    # print(offspring+(population)[:4])
+#     exit(0)
+#     return offspring+(population)[:4]
 
 seq = 0
 
 def sequencia():
     global seq
     seq += 1
-    print(seq)
+    #print(seq)
     return seq
 
 def the_function(population, gen, offspring):
-    global X_val,y_val, dist_medias, n
+    global X_val,y_val, dist_medias, n, geracao
+    pasta = caminho_todas + str(repeticao) + "/" + str(geracao)
+    pasta2 = caminho_todas + str(repeticao) + "/" + str(geracao + 1)
     dist_medias = []
     X_val = []
     y_val = []
 
+
     geracao = gen
-    # print('Eletismo: ',population)
-    # print('Populacao: ', offspring)
-    # print(len(offspring))
-    # for i in population:
-    #    os.system("cp "+pasta+"/Individuo" + nome_base + str(i[0]) + '.arff '+pasta2+"/Individuo" + nome_base + str(n)+'.arff')
-    #    n=n+1
-    n = 1
-    #exit(0)
+    print('Eletismo: ',(population))
+    #print('Populacao: ', len(offspring))
+    for i in range(len(population)):
+        print(population[i][0])
+
+
+
+
+    #print((geracao))
+    exit(0)
+    if (os.path.exists(pasta2) == False):
+        os.system("mkdir -p " + pasta2)
+    for i in population:
+        #print('arquivo', i[0])
+        os.system("cp "+pasta+"/Individuo" + nome_base + str(i[0]) + '.arff '+pasta2+"/Individuo" + nome_base + str(i[0])+'.arff')
+
 
     abre_validacao()
-    _ = retorna_complexidades()
+    _ = retorna_complexidades(1)
 
 
 caminho_todas = "/media/marcos/Data/Tese/AG/"
 caminho_valida = "/media/marcos/Data/Tese/Bases/Validacao/"
 nome_base = 'Wine'
 repeticao = 1
-geracao = 1
+geracao = 0
 
 num_classes = 2
 
 dist_medias = []
 X_val = []
 y_val = []
+fit_andre=[]
 
 abre_validacao()
-_ = retorna_complexidades()
-n=1
+_ = retorna_complexidades(1)
+n=101
 
 #####################################################################################################################################
 
@@ -325,33 +366,19 @@ toolbox.register("attr_item", sequencia)
 toolbox.register("individual", tools.initRepeat, creator.Individual,
                  toolbox.attr_item, 1)
 
-toolbox.register("population", tools.initRepeat, list, toolbox.individual)
+polutation=toolbox.register("population", tools.initRepeat, list, toolbox.individual)
 
 toolbox.register("evaluate", fitness_andre)
 toolbox.register("mate", cruza)
 toolbox.register("mutate", mutacao)
-toolbox.register("select", tools.selRoulette)
+toolbox.register("select", selBest)
 # toolbox.register("select", tools.selRoulette)
 
 
 pop = toolbox.population(n=100)
 
 
-hof = tools.ParetoFront()
-# stats = tools.Statistics(lambda ind: ind.fitness.values)
-#
-# stats.register("avg", np.mean, axis=0)
-# stats.register("std", np.std, axis=0)
-# stats.register("min", np.min, axis=0)
-# stats.register("max", np.max, axis=0)
-
-# sys.stdout.flush()
-
-
-
-
-
-algorithms.eaMuPlusLambda(pop, toolbox, 100, 100, proba_crossover, proba_mutation, nr_generation, generation_function=the_function, select_function=selMaquinhos)
+algorithms.eaMuPlusLambda(pop, toolbox, 100, 100, proba_crossover, proba_mutation, nr_generation, generation_function=the_function)
 
 
 
