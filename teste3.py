@@ -1,19 +1,20 @@
-import numpy as np
-import matplotlib.pyplot as plt
+import os, shutil
 
-fig = plt.figure()
-ax1 = fig.add_axes([0.1, 0.1, 0.4, 0.7])
-ax2 = fig.add_axes([0.55, 0.1, 0.4, 0.7])
+caminho_todas = "/media/marcos/Data/Tese/AG/"
+caminho_valida = "/media/marcos/Data/Tese/Bases/Validacao/"
+nome_base = 'Wine'
+repeticao = 1
+geracao = 0
+population=[[34], [67], [115], [134], [42], [133], [8], [83], [43], [71], [80], [60], [36], [86], [21], [161], [188], [19], [39], [81], [98], [33], [46], [56], [143], [183], [124], [156], [96], [158], [103], [95], [149], [82], [117], [163], [1], [108], [3], [79], [70], [53], [65], [182], [68], [52], [176], [159], [69], [41], [73], [57], [85], [40], [14], [126], [37], [29], [28], [112], [31], [75], [35], [11], [9], [84], [45], [66], [173], [100], [49], [110], [87], [94], [54], [164], [51], [132], [17], [174], [162], [145], [121], [129], [128], [88], [91], [5], [58], [62], [144], [6], [118], [198], [184], [48], [185], [7], [157], [160]]
+pasta = caminho_todas + str(repeticao) + "/" + str(geracao)
+pasta2 = caminho_todas + str(repeticao) + "/" + str(geracao + 1)
 
-x = np.arange(0.0, 2.0, 0.02)
-y1 = np.sin(2*np.pi*x)
-y2 = np.exp(-x)
-l1, l2 = ax1.plot(x, y1, 'rs-', x, y2, 'go')
+if (os.path.exists(pasta2) == False):
+    os.system("mkdir -p " + pasta2)
 
-y3 = np.sin(4*np.pi*x)
-y4 = np.exp(-2*x)
-l3, l4 = ax2.plot(x, y3, 'yd-', x, y4, 'k^')
-
-fig.legend((l1, l2), ('Line 1', 'Line 2'), 'upper left')
-fig.legend((l3, l4), ('Line 3', 'Line 4'), 'upper right')
-plt.show()
+for i in population:
+    print(population)
+    shutil.copy2(pasta+"/Individuo" + nome_base + str(i[0]) + '.arff', pasta2)
+    # print(pasta+"/Individuo" + nome_base + str(i[0]) + '.arff '+pasta2+"/Individuo" + nome_base + str(i[0])+'.arff')
+    #os.system("cp " + pasta + "/Individuo" + nome_base + str(i[0]) + '.arff ' + pasta2 + "/Individuo" + nome_base + str(
+     #   i[0]) + '.arff')
