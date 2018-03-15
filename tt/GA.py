@@ -1,13 +1,3 @@
-from deap.tools.selection import selBest
-
-import Marff as arff, newDcol, random, os, shutil
-from math import sqrt
-from sklearn.linear_model import perceptron
-from deap import algorithms
-from deap import base
-from deap import creator
-from deap import tools
-
 '''
 Variaveis globais
 caminho_todas # tipo string ->"/media/marcos/Data/Tese/AG/"
@@ -89,7 +79,16 @@ caminhos
 
 '''
 
+from deap.tools.selection import selBest
 
+import Marff as arff, newDcol, random, os, shutil
+from math import sqrt
+from sklearn.linear_model import perceptron
+from deap import algorithms
+from deap import base
+from deap import creator
+from deap import tools
+import graficos_moga
 def abre_validacao():
     global X_val, y_val, nome_base, repeticao, num_classes, caminho_valida
     v = caminho_valida + str(repeticao) + "/Valida" + nome_base + str(
@@ -242,20 +241,30 @@ def fitness_andre(individuo):
 
 
 def fitness_moga(individuo):
-    indi = individuo[0]
+
     '''
     Funcao de fitness, retorna a acuracia e a distancia do bag requerido
     :param individuo: tipo int #será passado por parametro para gerar o nome do arquivo
     :return: perc.score(X_val, y_val), dist_medias[arquivo]
     '''
-    global dist_medias, X_val, y_val
+    global dist, X_val, y_val
+    # print('fitness')
+    distancia = 0
 
-    X, y, *_ = abre_individuos(indi)
+    ind = individuo[0]
+    for i in range(len(dist['nome'])):
+
+        if dist['nome'][i][0] == ind:
+            distancia = dist['dist'][i]
+            # print('nome, distancia', dist['nome'][i][0], distancia)
+            break
+    X, y, *_ = abre_individuos(ind)
     perc = perceptron.Perceptron()
     perc.fit(X, y)
+    # print(len(dist_medias))
 
     out = float(perc.score(X_val, y_val))
-    out2 = float(dist_medias[indi-1])
+    out2 = float(distancia)
     return out, out2,
 
 
@@ -341,23 +350,24 @@ def the_function(population, gen, offspring):
     :param offspring: nova população
     :return:
     '''
-    global X_val,y_val, n, geracao, off
+    global geracao, off
     pasta = caminho_todas + str(repeticao) + "/" + str(geracao)
     pasta2 = caminho_todas + str(repeticao) + "/" + str(geracao + 1)
-    X_val = []
-    y_val = []
     off=[]
-    for i in population:
-        j=([i][0])
-        j=j[0]
-        off.append(j)
     geracao = gen
+    csv.write(str(geracao) + ';')
+   # population = sorted(population)
+    for i in range(len(population)):
+        off.append(population[i][0])
+        if (population[i][0] == population[-1][0]):
+            csv.write(str(population[i][0]) + '\n')
+        else:
+            csv.write(str(population[i][0]) + ';')
     if (os.path.exists(pasta2) == False):
         os.system("mkdir -p " + pasta2)
-    population = sorted(population)
     for i in population:
         shutil.copy2(pasta + "/Individuo" + nome_base + str(i[0]) + '.arff', pasta2)
-    abre_validacao()
+    #abre_validacao()
     _ = retorna_complexidades(population=population)
 
 def populacao(populacao_total):
@@ -368,16 +378,16 @@ def populacao(populacao_total):
     '''
     global off
     off=[]
-    for i in populacao_total:
+    for i in range(len(populacao_total)):
         j=([i][0])
-        j=j[0]
         off.append(j)
     return off
 
 caminho_todas = "/media/marcos/Data/Tese/AG/"
 caminho_valida = "/media/marcos/Data/Tese/Bases/Validacao/"
+caminho_teste = "/media/marcos/Data/Tese/Bases/Teste/"
 nome_base = 'Wine'
-repeticao = 1
+repeticao = 5
 geracao = 0
 off=[]
 num_classes = 2
@@ -392,19 +402,20 @@ seq = 0
 contador_complexidades=0
 contador_cruzamento=1
 n=101
-
+random.seed(64)
 #####################################################################################################################################
 
-verbose = True
 
-nr_generation = 30
+
+nr_generation = 5
 proba_crossover = 0.99
 proba_mutation = 0.01
 # current_ind = 14
+fit_value1=1.0
+fit_value2=1.0
 
 
-
-creator.create("Fitness", base.Fitness, weights=(1.0,))
+creator.create("Fitness", base.Fitness, weights=(fit_value1,fit_value2,))
 creator.create("Individual", list, fitness=creator.Fitness)
 toolbox = base.Toolbox()
 
@@ -418,19 +429,33 @@ population=toolbox.register("population", tools.initRepeat, list, toolbox.indivi
 toolbox.register("evaluate", fitness_andre)
 toolbox.register("mate", cruza)
 toolbox.register("mutate", mutacao)
-toolbox.register("select", tools.selBest )
+toolbox.register("select", tools.selSPEA2 )
+sel='selSPEA2'
 # toolbox.register("select", tools.selRoulette)
 
 
 
 
 pop = toolbox.population(n=100)
+csv=open("LogPop"+nome_base+'.csv','w')
+csv.write('Geração;Populacao\n')
+csv.write('0;')
+for i in range (len(pop)):
+    if(pop[i][0]==pop[-1][0]):
+        csv.write(str(pop[i][0])+'\n')
+    else:
+        csv.write(str(pop[i][0])+';')
 abre_validacao()
 _ = retorna_complexidades(primeira=True)
-
+csv2=open("Log"+nome_base+'.csv','a')
+csv2.write("Repeticao;NumGera;ProbaCross;ProbaMut;FitValue1;FitValue2;Select;acBag;acMoga\n")
+csv2.write("{};{};{};{};{};{};{};".format(repeticao,nr_generation,proba_crossover,proba_mutation,fit_value1,fit_value2,sel))
+csv2.close()
 algorithms.eaMuPlusLambda(pop, toolbox, 100, 100, proba_crossover, proba_mutation, nr_generation, generation_function=the_function, popu=populacao)
-
-
+print('+_OIJIOHUNMLÇHUIJKMÇJHUJN')
+#ac, ac2=graficos_moga.calcula_acc(caminho_todas,caminho_teste,nome_base,repeticao,5,num_classes)
+#csv2.write("{};{}\n".format(ac,ac2))
+csv2.close()
 
 
 
