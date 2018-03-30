@@ -2,5 +2,5 @@
 
 while read i;
 do
-	~/anaconda3/envs/tese2/bin/python ./DcolArff.py $i
-done < bases10-todasmenosmagicewdvg.txt
+	~/anaconda3/envs/tese2/bin/python ./../GA.py $i
+done < bases2.txt

@@ -3,7 +3,7 @@ Banana
 Blood
 CTG
 Diabetes
-Ecoli
+Ecolie
 Faults
 German
 Glass
@@ -27,3 +27,4 @@ Weaning
 Wine
 Yonosphere
 WDVG
+Magic

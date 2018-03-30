@@ -79,16 +79,16 @@ caminhos
 
 '''
 
-from deap.tools.selection import selBest
+#from deap.tools.selection import selBest
 
-import Marff as arff, newDcol, random, os, shutil
+import Marff as arff, newDcol, random, os, shutil, sys
 from math import sqrt
 from sklearn.linear_model import perceptron
 from deap import algorithms
 from deap import base
 from deap import creator
 from deap import tools
-import graficos_moga
+#import graficos_moga, melhorAcc_complex
 def abre_validacao():
     global X_val, y_val, nome_base, repeticao, num_classes, caminho_valida
     v = caminho_valida + str(repeticao) + "/Valida" + nome_base + str(
@@ -96,7 +96,11 @@ def abre_validacao():
     base_valida = arff.abre_arff(v)
 
     X_val, y_val = arff.retorna_instacias(base_valida)
-    num_classes, *_ = arff.retorna_classes_existentes(base_valida)
+
+    if(nome_base=="Ecoli"):
+        num_classes=8
+    else:
+        num_classes, *_ = arff.retorna_classes_existentes(base_valida)
     # print(y_val)
     # return X_val,y_val
 
@@ -136,10 +140,10 @@ def retorna_complexidades(population=None, primeira=None):
         dist['nome'] = list()
         dist['dist'] = list()
         dist['nome'] = pop
-        print('primeira populacao', dist['nome'])
+        #print('primeira populacao', dist['nome'])
         for i in dist['nome']:
             c = caminho_todas + str(repeticao) + "/" + str(geracao) + "/Individuo" + nome_base + str(i[0]) + ".arff"
-            F1, N2, *_ = newDcol.retorna_complexidade(c, complexidades="-F 1 -N 2", num_classes=num_classes, media=True)
+            F1, N2, *_ = newDcol.retorna_complexidade(c, complexidades="-F 1 -N 2", num_classes=num_classes, media=False)
             cpx = [F1, N2]
             complexidades.append(cpx)
         for j in range(len(complexidades)):
@@ -160,11 +164,11 @@ def retorna_complexidades(population=None, primeira=None):
         dist['nome'] = list()
         dist['dist'] = list()
         dist['nome'] = population
-        print('geracao de populacao', dist['nome'])
+       # print('geracao de populacao', dist['nome'])
         for i in dist['nome']:
             # print(i[0])
             c = caminho_todas + str(repeticao) + "/" + str(geracao) + "/Individuo" + nome_base + str(i[0]) + ".arff"
-            F1, N2, *_ = newDcol.retorna_complexidade(c, complexidades="-F 1 -N 2", num_classes=num_classes, media=True)
+            F1, N2, *_ = newDcol.retorna_complexidade(c, complexidades="-F 1 -N 2", num_classes=num_classes, media=False)
             cpx = [F1, N2]
             # print(cpx)
             complexidades.append(cpx)
@@ -189,13 +193,13 @@ def retorna_complexidades(population=None, primeira=None):
             x=[]
             x.append(i)
             dist['nome'].append(x)
-        print('demais populacao', dist['nome'])
+        #print('demais populacao', dist['nome'])
         complexidades = list()
-        for i in dist['nome']:
+        for i in dist['nome']:#
             # print(i[0])
             c = caminho_todas + str(repeticao) + "/" + str(geracao) + "/Individuo" + nome_base + str(i[0]) + ".arff"
             F1, N2, *_ = newDcol.retorna_complexidade(c, complexidades="-F 1 -N 2", num_classes=num_classes,
-                                                      media=True)
+                                                      media=False)
             cpx = [F1, N2]
             # print(cpx)
             complexidades.append(cpx)
@@ -266,11 +270,23 @@ def fitness_moga(individuo):
     out = float(perc.score(X_val, y_val))
     out2 = float(distancia)
     return out, out2,
-
+def fitness_complex(individuo):
+    global num_classes, geracao, repeticao, caminho_todas
+    ind = individuo[0]
+    c = caminho_todas + str(repeticao) + "/"+str(geracao)+"/Individuo" + nome_base + str(ind) + ".arff"
+    f1, n2,*_ = newDcol.retorna_complexidade(c, complexidades="-F 1 -N 2", num_classes=num_classes, media=False)
+    X, y, *_ = abre_individuos(ind)
+    perc = perceptron.Perceptron()
+    perc.fit(X, y)
+    # print(len(dist_medias))
+    out2=float(f1)
+    out3=float(n2)
+    out = float(perc.score(X_val, y_val))
+    return out, out2, out3,
 
 def cruza(indi, indi2):
     global nome_base, geracao, repeticao, caminho_todas, n, contador_cruzamento, population
-    print("cruzamento entre: individuo1 {} e individuo2 {} e contador {}".format(indi,indi2,contador_cruzamento))
+   # print("cruzamento entre: individuo1 {} e individuo2 {} e contador {}".format(indi,indi2,contador_cruzamento))
     inicio = 0
     fim = 0
     X3 = dict()
@@ -311,7 +327,7 @@ def mutacao(individuo):
     ind = individuo[0]
     X = dict()
     X['data'], y, base, todas_as_classes = abre_individuos(ind)
-    print('OFF, tamanho', len(off), off )
+   # print('OFF, tamanho', len(off), off )
     inst = 0
     inst2 = len(y)
     if(geracao==0 and off==[]):
@@ -319,7 +335,7 @@ def mutacao(individuo):
     else:
         ind2=random.sample(off,1)
         ind2=ind2[0]
-    print('mutacaooooo e contador', individuo, ind2, contador_cruzamento)
+   # print('mutacaooooo e contador', individuo, ind2, contador_cruzamento)
     X2, *_ = abre_individuos(ind2)
     while y[inst] != y[inst2 - 1]:
         inst = random.randint(0, len(y) - 1)
@@ -355,14 +371,18 @@ def the_function(population, gen, offspring):
     pasta2 = caminho_todas + str(repeticao) + "/" + str(geracao + 1)
     off=[]
     geracao = gen
-    csv.write(str(geracao) + ';')
+    #csv.write(str(geracao) + ';')
    # population = sorted(population)
     for i in range(len(population)):
         off.append(population[i][0])
-        if (population[i][0] == population[-1][0]):
-            csv.write(str(population[i][0]) + '\n')
-        else:
-            csv.write(str(population[i][0]) + ';')
+    if (geracao==30):
+        csv.write('{};{};{};'.format(nome_base,str(repeticao),str(geracao)))
+        for i in range(len(population)):
+            off.append(population[i][0])
+            if (population[i][0] == population[-1][0]):
+                csv.write(str(population[i][0]) + '\n')
+            else:
+                csv.write(str(population[i][0]) + ';')
     if (os.path.exists(pasta2) == False):
         os.system("mkdir -p " + pasta2)
     for i in population:
@@ -381,13 +401,15 @@ def populacao(populacao_total):
     for i in range(len(populacao_total)):
         j=([i][0])
         off.append(j)
+    #print(off)
     return off
 
 caminho_todas = "/media/marcos/Data/Tese/AG/"
 caminho_valida = "/media/marcos/Data/Tese/Bases/Validacao/"
 caminho_teste = "/media/marcos/Data/Tese/Bases/Teste/"
-nome_base = 'Wine'
-repeticao = 5
+nome_base = sys.argv[1]
+#nome_base = "German"
+repeticao = 10
 geracao = 0
 off=[]
 num_classes = 2
@@ -397,25 +419,27 @@ dist['dist'] = list()
 dist_medias = []
 X_val = []
 y_val = []
-fit_andre=[]
+#fit_andre=[]
 seq = 0
 contador_complexidades=0
 contador_cruzamento=1
 n=101
 random.seed(64)
 #####################################################################################################################################
+print('###################################################')
+print(nome_base, repeticao)
+print('###################################################')
 
-
-
-nr_generation = 5
+nr_generation = 30
 proba_crossover = 0.99
 proba_mutation = 0.01
 # current_ind = 14
 fit_value1=1.0
 fit_value2=1.0
+#fit_value3=0
+#valor=1
 
-
-creator.create("Fitness", base.Fitness, weights=(fit_value1,fit_value2,))
+creator.create("Fitness", base.Fitness, weights=(fit_value1,fit_value2))
 creator.create("Individual", list, fitness=creator.Fitness)
 toolbox = base.Toolbox()
 
@@ -426,7 +450,7 @@ toolbox.register("individual", tools.initRepeat, creator.Individual,
 
 population=toolbox.register("population", tools.initRepeat, list, toolbox.individual)
 
-toolbox.register("evaluate", fitness_andre)
+toolbox.register("evaluate", fitness_moga)
 toolbox.register("mate", cruza)
 toolbox.register("mutate", mutacao)
 toolbox.register("select", tools.selSPEA2 )
@@ -437,25 +461,21 @@ sel='selSPEA2'
 
 
 pop = toolbox.population(n=100)
-csv=open("LogPop"+nome_base+'.csv','w')
-csv.write('Geração;Populacao\n')
-csv.write('0;')
-for i in range (len(pop)):
-    if(pop[i][0]==pop[-1][0]):
-        csv.write(str(pop[i][0])+'\n')
-    else:
-        csv.write(str(pop[i][0])+';')
+csv=open('LogPop'+str(repeticao)+'.csv','a')
+#csv.write('Nome_base;Repeticao;Geração;Populacao\n')
 abre_validacao()
 _ = retorna_complexidades(primeira=True)
-csv2=open("Log"+nome_base+'.csv','a')
-csv2.write("Repeticao;NumGera;ProbaCross;ProbaMut;FitValue1;FitValue2;Select;acBag;acMoga\n")
-csv2.write("{};{};{};{};{};{};{};".format(repeticao,nr_generation,proba_crossover,proba_mutation,fit_value1,fit_value2,sel))
-csv2.close()
+#csv2=open("Log"+nome_base+'.csv','a')
+#csv2.write("Repeticao;NumGera;ProbaCross;ProbaMut;FitValue1;FitValue2;fitValue3;Select;acBag;acMoga\n")
+#csv2.write("{};{};{};{};{};{};{};{};{};".format(valor,repeticao,nr_generation,proba_crossover,proba_mutation,fit_value1,fit_value2,fit_value3,sel))
+
 algorithms.eaMuPlusLambda(pop, toolbox, 100, 100, proba_crossover, proba_mutation, nr_generation, generation_function=the_function, popu=populacao)
-print('+_OIJIOHUNMLÇHUIJKMÇJHUJN')
-#ac, ac2=graficos_moga.calcula_acc(caminho_todas,caminho_teste,nome_base,repeticao,5,num_classes)
+csv.close()
+#print('+_OIJIOHUNMLÇHUIJKMÇJHUJN')
+#ac, ac2=graficos_moga.calcula_acc(caminho_todas,caminho_teste,nome_base,repeticao,30,num_classes, valor, 0,"LogPop"+nome_base+'.csv')
+#melhorAcc_complex.CMacc(caminho_todas, caminho_teste,nome_base,repeticao,30,num_classes,"LogPop"+nome_base+'.csv')
 #csv2.write("{};{}\n".format(ac,ac2))
-csv2.close()
+#csv2.close()
 
 
 
