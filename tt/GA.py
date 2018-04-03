@@ -134,7 +134,7 @@ def retorna_complexidades(population=None, primeira=None):
     global nome_base, repeticao, num_classes, geracao, caminho_todas, pop, contador_complexidades, n, dist
     complexidades = list()
 
-    print('##########################-Complexidades-##############################################')
+   # print('##########################-Complexidades-##############################################')
     if (geracao == 0 and primeira==True):
         dist = dict()
         dist['nome'] = list()
@@ -387,7 +387,7 @@ def the_function(population, gen, offspring):
         os.system("mkdir -p " + pasta2)
     for i in population:
         shutil.copy2(pasta + "/Individuo" + nome_base + str(i[0]) + '.arff', pasta2)
-    #abre_validacao()
+    abre_validacao()
     _ = retorna_complexidades(population=population)
 
 def populacao(populacao_total):
@@ -407,9 +407,9 @@ def populacao(populacao_total):
 caminho_todas = "/media/marcos/Data/Tese/AG/"
 caminho_valida = "/media/marcos/Data/Tese/Bases/Validacao/"
 caminho_teste = "/media/marcos/Data/Tese/Bases/Teste/"
-nome_base = sys.argv[1]
-#nome_base = "German"
-repeticao = 10
+#nome_base = sys.argv[1]
+nome_base = "WDVG"
+repeticao = 5
 geracao = 0
 off=[]
 num_classes = 2

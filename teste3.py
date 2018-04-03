@@ -1,20 +1,41 @@
-import os, shutil
+import sys, newDcol, Marff as arff
+from sklearn.linear_model import perceptron
 
-caminho_todas = "/media/marcos/Data/Tese/AG/"
-caminho_valida = "/media/marcos/Data/Tese/Bases/Validacao/"
-nome_base = 'Wine'
-repeticao =1
-geracao = 0
-population=[[34], [67], [115], [134], [42], [133], [8], [83], [43], [71], [80], [60], [36], [86], [21], [161], [188], [19], [39], [81], [98], [33], [46], [56], [143], [183], [124], [156], [96], [158], [103], [95], [149], [82], [117], [163], [1], [108], [3], [79], [70], [53], [65], [182], [68], [52], [176], [159], [69], [41], [73], [57], [85], [40], [14], [126], [37], [29], [28], [112], [31], [75], [35], [11], [9], [84], [45], [66], [173], [100], [49], [110], [87], [94], [54], [164], [51], [132], [17], [174], [162], [145], [121], [129], [128], [88], [91], [5], [58], [62], [144], [6], [118], [198], [184], [48], [185], [7], [157], [160]]
-pasta = caminho_todas + str(repeticao) + "/" + str(geracao)
-pasta2 = caminho_todas + str(repeticao) + "/" + str(geracao + 1)
+from numpy import average
+#nome_base=sys.argv[1]
+nome_base='WDVG'
+caminho_teste = "/media/marcos/Data/Tese/Bases/Teste/"
+caminho = "/media/marcos/Data/Tese/AG/"
+arq=open('./tt/ResultadosFinais.csv', 'a')
+arq.write('Nome_base;Repeticao;AccBag;AccPGSC\n')
+#print(caminho)
 
-if (os.path.exists(pasta2) == False):
-    os.system("mkdir -p " + pasta2)
 
-for i in population:
-    print(population)
-    shutil.copy2(pasta+"/Individuo" + nome_base + str(i[0]) + '.arff', pasta2)
-    # print(pasta+"/Individuo" + nome_base + str(i[0]) + '.arff '+pasta2+"/Individuo" + nome_base + str(i[0])+'.arff')
-    #os.system("cp " + pasta + "/Individuo" + nome_base + str(i[0]) + '.arff ' + pasta2 + "/Individuo" + nome_base + str(
-     #   i[0]) + '.arff')
+for i in range(1,21):
+   # print(i)
+    accBag = []
+    accMoga = []
+    v = caminho_teste + str(i) + "/Teste" + nome_base + str(i) + ".arff"
+    base_teste = arff.abre_arff(v)
+    X_test, y_test = arff.retorna_instacias(base_teste)
+    for j in range(1, 101):
+        bag = caminho + str(i) + "/0/Individuo" + nome_base + str(j) + '.arff'
+        moga = caminho + str(i) + "/" + str(i) + "-finais/Individuo" + nome_base + str(j) + '.arff'
+        base_bag = arff.abre_arff(bag)
+        Xbag, ybag = arff.retorna_instacias(base_bag)
+        base_moga = arff.abre_arff(moga)
+        Xmoga, ymoga = arff.retorna_instacias(base_moga)
+
+        perc_bag = perceptron.Perceptron()
+        perc_bag.fit(Xbag, ybag)
+        accBag.append(perc_bag.score(X_test, y_test))
+
+        perc_moga = perceptron.Perceptron()
+        perc_moga.fit(Xmoga, ymoga)
+        accMoga.append(perc_moga.score(X_test, y_test))
+    arq.write('{},{},{},{}\n'.format(nome_base,str(i),average(accBag),average(accMoga)))
+    print('BAg',average(accBag))
+    print(nome_base, i)
+arq.close()
+
+

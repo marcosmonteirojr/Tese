@@ -1,6 +1,6 @@
 import subprocess, numpy
 
-#caminho = "/media/marcos/Data/Tese/Bags/1/IndividuoWine1.arff"
+#caminho = "/media/marcos/Data/Tese/Bases/Teste/1/TesteWine1.arff"
 dcol = "/media/marcos/Data/Tese/dcol/DCoL-v1.1/Source/dcol ./dcol"
 
 
