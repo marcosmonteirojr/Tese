@@ -8,27 +8,29 @@ from deslib.static.single_best import SingleBest
 
 from numpy import average
 from numpy import std
-#nome_base=sys.argv[1]
-nome_base='Wine'
+nome_base=sys.argv[1]
+#nome_base='Wine'
 caminho_teste = "/media/marcos/Data/Tese/Bases/Teste/"
 caminho_valida = "/media/marcos/Data/Tese/Bases/Validacao/"
 caminho = "/media/marcos/Data/Tese/AG/"
 arq=open('ResultadosFinais3.csv', 'a')
-arq.write('Nome_base;KNUB;;;KNEB;;;OLAB;;;SIGLEB;;;;KNUM;;;KNEM;;;OLAM;;;SIGLEM\n')
+
 #print(caminho)
+accKUB = []
+accKEB = []
+accOLAB = []
+accSBB = []
+
+accKUM = []
+accKEM = []
+accOLAM = []
+accSBM = []
 
 
+print(nome_base)
 for i in range(1,21):
    # print(i)
-    accKUB = []
-    accKEB = []
-    accOLAB =[]
-    accSBB=[]
 
-    accKUM=[]
-    accKEM=[]
-    accOLAM =[]
-    accSBM =[]
 
     poolBag=[]
     poolMoga = []
@@ -91,12 +93,13 @@ for i in range(1,21):
     accSBM.append(singleM.score(X_test,y_test))
 
 
+    print(i)
 
+#print(accSBB)
+arq.write('{};{} ({});{} ({});{} ({});{} ({});{} ({});{} ({});{} ({});{} ({})\n'.format(nome_base,average(accKUB),std(accKUB),average(accKUM),std(accKUM),
+average(accKEB),std(accKEB),average(accKEM),std(accKEM),average(accOLAB),std(accOLAB),average(accOLAM),
+std(accOLAM),average(accSBB),std(accSBB),average(accSBM),std(accSBM)))
 
-arq.write('{};{};{};;{};{};;{};{};;{};{};;;{};{};;{};{};;{};{};;{};{}\n'.format(nome_base,average(accKUB),std(accKUB),average(accKEB),std(accKEB),
-average(accOLAB),std(accOLAB),average(accSBB),std(accSBB),average(accKUM),std(accKUM),average(accKEM),
-std(accKEM),average(accOLAM),std(accOLAM),average(accSBM),std(accSBM)))
-print(nome_base)
 arq.close()
 
 
