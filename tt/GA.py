@@ -145,6 +145,7 @@ def retorna_complexidades(population=None, primeira=None):
             c = caminho_todas + str(repeticao) + "/" + str(geracao) + "/Individuo" + nome_base + str(i[0]) + ".arff"
             F1, N2, *_ = newDcol.retorna_complexidade(c, complexidades="-F 1 -N 2", num_classes=num_classes, media=False)
             cpx = [F1, N2]
+           # print(cpx)
             complexidades.append(cpx)
         for j in range(len(complexidades)):
             dista = 0
@@ -408,8 +409,8 @@ caminho_todas = "/media/marcos/Data/Tese/AG/"
 caminho_valida = "/media/marcos/Data/Tese/Bases/Validacao/"
 caminho_teste = "/media/marcos/Data/Tese/Bases/Teste/"
 #nome_base = sys.argv[1]
-nome_base = "Magic"
-repeticao = 7
+nome_base = "Vehicle"
+repeticao = 20
 geracao = 0
 off=[]
 num_classes = 2
@@ -436,10 +437,10 @@ proba_mutation = 0.01
 # current_ind = 14
 fit_value1=1.0
 fit_value2=1.0
-#fit_value3=0
+fit_value3=1.0
 #valor=1
 
-creator.create("Fitness", base.Fitness, weights=(fit_value1,fit_value2))
+creator.create("Fitness", base.Fitness, weights=(fit_value1,fit_value2,fit_value3))
 creator.create("Individual", list, fitness=creator.Fitness)
 toolbox = base.Toolbox()
 
@@ -450,7 +451,7 @@ toolbox.register("individual", tools.initRepeat, creator.Individual,
 
 population=toolbox.register("population", tools.initRepeat, list, toolbox.individual)
 
-toolbox.register("evaluate", fitness_moga)
+toolbox.register("evaluate", fitness_complex)
 toolbox.register("mate", cruza)
 toolbox.register("mutate", mutacao)
 toolbox.register("select", tools.selSPEA2 )

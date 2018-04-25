@@ -1,19 +1,19 @@
-import sys, newDcol, Marff as arff
+import sys,  Marff as arff
 from sklearn.linear_model import perceptron
-from sklearn.calibration import CalibratedClassifierCV
 from deslib.des.knora_u import KNORAU
 from deslib.des.knora_e import KNORAE
 from deslib.dcs.ola import OLA
 from deslib.static.single_best import SingleBest
-
+from scipy.stats import wilcoxon
 from numpy import average
 from numpy import std
 nome_base=sys.argv[1]
-#nome_base='Wine'
+#nome_base='Magic'
 caminho_teste = "/media/marcos/Data/Tese/Bases/Teste/"
 caminho_valida = "/media/marcos/Data/Tese/Bases/Validacao/"
 caminho = "/media/marcos/Data/Tese/AG/"
-arq=open('ResultadosFinais3.csv', 'a')
+arq=open('ResultadosFinaisSelecaoD.csv', 'a')
+arq1=open('WilSelecaoD.csv', 'a')
 
 #print(caminho)
 accKUB = []
@@ -92,14 +92,19 @@ for i in range(1,21):
     accOLAM.append(olaM.score(X_test,y_test))
     accSBM.append(singleM.score(X_test,y_test))
 
+    kp,ke=wilcoxon(accKEB,accKEM)
+    kp2,ku=wilcoxon(accKUB,accKUM)
+    op,ol=wilcoxon(accOLAB,accOLAM)
+    sp,sb=wilcoxon(accSBB,accSBM)
 
     print(i)
 
 #print(accSBB)
-arq.write('{};{} ({});{} ({});{} ({});{} ({});{} ({});{} ({});{} ({});{} ({})\n'.format(nome_base,average(accKUB),std(accKUB),average(accKUM),std(accKUM),
+arq1.write('{};{};{};;{};{};;{};{};;{};{}\n'.fomat(nome_base,str(kp),str(ke),str(kp2),str(ku),str(op),str(ol),str(sp),str(sb)))
+arq.write('{};{};{};{};{};;{};{};{};{};;{};{};{};{};;{};{};{};{}\n'.format(nome_base,average(accKUB),std(accKUB),average(accKUM),std(accKUM),
 average(accKEB),std(accKEB),average(accKEM),std(accKEM),average(accOLAB),std(accOLAB),average(accOLAM),
 std(accOLAM),average(accSBB),std(accSBB),average(accSBM),std(accSBM)))
-
+arq1.close()
 arq.close()
 
 
