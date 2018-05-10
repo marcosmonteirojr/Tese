@@ -271,6 +271,8 @@ def fitness_moga(individuo):
     out = float(perc.score(X_val, y_val))
     out2 = float(distancia)
     return out, out2,
+
+
 def fitness_complex(individuo):
     global num_classes, geracao, repeticao, caminho_todas
     ind = individuo[0]

@@ -7,13 +7,13 @@ from deslib.static.single_best import SingleBest
 from scipy.stats import wilcoxon
 from numpy import average
 from numpy import std
-nome_base=sys.argv[1]
-#nome_base='Magic'
+#nome_base=sys.argv[1]
+nome_base='Vehicle'
 caminho_teste = "/media/marcos/Data/Tese/Bases/Teste/"
 caminho_valida = "/media/marcos/Data/Tese/Bases/Validacao/"
 caminho = "/media/marcos/Data/Tese/AG/"
-arq=open('ResultadosFinaisSelecaoD.csv', 'a')
-arq1=open('WilSelecaoD.csv', 'a')
+arq=open('ResultadosFinais4.csv', 'a')
+arq1=open('AccWilcoxonD2.csv', 'a')
 
 #print(caminho)
 accKUB = []
@@ -44,7 +44,7 @@ for i in range(1,21):
 
 
         bag = caminho + str(i) + "/0/Individuo" + nome_base + str(j) + '.arff'
-        moga = caminho + str(i) + "/" + str(i) + "-finais/Individuo" + nome_base + str(j) + '.arff'
+        moga = caminho + str(i) + "/" + str(i) + "-finais_complex/Individuo" + nome_base + str(j) + '.arff'
 
         base_bag = arff.abre_arff(bag)
         Xbag, ybag = arff.retorna_instacias_numpy(base_bag)
@@ -100,7 +100,7 @@ for i in range(1,21):
     print(i)
 
 #print(accSBB)
-arq1.write('{};{};{};;{};{};;{};{};;{};{}\n'.fomat(nome_base,str(kp),str(ke),str(kp2),str(ku),str(op),str(ol),str(sp),str(sb)))
+arq1.write('{};{};{};;{};{};;{};{};;{};{}\n'.format(nome_base,kp,ke,kp2,ku,op,ol,sp,sb))
 arq.write('{};{};{};{};{};;{};{};{};{};;{};{};{};{};;{};{};{};{}\n'.format(nome_base,average(accKUB),std(accKUB),average(accKUM),std(accKUM),
 average(accKEB),std(accKEB),average(accKEM),std(accKEM),average(accOLAB),std(accOLAB),average(accOLAM),
 std(accOLAM),average(accSBB),std(accSBB),average(accSBM),std(accSBM)))

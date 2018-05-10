@@ -103,6 +103,33 @@ def retorna_complexidades(population=None, primeira=None):
             dist['dist'].append(dista / 100)
         #print('complexidade', dist['dist'])
     return complexidades
+def altera_arquivo_marcelo():
+    '''
+    da nome aos bags nesse caso 1 a 100
+    :return:
+    '''
+    arq = open("/media/marcos/Data/Tese/GA2/" + str(repeticao) + "/" + nome_base + ".indx")
+    arqtemp = open("/media/marcos/Data/Tese/GA2/" + str(repeticao) + "/" + nome_base + ".indxTemp", 'w')
+    cont=1
+    for i in arq:
+        texto=i
+        q=texto.split(" ")
+        print(q)
+        q.insert(0,str(cont))
+        #print(q)
+        for j in q:
+           # print(j)
+            if(j!=q[-1]):
+                arqtemp.write(j)
+                arqtemp.write(" ")
+            else:
+                arqtemp.write(j)
+                #arqtemp.write('\n')
+        cont+=1
+    arq.close()
+    arqtemp.close()
+    os.system("cp -r /media/marcos/Data/Tese/GA2/" + str(repeticao) + "/" + nome_base + ".indxTemp /media/marcos/Data/Tese/GA2/" + str(repeticao) + "/" + nome_base + ".indx")
+    os.system("rm /media/marcos/Data/Tese/GA2/" + str(repeticao) + "/" + nome_base + ".indxTemp")
 
 
 
@@ -110,10 +137,15 @@ def abre_arquivo(individuo):
     global nome_base, repeticao
 
     arq=open("/media/marcos/Data/Tese/GA2/"+str(repeticao)+"/"+nome_base+".indx")
-    texto = arq.readlines()
-    indx_bag=(texto[individuo])
-    arq.close()
-    return indx_bag.split(" ")
+    for i in arq:
+        texto=i
+        #print(str(individuo))
+        if(str(individuo)==texto.split(" ")[0]):
+            indx_bag=texto.split(" ")
+            arq.close()
+            break
+
+    return indx_bag[1:]
 
 def monta_arquivo(indx_bag):
     '''
@@ -121,6 +153,7 @@ def monta_arquivo(indx_bag):
     :param indx_bag:
     :return:
     '''
+    print(indx_bag)
     global nome_base
     X_data=[]
     y_data=[]
@@ -131,6 +164,8 @@ def monta_arquivo(indx_bag):
         #print(int(i))
         X_data.append(X[int(i)])
         y_data.append(y[int(i)])
+    print(X_data)
+    exit(0)
     return X_data, y_data
 
 def cruza(ind1, ind2):
@@ -155,7 +190,10 @@ def cruza(ind1, ind2):
             ind_out1.append(indx_bag1[i])
         else:
             ind_out1.append(indx_bag2[i])
-
+    print(y_data[inicio],y_data[fim])
+    print(indx_bag1)
+    print(indx_bag2)
+    print(ind_out1)
 
 
 
@@ -222,6 +260,8 @@ repeticao=1
 off=[]
 geracao=0
 nome_base="Wine"
-mutacao(0)
+#altera_arquivo_marcelo()
+cruza([1],[99])
+#nome_bag()
 #print(x)
 

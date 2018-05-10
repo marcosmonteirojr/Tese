@@ -7,11 +7,11 @@ import sys
 
 
 #nome_base=sys.argv[1]
-nome_base='Wine'
+nome_base='Banana'
 caminho_teste = "/media/marcos/Data/Tese/Bases/Teste/"
 caminho_valida = "/media/marcos/Data/Tese/Bases/Validacao/"
 caminho = "/media/marcos/Data/Tese/AG/"
-arq=open('Media_desvio2.csv', 'a')
+arq=open('Media_desvio_voto2.csv', 'a')
 arq1=open('AccVoto2.csv', 'a')
 arq2=open('AccWilcoxon2.csv', 'a')
 accVotingBag = []
@@ -67,7 +67,7 @@ arq1.write('\n')
 
 p,w=wilcoxon(accVotingBag,accVotingPgsc)
 
-arq.write('{};{};{};;{};{}\n'.format(nome_base,average(accVotingBag),std(accVotingBag),average(accVotingPgsc),std(accVotingBag)))
+arq.write('{};{};{};;{};{}\n'.format(nome_base,average(accVotingBag),std(accVotingBag),average(accVotingPgsc),std(accVotingPgsc)))
 arq2.write('{};{};{}\n'.format(nome_base,p,w))
 arq.close()
 arq1.close()
