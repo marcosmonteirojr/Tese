@@ -6,115 +6,19 @@ from deap import base
 from deap import creator
 from deap import tools
 
-def retorna_complexidades(population=None, primeira=None):
-    '''
-    retorna a complexidade F1 e N2 baseado no nome da base e a repeticao, altera a variavel dist
-    possui tres situacoes, 1 primeira geracao, demais populacao (nova populacao, antes da geracao), e populacao geracao (populacao
-    de uma nova geracao)
-
-    #################333continuar #####################3333
-    :param: populacao, e primeira geracao
-    :return: complexidades #vetor de distancias medias e vetor de todas as complexiadades, e variavel global dist
-
-    '''
-
-    global nome_base, repeticao, num_classes, geracao, caminho_todas, pop, contador_complexidades, nome_individuo, dist
-    complexidades = list()
-
-   # print('##########################-Complexidades-##############################################')
-    if (geracao == 0 and primeira==True):
-        dist = dict()
-        dist['nome'] = list()
-        dist['dist'] = list()
-        dist['nome'] = pop
-        #print('primeira populacao', dist['nome'])
-        for i in dist['nome']:
-            indx = abre_arquivo(i)
-            X,y=monta_arquivo(indx)
-            # calcula F1 e N2  F1, N2, =
-            F1,N2=0################################3
-            cpx = [F1, N2]
-            complexidades.append(cpx)
-        for j in range(len(complexidades)):
-            dista = 0
-            for l in range(len(complexidades)):
-                if (j == l):
-                    continue
-                else:
-                    a = complexidades[j]
-                    b = complexidades[l]
-                    dista += sqrt(sum(((a - b)) ** 2 for a, b in zip(a, b)))
-            dist['dist'].append(dista / 100)
-        #print('complexidade', dist['dist'])
-        return complexidades
-
-    if (population):
-        dist = dict()
-        dist['nome'] = list()
-        dist['dist'] = list()
-        dist['nome'] = population
-       # print('geracao de populacao', dist['nome'])
-        for i in dist['nome']:
-            # print(i[0])
-            c = caminho_todas + str(repeticao) + "/" + str(geracao) + "/Individuo" + nome_base + str(i[0]) + ".arff"
-            F1, N2, *_ = newDcol.retorna_complexidade(c, complexidades="-F 1 -N 2", num_classes=num_classes, media=False)
-            cpx = [F1, N2]
-            # print(cpx)
-            complexidades.append(cpx)
-        for j in range(len(complexidades)):
-            dista = 0
-            for l in range(len(complexidades)):
-                if (j == l):
-                    continue
-                else:
-                    a = complexidades[j]
-                    b = complexidades[l]
-                    dista += sqrt(sum(((a - b)) ** 2 for a, b in zip(a, b)))
-                dist['dist'].append(dista / 100)
-       # print('complexidade', dist['dist'])
-    else:
-
-        dist = dict()
-        dist['nome'] = list()
-        dist['dist'] = list()
-        inicio=nome_individuo-100
-        for i in range(inicio,nome_individuo):
-            x=[]
-            x.append(i)
-            dist['nome'].append(x)
-        #print('demais populacao', dist['nome'])
-        complexidades = list()
-        for i in dist['nome']:#
-            indx = abre_arquivo(i)
-            X, y = monta_arquivo(indx)
-            # calcula F1 e N2  F1, N2, =
-            F1, N2 = 0  ################################3
-            cpx = [F1, N2]
-            complexidades.append(cpx)
-        for j in range(len(complexidades)):
-            dista = 0
-            for l in range(len(complexidades)):
-                if (j == l):
-                    continue
-                else:
-                    a = complexidades[j]
-                    b = complexidades[l]
-                    dista += sqrt(sum(((a - b)) ** 2 for a, b in zip(a, b)))
-            dist['dist'].append(dista / 100)
-        #print('complexidade', dist['dist'])
-    return complexidades
 def altera_arquivo_marcelo():
     '''
     da nome aos bags nesse caso 1 a 100
     :return:
     '''
-    arq = open("/media/marcos/Data/Tese/GA2/" + str(repeticao) + "/" + nome_base + ".indx")
+    global repeticao, nome_base, geracao
+    arq = open("/media/marcos/Data/Tese/GA2/" + str(repeticao) + "/" + nome_base +str(geracao)+ ".indx")
     arqtemp = open("/media/marcos/Data/Tese/GA2/" + str(repeticao) + "/" + nome_base + ".indxTemp", 'w')
     cont=1
     for i in arq:
         texto=i
         q=texto.split(" ")
-        print(q)
+        #print(q)
         q.insert(0,str(cont))
         #print(q)
         for j in q:
@@ -128,24 +32,31 @@ def altera_arquivo_marcelo():
         cont+=1
     arq.close()
     arqtemp.close()
-    os.system("cp -r /media/marcos/Data/Tese/GA2/" + str(repeticao) + "/" + nome_base + ".indxTemp /media/marcos/Data/Tese/GA2/" + str(repeticao) + "/" + nome_base + ".indx")
-    os.system("rm /media/marcos/Data/Tese/GA2/" + str(repeticao) + "/" + nome_base + ".indxTemp")
+    os.system("cp -r /media/marcos/Data/Tese/GA2/" + str(repeticao) + "/" + nome_base + str(geracao)+ ".indxTemp /media/marcos/Data/Tese/GA2/" + str(repeticao) + "/" + nome_base +str(geracao)+ ".indx")
+    os.system("rm /media/marcos/Data/Tese/GA2/" + str(repeticao) + "/" + nome_base + str(geracao) +".indxTemp")
 
 
 
-def abre_arquivo(individuo):
-    global nome_base, repeticao
+def abre_arquivo(individuo=None, valida=None):
 
-    arq=open("/media/marcos/Data/Tese/GA2/"+str(repeticao)+"/"+nome_base+".indx")
-    for i in arq:
-        texto=i
-        #print(str(individuo))
-        if(str(individuo)==texto.split(" ")[0]):
-            indx_bag=texto.split(" ")
-            arq.close()
-            break
-
-    return indx_bag[1:]
+    ###########################Conferir##########################333
+    global nome_base, repeticao, geracao
+    if individuo:
+        arq=open("/media/marcos/Data/Tese/GA2/"+str(repeticao)+"/"+nome_base+str(geracao)+".indx")
+        for i in arq:
+            texto=i
+            #print(str(individuo))
+            if(str(individuo)==texto.split(" ")[0]):
+                indx_bag=texto.split(" ")
+                arq.close()
+                indx_bag=indx_bag[1:]
+                break
+    elif valida:
+        arq = open("/media/marcos/Data/Tese/Bases2/Validacao" + str(repeticao) + "/" + nome_base+".idx")
+        texto=arq.readline()
+        indx_bag=texto.split(" ")
+        arq.close()
+    return indx_bag
 
 def monta_arquivo(indx_bag):
     '''
@@ -153,7 +64,7 @@ def monta_arquivo(indx_bag):
     :param indx_bag:
     :return:
     '''
-    print(indx_bag)
+    #print(indx_bag)
     global nome_base
     X_data=[]
     y_data=[]
@@ -164,8 +75,8 @@ def monta_arquivo(indx_bag):
         #print(int(i))
         X_data.append(X[int(i)])
         y_data.append(y[int(i)])
-    print(X_data)
-    exit(0)
+    #print(X_data)
+    #exit(0)
     return X_data, y_data
 
 def cruza(ind1, ind2):
@@ -175,10 +86,12 @@ def cruza(ind1, ind2):
     :param ind2:
     :return:
     '''
-    global nome_individuo
+    global nome_individuo, repeticao, nome_base, geracao
+    #print(ind1, ind2, geracao)
+    individuo_arq = open("/media/marcos/Data/Tese/GA2/" + str(repeticao) + "/" + nome_base + str(geracao)+".indx", 'a')
     inicio=fim=0
     ind_out1=[]
-    
+    ind_out1.append(str(nome_individuo))
     indx_bag1=abre_arquivo(ind1[0])
     indx_bag2=abre_arquivo(ind2[0])
     X, y_data=monta_arquivo(indx_bag2)
@@ -190,27 +103,40 @@ def cruza(ind1, ind2):
             ind_out1.append(indx_bag1[i])
         else:
             ind_out1.append(indx_bag2[i])
-    print(y_data[inicio],y_data[fim])
-    print(indx_bag1)
-    print(indx_bag2)
-    print(ind_out1)
 
+    ind1[0] = nome_individuo
+    ind2[0] = nome_individuo
+    nome_individuo+=1
+
+    for j in ind_out1:
+        if (j != ind_out1[-1]):
+            individuo_arq.write(j)
+            individuo_arq.write(" ")
+        else:
+            individuo_arq.write(j)
+
+    individuo_arq.close()
+
+    return creator.Individual(ind1), creator.Individual(ind2)
 
 
 
 def mutacao(ind):
-    global geracao, off, nome_individuo
-
+    global geracao, off, nome_individuo, repeticao
+    individuo_arq = open("/media/marcos/Data/Tese/GA2/" + str(repeticao) + "/" + nome_base + str(geracao) + ".indx",
+                         'a')
 
 
     indx_bag1 = abre_arquivo(ind[0])
     X,y_data=monta_arquivo(indx_bag1)
     ind_out=[]
+    ind_out.append(str(nome_individuo))
     inst = 0
     inst2 = len(y_data)
 
     if (geracao == 0 and off == []):
         ind2 = random.randint(1, 100)
+
     else:
         ind2 = random.sample(off, 1)
 
@@ -227,41 +153,74 @@ def mutacao(ind):
         else:
             ind_out.append(indx_bag1[i])
 
+    for j in ind_out:
+        if (j != ind_out[-1]):
+            individuo_arq.write(j)
+            individuo_arq.write(" ")
+        else:
+            individuo_arq.write(j)
+    ind[0] = nome_individuo
+    nome_individuo += 1
+    return ind
 
+def sequencia():
+    global seq
+    seq += 1
+    return seq
 
-
-def fitness_moga(individuo):
-
+def the_function(population, gen, offspring):
     '''
-    Funcao de fitness, retorna a acuracia e a distancia do bag requerido
-    :param individuo: tipo int #será passado por parametro para gerar o nome do arquivo
-    :return: perc.score(X_val, y_val), dist_medias[arquivo]
+    responsavel por alterar a geração, assim como zerar variaveis, alterar populaçoes, e copiar arquivos
+    :param population: populacao, retorna do DEAP
+    :param gen: geração Retorna do DEAP
+    :param offspring: nova população
+    :return:
     '''
-    global dist, X_val, y_val
-    # print('fitness')
-    distancia = 0
+    global geracao, off
+    off=[]
+    geracao = gen
+    for i in range(len(population)):
+        off.append(population[i][0])
+    if (geracao==30):
+        csv.write('{};{};{};'.format(nome_base,str(repeticao),str(geracao)))
+        for i in range(len(population)):
+            off.append(population[i][0])
+            if (population[i][0] == population[-1][0]):
+                csv.write(str(population[i][0]) + '\n')
+            else:
+                csv.write(str(population[i][0]) + ';')
+    if (os.path.exists(pasta2) == False):
+        os.system("mkdir -p " + pasta2)
+    for i in population:
+        shutil.copy2(pasta + "/Individuo" + nome_base + str(i[0]) + '.arff', pasta2)
+    abre_validacao()
+    _ = retorna_complexidades(population=population)
 
-    ind = individuo[0]
-    for i in range(len(dist['nome'])):
+def populacao(populacao_total):
+    '''
+    callback para offspring
+    :param populacao_total: offspring DEAP
+    :return: off (offspring+populacao)
+    '''
+    global off
+    off=[]
+    for i in range(len(populacao_total)):
+        j=([i][0])
+        off.append(j)
+    #print(off)
+    return off
 
-        if dist['nome'][i][0] == ind:
-            distancia = dist['dist'][i]
-            # print('nome, distancia', dist['nome'][i][0], distancia)
-            break
-    X, y, *_ = abre_individuos(ind)
-    perc = perceptron.Perceptron()
-    perc.fit(X, y)
-    # print(len(dist_medias))
-
-    out = float(perc.score(X_val, y_val))
-    out2 = float(distancia)
-    return out, out2,
-repeticao=1
-off=[]
-geracao=0
+nome_individuo=101
 nome_base="Wine"
 #altera_arquivo_marcelo()
-cruza([1],[99])
+
+for i in range(1,5):
+    #global geracao
+        x = random.randint(1, 100)
+        y = random.randint(1, 100)
+        mutacao([x])
+        #geracao += 1
+
 #nome_bag()
 #print(x)
 
