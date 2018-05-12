@@ -38,8 +38,6 @@ def altera_arquivo_marcelo():
 
 
 def abre_arquivo(individuo=None, valida=None):
-
-    ###########################Conferir##########################333
     global nome_base, repeticao, geracao
     if individuo:
         arq=open("/media/marcos/Data/Tese/GA2/"+str(repeticao)+"/"+nome_base+str(geracao)+".indx")
@@ -52,7 +50,7 @@ def abre_arquivo(individuo=None, valida=None):
                 indx_bag=indx_bag[1:]
                 break
     elif valida:
-        arq = open("/media/marcos/Data/Tese/Bases2/Validacao" + str(repeticao) + "/" + nome_base+".idx")
+        arq = open("/media/marcos/Data/Tese/Bases2/Validacao/" + str(repeticao) + "/" + nome_base+".idx")
         texto=arq.readline()
         indx_bag=texto.split(" ")
         arq.close()
@@ -125,8 +123,6 @@ def mutacao(ind):
     global geracao, off, nome_individuo, repeticao
     individuo_arq = open("/media/marcos/Data/Tese/GA2/" + str(repeticao) + "/" + nome_base + str(geracao) + ".indx",
                          'a')
-
-
     indx_bag1 = abre_arquivo(ind[0])
     X,y_data=monta_arquivo(indx_bag1)
     ind_out=[]
@@ -163,6 +159,12 @@ def mutacao(ind):
     nome_individuo += 1
     return ind
 
+def fitness_f1_n2(individuo):
+    indx_indivudo=abre_arquivo(individuo)
+    X_data,y_data=monta_arquivo(indx_indivudo)
+
+
+
 def sequencia():
     global seq
     seq += 1
@@ -176,25 +178,37 @@ def the_function(population, gen, offspring):
     :param offspring: nova população
     :return:
     '''
-    global geracao, off
+    global geracao, off, X_valida, y_valida
     off=[]
     geracao = gen
+    geracao_arq = open("/media/marcos/Data/Tese/GA2/" + str(repeticao) + "/" + nome_base + str(geracao) + ".indx",
+                         'a')
+    arq = open("/media/marcos/Data/Tese/GA2/" + str(repeticao) + "/" + nome_base + str(geracao-1) + ".indx")
     for i in range(len(population)):
         off.append(population[i][0])
-    if (geracao==30):
-        csv.write('{};{};{};'.format(nome_base,str(repeticao),str(geracao)))
-        for i in range(len(population)):
-            off.append(population[i][0])
-            if (population[i][0] == population[-1][0]):
-                csv.write(str(population[i][0]) + '\n')
-            else:
-                csv.write(str(population[i][0]) + ';')
-    if (os.path.exists(pasta2) == False):
-        os.system("mkdir -p " + pasta2)
-    for i in population:
-        shutil.copy2(pasta + "/Individuo" + nome_base + str(i[0]) + '.arff', pasta2)
-    abre_validacao()
-    _ = retorna_complexidades(population=population)
+    # if (geracao==30):
+    #     csv.write('{};{};{};'.format(nome_base,str(repeticao),str(geracao)))
+    #     for i in range(len(population)):
+    #         off.append(population[i][0])
+    #         if (population[i][0] == population[-1][0]):
+    #             csv.write(str(population[i][0]) + '\n')
+    #         else:
+    #             csv.write(str(population[i][0]) + ';')
+    # if (os.path.exists(pasta2) == False):
+    #     os.system("mkdir -p " + pasta2)
+    # for i in population:
+    #     shutil.copy2(pasta + "/Individuo" + nome_base + str(i[0]) + '.arff', pasta2)
+    # abre_validacao()
+    # _ = retorna_complexidades(population=population)
+    for j in population:
+        for i in arq:
+            texto = i
+            # print(str(individuo))
+            if (str(j[0]) == texto.split(" ")[0]):
+                geracao_arq.write(i)
+    indx_valida = abre_arquivo(valida=True)
+    X_valida, y_valida = monta_arquivo(indx_valida)
+
 
 def populacao(populacao_total):
     '''
@@ -212,15 +226,14 @@ def populacao(populacao_total):
 
 nome_individuo=101
 nome_base="Wine"
+repeticao=1
+geracao=0
+indx_valida=abre_arquivo(valida=True)
+X_valida,y_valida=monta_arquivo(indx_valida)
+print(y_valida)
 #altera_arquivo_marcelo()
 
-for i in range(1,5):
-    #global geracao
-        x = random.randint(1, 100)
-        y = random.randint(1, 100)
-        mutacao([x])
-        #geracao += 1
-
+#cruza([1],[2])
 #nome_bag()
 #print(x)
 
