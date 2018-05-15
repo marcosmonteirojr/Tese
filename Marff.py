@@ -20,6 +20,7 @@ def retorna_classes_existentes(dataset):
     '''
 
     classes=[]#vetor com as classes
+
     num_class=0
     elem_p_classes=[]
     total_elementos = (len(dataset['data']))

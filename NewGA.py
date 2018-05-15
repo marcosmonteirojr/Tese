@@ -5,6 +5,9 @@ from deap import algorithms
 from deap import base
 from deap import creator
 from deap import tools
+from sklearn.preprocessing import MinMaxScaler
+import complexity_pcol as dcol
+import numpy as np
 
 def altera_arquivo_marcelo():
     '''
@@ -37,7 +40,7 @@ def altera_arquivo_marcelo():
 
 
 
-def abre_arquivo(individuo=None, valida=None):
+def abre_arquivo(individuo=None, valida=False):
     global nome_base, repeticao, geracao
     if individuo:
         arq=open("/media/marcos/Data/Tese/GA2/"+str(repeticao)+"/"+nome_base+str(geracao)+".indx")
@@ -54,21 +57,26 @@ def abre_arquivo(individuo=None, valida=None):
         texto=arq.readline()
         indx_bag=texto.split(" ")
         arq.close()
+    #print(indx_bag)
     return indx_bag
 
-def monta_arquivo(indx_bag):
+def monta_arquivo(indx_bag,vet_class=False):
     '''
     Recebe o indice de instancias de um bag
     :param indx_bag:
     :return:
     '''
     #print(indx_bag)
-    global nome_base
+    global nome_base, classes
+
+    #print(indx_bag)
     X_data=[]
     y_data=[]
     arq2=("/media/marcos/Data/Tese/Bases2/Dataset/"+nome_base+".arff")
     arq3=arff.abre_arff(arq2)
     X,y=arff.retorna_instacias(arq3)
+    if(vet_class):
+        _,classes,*_=arff.retorna_classes_existentes(arq3)
     for i in indx_bag:
         #print(int(i))
         X_data.append(X[int(i)])
@@ -85,6 +93,7 @@ def cruza(ind1, ind2):
     :return:
     '''
     global nome_individuo, repeticao, nome_base, geracao
+    print("Cruzamento", ind1,ind2)
     #print(ind1, ind2, geracao)
     individuo_arq = open("/media/marcos/Data/Tese/GA2/" + str(repeticao) + "/" + nome_base + str(geracao)+".indx", 'a')
     inicio=fim=0
@@ -121,6 +130,7 @@ def cruza(ind1, ind2):
 
 def mutacao(ind):
     global geracao, off, nome_individuo, repeticao
+    print("mutacao", ind)
     individuo_arq = open("/media/marcos/Data/Tese/GA2/" + str(repeticao) + "/" + nome_base + str(geracao) + ".indx",
                          'a')
     indx_bag1 = abre_arquivo(ind[0])
@@ -157,13 +167,31 @@ def mutacao(ind):
             individuo_arq.write(j)
     ind[0] = nome_individuo
     nome_individuo += 1
-    return ind
+    return ind,
 
 def fitness_f1_n2(individuo):
-    indx_indivudo=abre_arquivo(individuo)
-    X_data,y_data=monta_arquivo(indx_indivudo)
+    global classes
 
+    print("fitnes", individuo)
 
+    indx_individuo=abre_arquivo(individuo[0])
+    X_data,y_data=monta_arquivo(indx_individuo)
+    #print(X_data)
+    #print(y_data)
+
+    scaler = MinMaxScaler()
+    scaler.fit(X_data)
+    transformed_data=scaler.transform(X_data)
+    #print(transformed_data)
+
+    complex=dcol.PPcol(classes=classes)
+    complexidades=complex.xy_measures(transformed_data,y_data)
+    F1 = np.average(complexidades['F1'])
+    N2 = np.average(complexidades['N2'])
+    perc=perceptron.Perceptron()
+    perc.fit(X_data,y_data)
+    score = perc.score(X_valida,y_valida)
+    return F1, N2, score,
 
 def sequencia():
     global seq
@@ -179,6 +207,7 @@ def the_function(population, gen, offspring):
     :return:
     '''
     global geracao, off, X_valida, y_valida
+    print("the_fuction", (population))
     off=[]
     geracao = gen
     geracao_arq = open("/media/marcos/Data/Tese/GA2/" + str(repeticao) + "/" + nome_base + str(geracao) + ".indx",
@@ -203,9 +232,11 @@ def the_function(population, gen, offspring):
     for j in population:
         for i in arq:
             texto = i
-            # print(str(individuo))
+            print(texto)
             if (str(j[0]) == texto.split(" ")[0]):
+                print(i)
                 geracao_arq.write(i)
+
     indx_valida = abre_arquivo(valida=True)
     X_valida, y_valida = monta_arquivo(indx_valida)
 
@@ -228,9 +259,48 @@ nome_individuo=101
 nome_base="Wine"
 repeticao=1
 geracao=0
+seq=0
+classes=[]
+off=[]
 indx_valida=abre_arquivo(valida=True)
-X_valida,y_valida=monta_arquivo(indx_valida)
-print(y_valida)
+X_valida,y_valida=monta_arquivo(indx_valida,vet_class=True)
+
+
+
+
+
+nr_generation = 30
+proba_crossover = 0.99
+proba_mutation = 0.01
+# current_ind = 14
+fit_value1=1.0
+fit_value2=1.0
+fit_value3=1.0
+#valor=1
+
+
+
+creator.create("Fitness", base.Fitness, weights=(fit_value1,fit_value2,fit_value3))
+creator.create("Individual", list, fitness=creator.Fitness)
+toolbox = base.Toolbox()
+
+toolbox.register("attr_item", sequencia)
+
+toolbox.register("individual", tools.initRepeat, creator.Individual,
+                 toolbox.attr_item, 1)
+
+
+population=toolbox.register("population", tools.initRepeat, list, toolbox.individual)
+pop = toolbox.population(n=100)
+toolbox.register("evaluate", fitness_f1_n2)
+toolbox.register("mate", cruza)
+toolbox.register("mutate", mutacao)
+toolbox.register("select", tools.selSPEA2 )
+algorithms.eaMuPlusLambda(pop, toolbox, 100, 100, proba_crossover, proba_mutation, nr_generation, generation_function=the_function, popu=populacao)
+
+#print(classes)
+#fitness_f1_n2([5])
+#print(y_valida)
 #altera_arquivo_marcelo()
 
 #cruza([1],[2])
