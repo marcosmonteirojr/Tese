@@ -24,3 +24,15 @@ def limpa_pasta():
              os.system ("rm -rf /media/marcos/Data/Tese/AG/" + str(l) + "/"+str(i))
 
 limpa_pasta()
+
+
+import os
+caminho1='/media/marcos/Data/Tese/GA2/'
+caminho2='/media/marcos/Data/Tese/Bases2/Validacao/'
+#for i in range(1,21):
+   # if (os.path.exists(caminho2+"/"+str(i)) == False):
+        #os.system("mkdir -p " + caminho2+"/"+str(i))
+for i in range(1,21):
+    #os.system("cp -r "+ caminho1+str(i)+"/validation/* " +caminho2+str(i)+"/")
+    #os.system("rm -rf "+caminho1+"/" +str(i) + "/*-info.info" )
+    c=0

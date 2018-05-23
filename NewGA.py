@@ -1,5 +1,5 @@
-import Marff as arff, newDcol, random, os, shutil, sys
-from math import sqrt
+import Marff
+import random, os
 from sklearn.linear_model import perceptron
 from deap import algorithms
 from deap import base
@@ -44,19 +44,22 @@ def abre_arquivo(individuo=None, valida=False):
     global nome_base, repeticao, geracao
     if individuo:
         arq=open("/media/marcos/Data/Tese/GA2/"+str(repeticao)+"/"+nome_base+str(geracao)+".indx")
+        #print(arq)
         for i in arq:
             texto=i
-            #print(str(individuo))
+            #print('abre arquivo indi',str(individuo))
             if(str(individuo)==texto.split(" ")[0]):
                 indx_bag=texto.split(" ")
                 arq.close()
                 indx_bag=indx_bag[1:]
                 break
+
     elif valida:
         arq = open("/media/marcos/Data/Tese/Bases2/Validacao/" + str(repeticao) + "/" + nome_base+".idx")
         texto=arq.readline()
         indx_bag=texto.split(" ")
         arq.close()
+
     #print(indx_bag)
     return indx_bag
 
@@ -73,10 +76,10 @@ def monta_arquivo(indx_bag,vet_class=False):
     X_data=[]
     y_data=[]
     arq2=("/media/marcos/Data/Tese/Bases2/Dataset/"+nome_base+".arff")
-    arq3=arff.abre_arff(arq2)
-    X,y=arff.retorna_instacias(arq3)
+    arq3=Marff.abre_arff(arq2)
+    X,y=Marff.retorna_instacias(arq3)
     if(vet_class):
-        _,classes,*_=arff.retorna_classes_existentes(arq3)
+        _,classes,_,_=Marff.retorna_classes_existentes(arq3)
     for i in indx_bag:
         #print(int(i))
         X_data.append(X[int(i)])
@@ -93,7 +96,7 @@ def cruza(ind1, ind2):
     :return:
     '''
     global nome_individuo, repeticao, nome_base, geracao
-    print("Cruzamento", ind1,ind2)
+    #print("Cruzamento", ind1,ind2)
     #print(ind1, ind2, geracao)
     individuo_arq = open("/media/marcos/Data/Tese/GA2/" + str(repeticao) + "/" + nome_base + str(geracao)+".indx", 'a')
     inicio=fim=0
@@ -122,7 +125,7 @@ def cruza(ind1, ind2):
         else:
             individuo_arq.write(j)
 
-    individuo_arq.close()
+    #individuo_arq.close()
 
     return creator.Individual(ind1), creator.Individual(ind2)
 
@@ -130,7 +133,8 @@ def cruza(ind1, ind2):
 
 def mutacao(ind):
     global geracao, off, nome_individuo, repeticao
-    print("mutacao", ind)
+    #print("mutacao", ind)
+    #print("off", (off))
     individuo_arq = open("/media/marcos/Data/Tese/GA2/" + str(repeticao) + "/" + nome_base + str(geracao) + ".indx",
                          'a')
     indx_bag1 = abre_arquivo(ind[0])
@@ -142,9 +146,11 @@ def mutacao(ind):
 
     if (geracao == 0 and off == []):
         ind2 = random.randint(1, 100)
-
+        #print("entrei")
     else:
+       # print("entreiIIIIIIIIIIII")
         ind2 = random.sample(off, 1)
+        ind2=ind2[0]
 
         # print('mutacaooooo e contador', individuo, ind2, contador_cruzamento)
     indx_bag2 = abre_arquivo(ind2)
@@ -172,7 +178,7 @@ def mutacao(ind):
 def fitness_f1_n2(individuo):
     global classes
 
-    print("fitnes", individuo)
+    #print("fitness", individuo)
 
     indx_individuo=abre_arquivo(individuo[0])
     X_data,y_data=monta_arquivo(indx_individuo)
@@ -200,42 +206,51 @@ def sequencia():
 
 def the_function(population, gen, offspring):
     '''
-    responsavel por alterar a geração, assim como zerar variaveis, alterar populaçoes, e copiar arquivos
+    responsavel por alterar a geracao, assim como zerar variaveis, alterar populacoes, e copiar arquivos
     :param population: populacao, retorna do DEAP
-    :param gen: geração Retorna do DEAP
-    :param offspring: nova população
+    :param gen: geracao Retorna do DEAP
+    :param offspring: nova populacao
     :return:
     '''
     global geracao, off, X_valida, y_valida
-    print("the_fuction", (population))
+    #print("the_fuction", (population))
     off=[]
     geracao = gen
     geracao_arq = open("/media/marcos/Data/Tese/GA2/" + str(repeticao) + "/" + nome_base + str(geracao) + ".indx",
                          'a')
-    arq = open("/media/marcos/Data/Tese/GA2/" + str(repeticao) + "/" + nome_base + str(geracao-1) + ".indx")
+   # arq = open("/media/marcos/Data/Tese/GA2/" + str(repeticao) + "/" + nome_base + str(geracao-1) + ".indx")
     for i in range(len(population)):
         off.append(population[i][0])
-    # if (geracao==30):
-    #     csv.write('{};{};{};'.format(nome_base,str(repeticao),str(geracao)))
-    #     for i in range(len(population)):
-    #         off.append(population[i][0])
-    #         if (population[i][0] == population[-1][0]):
-    #             csv.write(str(population[i][0]) + '\n')
-    #         else:
-    #             csv.write(str(population[i][0]) + ';')
+    #if (geracao==30):
+       # population=sorted(population)
+    #      csv.write('{};{};{};'.format(nome_base,str(repeticao),str(geracao)))
+    #      for i in range(len(population)):
+    #          off.append(population[i][0])
+    #          if (population[i][0] == population[-1][0]):
+    #              csv.write(str(population[i][0]) + '\n')
+    #          else:
+    #              csv.write(str(population[i][0]) + ';')
     # if (os.path.exists(pasta2) == False):
     #     os.system("mkdir -p " + pasta2)
     # for i in population:
     #     shutil.copy2(pasta + "/Individuo" + nome_base + str(i[0]) + '.arff', pasta2)
     # abre_validacao()
     # _ = retorna_complexidades(population=population)
+   # print(len(population))
+    #exit(0)
     for j in population:
+      #  print (j)
+        arq = open("/media/marcos/Data/Tese/GA2/" + str(repeticao) + "/" + nome_base + str(geracao - 1) + ".indx")
         for i in arq:
             texto = i
-            print(texto)
+           # print(str(j[0]), texto.split(" ")[0])
             if (str(j[0]) == texto.split(" ")[0]):
-                print(i)
+                #print(i)
                 geracao_arq.write(i)
+                arq.close()
+                break
+    geracao_arq.close()
+
 
     indx_valida = abre_arquivo(valida=True)
     X_valida, y_valida = monta_arquivo(indx_valida)
@@ -254,56 +269,53 @@ def populacao(populacao_total):
         off.append(j)
     #print(off)
     return off
+for t in range(1,21):
+    nome_individuo=101
+    nome_base="Ecoli"
+    repeticao=t
+    print("iteracao", t, nome_base)
+    geracao=0
+    seq=0
+    classes=[]
+    off=[]
+    indx_valida=abre_arquivo(valida=True)
+    X_valida,y_valida=monta_arquivo(indx_valida,vet_class=True)
 
-nome_individuo=101
-nome_base="Wine"
-repeticao=1
-geracao=0
-seq=0
-classes=[]
-off=[]
-indx_valida=abre_arquivo(valida=True)
-X_valida,y_valida=monta_arquivo(indx_valida,vet_class=True)
-
-
-
-
-
-nr_generation = 30
-proba_crossover = 0.99
-proba_mutation = 0.01
-# current_ind = 14
-fit_value1=1.0
-fit_value2=1.0
-fit_value3=1.0
-#valor=1
+    nr_generation = 30
+    proba_crossover = 0.99
+    proba_mutation = 0.01
+    # current_ind = 14
+    fit_value1=1.0
+    fit_value2=1.0
+    fit_value3=1.0
+    #valor=1
 
 
 
-creator.create("Fitness", base.Fitness, weights=(fit_value1,fit_value2,fit_value3))
-creator.create("Individual", list, fitness=creator.Fitness)
-toolbox = base.Toolbox()
+    creator.create("Fitness", base.Fitness, weights=(fit_value1,fit_value2,fit_value3))
+    creator.create("Individual", list, fitness=creator.Fitness)
+    toolbox = base.Toolbox()
 
-toolbox.register("attr_item", sequencia)
+    toolbox.register("attr_item", sequencia)
 
-toolbox.register("individual", tools.initRepeat, creator.Individual,
-                 toolbox.attr_item, 1)
+    toolbox.register("individual", tools.initRepeat, creator.Individual,
+                     toolbox.attr_item, 1)
 
 
-population=toolbox.register("population", tools.initRepeat, list, toolbox.individual)
-pop = toolbox.population(n=100)
-toolbox.register("evaluate", fitness_f1_n2)
-toolbox.register("mate", cruza)
-toolbox.register("mutate", mutacao)
-toolbox.register("select", tools.selSPEA2 )
-algorithms.eaMuPlusLambda(pop, toolbox, 100, 100, proba_crossover, proba_mutation, nr_generation, generation_function=the_function, popu=populacao)
+    population=toolbox.register("population", tools.initRepeat, list, toolbox.individual)
+    pop = toolbox.population(n=100)
+    toolbox.register("evaluate", fitness_f1_n2)
+    toolbox.register("mate", cruza)
+    toolbox.register("mutate", mutacao)
+    toolbox.register("select", tools.selSPEA2 )
+    algorithms.eaMuPlusLambda(pop, toolbox, 100, 100, proba_crossover, proba_mutation, nr_generation, generation_function=the_function, popu=populacao)
 
-#print(classes)
-#fitness_f1_n2([5])
-#print(y_valida)
-#altera_arquivo_marcelo()
+    #print(classes)
+    #fitness_f1_n2([5])
+    #print(y_valida)
+    #altera_arquivo_marcelo()
 
-#cruza([1],[2])
-#nome_bag()
-#print(x)
+    #cruza([1],[2])
+    #nome_bag()
+    #print(x)
 
