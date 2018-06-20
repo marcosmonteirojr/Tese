@@ -16,7 +16,7 @@ def altera_arquivo_marcelo():
     '''
     global repeticao, nome_base, geracao
     arq = open("/media/marcos/Data/Tese/GA2/" + str(repeticao) + "/" + nome_base +str(geracao)+ ".indx")
-    arqtemp = open("/media/marcos/Data/Tese/GA2/" + str(repeticao) + "/" + nome_base + ".indxTemp", 'w')
+    arqtemp = open("/media/marcos/Data/Tese/GA2/" + str(repeticao) + "/" + nome_base +str(geracao)+ ".indxTemp", 'w')
     cont=1
     for i in arq:
         texto=i
@@ -36,14 +36,14 @@ def altera_arquivo_marcelo():
     arq.close()
     arqtemp.close()
     os.system("cp -r /media/marcos/Data/Tese/GA2/" + str(repeticao) + "/" + nome_base + str(geracao)+ ".indxTemp /media/marcos/Data/Tese/GA2/" + str(repeticao) + "/" + nome_base +str(geracao)+ ".indx")
-    os.system("rm /media/marcos/Data/Tese/GA2/" + str(repeticao) + "/" + nome_base + str(geracao) +".indxTemp")
+    os.system("rm /media/marcos/Data/Tese/GA2/" + str(repeticao) + "/" + nome_base+str(geracao)+".indxTemp")
 
 
 
 def abre_arquivo(individuo=None, valida=False):
-    global nome_base, repeticao, geracao
+    global nome_base, repeticao, geracao, caminho_bags, caminho_base
     if individuo:
-        arq=open("/media/marcos/Data/Tese/GA2/"+str(repeticao)+"/"+nome_base+str(geracao)+".indx")
+        arq=open(caminho_bags+str(repeticao)+"/"+nome_base+str(geracao)+".indx")
         #print(arq)
         for i in arq:
             texto=i
@@ -55,7 +55,7 @@ def abre_arquivo(individuo=None, valida=False):
                 break
 
     elif valida:
-        arq = open("/media/marcos/Data/Tese/Bases2/Validacao/" + str(repeticao) + "/" + nome_base+".idx")
+        arq = open(caminho_base+"Validacao/" + str(repeticao) + "/" + nome_base+".idx")
         texto=arq.readline()
         indx_bag=texto.split(" ")
         arq.close()
@@ -70,14 +70,14 @@ def monta_arquivo(indx_bag,vet_class=False):
     :return:
     '''
     #print(indx_bag)
-    global nome_base, classes
+    global nome_base, classes, caminho_base
 
     #print(indx_bag)
     X_data=[]
     y_data=[]
-    arq2=("/media/marcos/Data/Tese/Bases2/Dataset/"+nome_base+".arff")
+    arq2=(caminho_base+"Dataset/"+nome_base+".arff")
     arq3=Marff.abre_arff(arq2)
-    X,y=Marff.retorna_instacias(arq3)
+    X,y,_=Marff.retorna_instacias(arq3)
     if(vet_class):
         _,classes,_,_=Marff.retorna_classes_existentes(arq3)
     for i in indx_bag:
@@ -95,10 +95,10 @@ def cruza(ind1, ind2):
     :param ind2:
     :return:
     '''
-    global nome_individuo, repeticao, nome_base, geracao
+    global nome_individuo, repeticao, nome_base, geracao, caminho_bags
     #print("Cruzamento", ind1,ind2)
     #print(ind1, ind2, geracao)
-    individuo_arq = open("/media/marcos/Data/Tese/GA2/" + str(repeticao) + "/" + nome_base + str(geracao)+".indx", 'a')
+    individuo_arq = open(caminho_bags + str(repeticao) + "/" + nome_base + str(geracao)+".indx", 'a')
     inicio=fim=0
     ind_out1=[]
     ind_out1.append(str(nome_individuo))
@@ -132,10 +132,10 @@ def cruza(ind1, ind2):
 
 
 def mutacao(ind):
-    global geracao, off, nome_individuo, repeticao
+    global geracao, off, nome_individuo, repeticao, caminho_bags
     #print("mutacao", ind)
     #print("off", (off))
-    individuo_arq = open("/media/marcos/Data/Tese/GA2/" + str(repeticao) + "/" + nome_base + str(geracao) + ".indx",
+    individuo_arq = open(caminho_bags + str(repeticao) + "/" + nome_base + str(geracao) + ".indx",
                          'a')
     indx_bag1 = abre_arquivo(ind[0])
     X,y_data=monta_arquivo(indx_bag1)
@@ -212,12 +212,16 @@ def the_function(population, gen, offspring):
     :param offspring: nova populacao
     :return:
     '''
-    global geracao, off, X_valida, y_valida
+    global geracao, off, X_valida, y_valida, caminho_bags
     #print("the_fuction", (population))
     off=[]
     geracao = gen
-    geracao_arq = open("/media/marcos/Data/Tese/GA2/" + str(repeticao) + "/" + nome_base + str(geracao) + ".indx",
+    if(geracao==30):
+        geracao_arq = open(caminho_bags + str(repeticao) + "/" + nome_base + str(geracao) + "-2.indx",
                          'a')
+    else:
+        geracao_arq = open(caminho_bags + str(repeticao) + "/" + nome_base + str(geracao) + ".indx",
+                           'a')
    # arq = open("/media/marcos/Data/Tese/GA2/" + str(repeticao) + "/" + nome_base + str(geracao-1) + ".indx")
     for i in range(len(population)):
         off.append(population[i][0])
@@ -240,7 +244,7 @@ def the_function(population, gen, offspring):
     #exit(0)
     for j in population:
       #  print (j)
-        arq = open("/media/marcos/Data/Tese/GA2/" + str(repeticao) + "/" + nome_base + str(geracao - 1) + ".indx")
+        arq = open(caminho_bags + str(repeticao) + "/" + nome_base + str(geracao - 1) + ".indx")
         for i in arq:
             texto = i
            # print(str(j[0]), texto.split(" ")[0])
@@ -269,9 +273,19 @@ def populacao(populacao_total):
         off.append(j)
     #print(off)
     return off
-for t in range(1,21):
+# for i in range(1,21):
+#     repeticao=i
+#     geracao=0
+#     nome_base="Segmentation"
+#     altera_arquivo_marcelo()
+# exit(0)
+caminho_bags="/media/marcos/Data/Tese/GA2/"
+caminho_base="/media/marcos/Data/Tese/Bases2/"
+
+
+for t in range(1,2):
     nome_individuo=101
-    nome_base="Ecoli"
+    nome_base="Wine"
     repeticao=t
     print("iteracao", t, nome_base)
     geracao=0
@@ -308,7 +322,7 @@ for t in range(1,21):
     toolbox.register("mate", cruza)
     toolbox.register("mutate", mutacao)
     toolbox.register("select", tools.selSPEA2 )
-    algorithms.eaMuPlusLambda(pop, toolbox, 100, 100, proba_crossover, proba_mutation, nr_generation, generation_function=the_function, popu=populacao)
+    algorithms.eaMuPlusLambda(pop, toolbox, 100, 500, proba_crossover, proba_mutation, nr_generation, generation_function=the_function, popu=populacao)
 
     #print(classes)
     #fitness_f1_n2([5])

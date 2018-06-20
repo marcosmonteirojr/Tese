@@ -6,15 +6,15 @@ from numpy import average, std
 import sys
 
 
-nome_base=sys.argv[1]
-#nome_base='Wine'
-caminho_teste = "/media/marcos/Data/Tese/Bases2/Teste/"
-caminho_valida = "/media/marcos/Data/Tese/Bases2/Validacao/"
+#nome_base=sys.argv[1]
+nome_base='Ecoli'
+caminho_teste = "/media/marcos/Data/Tese/Bases/Teste/"
+caminho_valida = "/media/marcos/Data/Tese/Bases/Validacao/"
 caminho = "/media/marcos/Data/Tese/AG/"
-arq=open('Media_desvio_voto_pgcs2.csv', 'a')
-arq1=open('AccVoto_pgcs2.csv', 'a')
-arq2=open('AccWilcoxon_pgcs2.csv', 'a')
-arq3=open('Tabela_pgcs2.csv', 'a')
+arq=open('Voto_Media_desvio_pgcs2.csv', 'a')
+arq1=open('Voto_pgcs2.csv', 'a')
+arq2=open('Voto_Wilcoxon_pgcs2.csv', 'a')
+arq3=open('Voto_Tabela_pgcs2.csv', 'a')
 accVotingBag = []
 accVotingPgsc = []
 
@@ -88,10 +88,18 @@ for i in range(1,21):
     poolBag=[]
     poolPgsc = []
 
-    base_teste = abre_arquivo(bag=None,geracao=None,valida=False,teste=True)
-    base_validacao = abre_arquivo(bag=None,geracao=None,valida=True,teste=False)
-    X_test, y_test = monta_arquivo(base_teste)
-    X_valida, y_valida = monta_arquivo(base_validacao)
+    if nome_base == 'Ecoli':
+        t = caminho_teste + str(i) + "/Teste" + nome_base + str(i) + ".arff"
+        v = caminho_valida + str(i) + "/Valida" + nome_base + str(i) + ".arff"
+        base_teste = Marff.abre_arff(t)
+        base_validacao = Marff.abre_arff(v)
+        X_test, y_test = Marff.retorna_instacias(base_teste, np_array=True)
+        X_valida, y_valida = Marff.retorna_instacias(base_validacao, np_array=True)
+    else:
+        base_teste = abre_arquivo(bag=None,geracao=None,valida=False,teste=True)
+        base_validacao = abre_arquivo(bag=None,geracao=None,valida=True,teste=False)
+        X_test, y_test = monta_arquivo(base_teste)
+        X_valida, y_valida = monta_arquivo(base_validacao)
     for j in range(0, 100):
 
 
@@ -130,7 +138,7 @@ arq1.write('\n')
 p,w=wilcoxon(accVotingBag,accVotingPgsc)
 
 arq.write('{};{};{};;{};{}\n'.format(nome_base,average(accVotingBag),std(accVotingBag),average(accVotingPgsc),std(accVotingPgsc)))
-arq3.write('{};{} ({});;{} ({})\n'.format(nome_base,average(accVotingBag),std(accVotingBag),average(accVotingPgsc),std(accVotingPgsc)))
+arq3.write('{};{} ({});;{} ({})\n'.format(nome_base,round(average(accVotingBag),2),round(std(accVotingBag),2),round(average(accVotingPgsc),2),round(std(accVotingPgsc),2)))
 arq2.write('{};{};{}\n'.format(nome_base,p,w))
 arq.close()
 arq1.close()

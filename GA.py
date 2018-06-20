@@ -266,6 +266,7 @@ def fitness_moga(individuo):
     X, y, *_ = abre_individuos(ind)
     perc = perceptron.Perceptron()
     perc.fit(X, y)
+    perc.pred
     # print(len(dist_medias))
 
     out = float(perc.score(X_val, y_val))

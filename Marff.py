@@ -1,4 +1,5 @@
-import arff
+import arff, numpy
+
 
 
 def abre_arff(caminho):
@@ -41,7 +42,7 @@ def retorna_classes_existentes(dataset):
 
     return num_class, classes, elem_p_classes,total_elementos
 
-def retorna_instacias(dataset):
+def retorna_instacias(dataset,np_array=False):
     """
 
     :param dataset: arff carregado
@@ -52,8 +53,10 @@ def retorna_instacias(dataset):
     for i in dataset['data']:
         y.append(i[-1])
         X.append(i[:-1])
-
-    return X,y
+    if(np_array==True):
+        X=numpy.array(X)
+        y=numpy.array(y)
+    return X,y,dataset['data']
 
 def cria_arff(info, data, classes,pasta, nome):
 
