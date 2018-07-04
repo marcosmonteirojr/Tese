@@ -8,11 +8,12 @@ from deap import tools
 from sklearn.preprocessing import MinMaxScaler
 import complexity_pcol as dcol
 import numpy as np
+from math import sqrt
 
 def altera_arquivo_marcelo():
     '''
     da nome aos bags nesse caso 1 a 100
-    :return:
+    :return: altera os arquivos
     '''
     global repeticao, nome_base, geracao
     arq = open("/media/marcos/Data/Tese/GA2/" + str(repeticao) + "/" + nome_base +str(geracao)+ ".indx")
@@ -38,9 +39,128 @@ def altera_arquivo_marcelo():
     os.system("cp -r /media/marcos/Data/Tese/GA2/" + str(repeticao) + "/" + nome_base + str(geracao)+ ".indxTemp /media/marcos/Data/Tese/GA2/" + str(repeticao) + "/" + nome_base +str(geracao)+ ".indx")
     os.system("rm /media/marcos/Data/Tese/GA2/" + str(repeticao) + "/" + nome_base+str(geracao)+".indxTemp")
 
+def distancia(primeira=False,population=None):
+    global classes, off, pop, nome_individuo
+    compx=[]
+    dist = dict()
+    dist['nome'] = list()
+    dist['dist'] = list()
+    arq = open(caminho_bags + str(repeticao) + "/" + nome_base + str(geracao) + ".indx")
+    texto = arq.readlines()
+    if (primeira and geracao==0):
+        print("primeira")
+        dist['nome'] = pop
+        for i in range(0,100):
+            text = texto[i]
+            indx_bag = text.split(" ")
+            indx_bag = indx_bag[1:]
+           # print(indx_bag)
+            X_29, y_29 = monta_arquivo(indx_bag, True)
+            scaler = MinMaxScaler()
+            scaler.fit(X_29)
+            transformed_data = scaler.transform(X_29)
+            complex = dcol.PPcol(classes=classes)
+            complexidades = complex.xy_measures(transformed_data, y_29)
+            F1=(np.average(complexidades['F1']))
+            N2=(np.average(complexidades['N2']))
+            cpx=[F1,N2]
+            compx.append(cpx)
+        #print(compx)
+        for j in range(len(compx)):
+            dista = 0
+            for l in range(len(compx)):
+                if (j == l):
+                    continue
+                else:
+                    a = compx[j]
+                    b = compx[l]
+                    dista += sqrt(sum(((a - b)) ** 2 for a, b in zip(a, b)))
+                   # print(j,l)
+            dist['dist'].append(dista / 100)
 
+    if (population!=None):
+        print("populacao")
+        dist['nome'] = population
+        cont=0
+        for i in range(len(dist['nome'])):
+            print(i)
+            text = texto[cont]
+            indx_bag = text.split(" ")
+            while(i!=indx_bag[0]):
+                cont=cont+1
+                text = texto[cont]
+                indx_bag = text.split(" ")
+            indx_bag = indx_bag[1:]
+            # print(indx_bag)
+            X_29, y_29 = monta_arquivo(indx_bag, True)
+            scaler = MinMaxScaler()
+            scaler.fit(X_29)
+            transformed_data = scaler.transform(X_29)
+            complex = dcol.PPcol(classes=classes)
+            complexidades = complex.xy_measures(transformed_data, y_29)
+            F1 = (np.average(complexidades['F1']))
+            N2 = (np.average(complexidades['N2']))
+            cpx = [F1, N2]
+            compx.append(cpx)
+        for j in range(len(compx)):
+            dista = 0
+            for l in range(len(compx)):
+                if (j == l):
+                    continue
+                else:
+                    a = compx[j]
+                    b = compx[l]
+                    dista += sqrt(sum(((a - b)) ** 2 for a, b in zip(a, b)))
+                    # print(j,l)
+            dist['dist'].append(dista / len(population))
+
+    if(primeira==False and population==None):
+        print("outras")
+        print(nome_individuo)
+        inicio = nome_individuo - numero_individuo
+
+        for i in range(inicio, nome_individuo):
+            x = []
+            x.append(i)
+            dist['nome'].append(x)
+        for i in range(inicio, nome_individuo):
+            print(i)
+            text = texto[i]
+            indx_bag = text.split(" ")
+            indx_bag = indx_bag[1:]
+            # print(indx_bag)
+            X_29, y_29 = monta_arquivo(indx_bag, True)
+            scaler = MinMaxScaler()
+            scaler.fit(X_29)
+            transformed_data = scaler.transform(X_29)
+            complex = dcol.PPcol(classes=classes)
+            complexidades = complex.xy_measures(transformed_data, y_29)
+            F1 = (np.average(complexidades['F1']))
+            N2 = (np.average(complexidades['N2']))
+            cpx = [F1, N2]
+            compx.append(cpx)
+        for j in range(len(compx)):
+            dista = 0
+            for l in range(len(compx)):
+                if (j == l):
+                    continue
+                else:
+                    a = compx[j]
+                    b = compx[l]
+                    dista += sqrt(sum(((a - b)) ** 2 for a, b in zip(a, b)))
+                    # print(j,l)
+            dist['dist'].append(dista / (numero_individuo))
+
+    arq.close()
+    return dist
 
 def abre_arquivo(individuo=None, valida=False):
+    '''
+
+    :param individuo: nome do individuo
+    :param valida: para aproveitar a funcao ela abre a validacao
+    :return: linha com indices do arquivo, caso do individuo exclui a primeira coluna, validacao nao
+    '''
     global nome_base, repeticao, geracao, caminho_bags, caminho_base
     if individuo:
         arq=open(caminho_bags+str(repeticao)+"/"+nome_base+str(geracao)+".indx")
@@ -67,12 +187,10 @@ def monta_arquivo(indx_bag,vet_class=False):
     '''
     Recebe o indice de instancias de um bag
     :param indx_bag:
-    :return:
+    :param vet_classes: false, retorna o vetor de classes
+    :return: X_data, y_data
     '''
-    #print(indx_bag)
     global nome_base, classes, caminho_base
-
-    #print(indx_bag)
     X_data=[]
     y_data=[]
     arq2=(caminho_base+"Dataset/"+nome_base+".arff")
@@ -81,11 +199,8 @@ def monta_arquivo(indx_bag,vet_class=False):
     if(vet_class):
         _,classes,_,_=Marff.retorna_classes_existentes(arq3)
     for i in indx_bag:
-        #print(int(i))
         X_data.append(X[int(i)])
         y_data.append(y[int(i)])
-    #print(X_data)
-    #exit(0)
     return X_data, y_data
 
 def cruza(ind1, ind2):
@@ -95,8 +210,8 @@ def cruza(ind1, ind2):
     :param ind2:
     :return:
     '''
-    global nome_individuo, repeticao, nome_base, geracao, caminho_bags
-    #print("Cruzamento", ind1,ind2)
+    global nome_individuo, repeticao, nome_base, geracao, caminho_bags, dispersao, contador_cruzamento, numero_individuo
+    #print("Cruzamento")
     #print(ind1, ind2, geracao)
     individuo_arq = open(caminho_bags + str(repeticao) + "/" + nome_base + str(geracao)+".indx", 'a')
     inicio=fim=0
@@ -113,11 +228,9 @@ def cruza(ind1, ind2):
             ind_out1.append(indx_bag1[i])
         else:
             ind_out1.append(indx_bag2[i])
-
     ind1[0] = nome_individuo
     ind2[0] = nome_individuo
     nome_individuo+=1
-
     for j in ind_out1:
         if (j != ind_out1[-1]):
             individuo_arq.write(j)
@@ -125,15 +238,19 @@ def cruza(ind1, ind2):
         else:
             individuo_arq.write(j)
 
-    #individuo_arq.close()
-
+    if (dispersao == True):
+        contador_cruzamento = contador_cruzamento + 1
+        if (contador_cruzamento == numero_individuo+1):
+            contador_cruzamento = 1
+            distancia(primeira=False,population=None)
     return creator.Individual(ind1), creator.Individual(ind2)
 
 
 
 def mutacao(ind):
-    global geracao, off, nome_individuo, repeticao, caminho_bags
-    #print("mutacao", ind)
+
+    global geracao, off, nome_individuo, repeticao, caminho_bags, dispersao, contador_cruzamento, numero_individuo
+   # print("mutacao")
     #print("off", (off))
     individuo_arq = open(caminho_bags + str(repeticao) + "/" + nome_base + str(geracao) + ".indx",
                          'a')
@@ -173,22 +290,22 @@ def mutacao(ind):
             individuo_arq.write(j)
     ind[0] = nome_individuo
     nome_individuo += 1
+    if (dispersao==True):
+        contador_cruzamento = contador_cruzamento + 1
+        if (contador_cruzamento == numero_individuo+1):
+            contador_cruzamento = 1
+            distancia(primeira=False, population=None)
     return ind,
 
 def fitness_f1_n2(individuo):
     global classes
-
-    #print("fitness", individuo)
-
+    print("fitness")
     indx_individuo=abre_arquivo(individuo[0])
     X_data,y_data=monta_arquivo(indx_individuo)
-    #print(X_data)
-    #print(y_data)
 
     scaler = MinMaxScaler()
     scaler.fit(X_data)
     transformed_data=scaler.transform(X_data)
-    #print(transformed_data)
 
     complex=dcol.PPcol(classes=classes)
     complexidades=complex.xy_measures(transformed_data,y_data)
@@ -197,7 +314,8 @@ def fitness_f1_n2(individuo):
     perc=perceptron.Perceptron()
     perc.fit(X_data,y_data)
     score = perc.score(X_valida,y_valida)
-    return F1, N2, score,
+    float(score)
+    return score, F1, N2,
 
 def sequencia():
     global seq
@@ -216,6 +334,7 @@ def the_function(population, gen, offspring):
     #print("the_fuction", (population))
     off=[]
     geracao = gen
+    print(population)
     if(geracao==30):
         geracao_arq = open(caminho_bags + str(repeticao) + "/" + nome_base + str(geracao) + "-2.indx",
                          'a')
@@ -225,23 +344,6 @@ def the_function(population, gen, offspring):
    # arq = open("/media/marcos/Data/Tese/GA2/" + str(repeticao) + "/" + nome_base + str(geracao-1) + ".indx")
     for i in range(len(population)):
         off.append(population[i][0])
-    #if (geracao==30):
-       # population=sorted(population)
-    #      csv.write('{};{};{};'.format(nome_base,str(repeticao),str(geracao)))
-    #      for i in range(len(population)):
-    #          off.append(population[i][0])
-    #          if (population[i][0] == population[-1][0]):
-    #              csv.write(str(population[i][0]) + '\n')
-    #          else:
-    #              csv.write(str(population[i][0]) + ';')
-    # if (os.path.exists(pasta2) == False):
-    #     os.system("mkdir -p " + pasta2)
-    # for i in population:
-    #     shutil.copy2(pasta + "/Individuo" + nome_base + str(i[0]) + '.arff', pasta2)
-    # abre_validacao()
-    # _ = retorna_complexidades(population=population)
-   # print(len(population))
-    #exit(0)
     for j in population:
       #  print (j)
         arq = open(caminho_bags + str(repeticao) + "/" + nome_base + str(geracao - 1) + ".indx")
@@ -254,10 +356,11 @@ def the_function(population, gen, offspring):
                 arq.close()
                 break
     geracao_arq.close()
-
-
     indx_valida = abre_arquivo(valida=True)
     X_valida, y_valida = monta_arquivo(indx_valida)
+    if (dispersao==True):
+        distancia(population=population)
+    exit(0)
 
 
 def populacao(populacao_total):
@@ -273,41 +376,39 @@ def populacao(populacao_total):
         off.append(j)
     #print(off)
     return off
-# for i in range(1,21):
-#     repeticao=i
-#     geracao=0
-#     nome_base="Segmentation"
-#     altera_arquivo_marcelo()
-# exit(0)
+
 caminho_bags="/media/marcos/Data/Tese/GA2/"
 caminho_base="/media/marcos/Data/Tese/Bases2/"
+off=[]
+numero_individuo=500
+dispersao=True
+contador_cruzamento=1
+nome_base="Banana"
+
+nr_generation = 30
+proba_crossover = 0.99
+proba_mutation = 0.01
+
+fit_value1 = 1.0
+fit_value2 = 1.0
+fit_value3 = 1.0
+
 
 
 for t in range(1,2):
+    classes = []
+    off = []
     nome_individuo=101
-    nome_base="Wine"
     repeticao=t
     print("iteracao", t, nome_base)
     geracao=0
     seq=0
-    classes=[]
-    off=[]
+
     indx_valida=abre_arquivo(valida=True)
     X_valida,y_valida=monta_arquivo(indx_valida,vet_class=True)
 
-    nr_generation = 30
-    proba_crossover = 0.99
-    proba_mutation = 0.01
-    # current_ind = 14
-    fit_value1=1.0
-    fit_value2=1.0
-    fit_value3=1.0
-    #valor=1
-
-
-
-    creator.create("Fitness", base.Fitness, weights=(fit_value1,fit_value2,fit_value3))
-    creator.create("Individual", list, fitness=creator.Fitness)
+    creator.create("FitnessMulti", base.Fitness, weights=(fit_value1,fit_value2, fit_value3))
+    creator.create("Individual", list, fitness=creator.FitnessMulti)
     toolbox = base.Toolbox()
 
     toolbox.register("attr_item", sequencia)
@@ -315,14 +416,15 @@ for t in range(1,2):
     toolbox.register("individual", tools.initRepeat, creator.Individual,
                      toolbox.attr_item, 1)
 
-
     population=toolbox.register("population", tools.initRepeat, list, toolbox.individual)
     pop = toolbox.population(n=100)
+    distancia(primeira=True)
+
     toolbox.register("evaluate", fitness_f1_n2)
     toolbox.register("mate", cruza)
     toolbox.register("mutate", mutacao)
     toolbox.register("select", tools.selSPEA2 )
-    algorithms.eaMuPlusLambda(pop, toolbox, 100, 500, proba_crossover, proba_mutation, nr_generation, generation_function=the_function, popu=populacao)
+    algorithms.eaMuPlusLambda(pop, toolbox, 100, numero_individuo, proba_crossover, proba_mutation, nr_generation, generation_function=the_function, popu=populacao)
 
     #print(classes)
     #fitness_f1_n2([5])

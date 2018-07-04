@@ -95,7 +95,7 @@ def abre_validacao():
         repeticao) + ".arff"  # e um arquivo so de validacao por repeticao
     base_valida = arff.abre_arff(v)
 
-    X_val, y_val = arff.retorna_instacias(base_valida)
+    X_val, y_val, _ = arff.retorna_instacias(base_valida)
 
     if(nome_base=="Ecoli"):
         num_classes=8
@@ -115,7 +115,7 @@ def abre_individuos(individuo):
     c = caminho_todas + str(repeticao) + "/" + str(geracao) + "/Individuo" + nome_base + str(
         individuo) + ".arff"  # arquivo bag
     base = arff.abre_arff(c)
-    X, y = arff.retorna_instacias(base)
+    X, y, _ = arff.retorna_instacias(base)
     _, todas_as_classes, *_ = arff.retorna_classes_existentes(base)
 
     return X, y, base, todas_as_classes
@@ -140,7 +140,7 @@ def retorna_complexidades(population=None, primeira=None):
         dist['nome'] = list()
         dist['dist'] = list()
         dist['nome'] = pop
-        #print('primeira populacao', dist['nome'])
+        print('primeira populacao', dist['nome'])
         for i in dist['nome']:
             c = caminho_todas + str(repeticao) + "/" + str(geracao) + "/Individuo" + nome_base + str(i[0]) + ".arff"
             F1, N2, *_ = newDcol.retorna_complexidade(c, complexidades="-F 1 -N 2", num_classes=num_classes, media=False)
@@ -165,7 +165,7 @@ def retorna_complexidades(population=None, primeira=None):
         dist['nome'] = list()
         dist['dist'] = list()
         dist['nome'] = population
-       # print('geracao de populacao', dist['nome'])
+        print('geracao de populacao', dist['nome'])
         for i in dist['nome']:
             # print(i[0])
             c = caminho_todas + str(repeticao) + "/" + str(geracao) + "/Individuo" + nome_base + str(i[0]) + ".arff"
@@ -194,7 +194,7 @@ def retorna_complexidades(population=None, primeira=None):
             x=[]
             x.append(i)
             dist['nome'].append(x)
-        #print('demais populacao', dist['nome'])
+        print('demais populacao', dist['nome'])
         complexidades = list()
         for i in dist['nome']:#
             # print(i[0])
@@ -412,7 +412,7 @@ caminho_todas = "/media/marcos/Data/Tese/AG/"
 caminho_valida = "/media/marcos/Data/Tese/Bases/Validacao/"
 caminho_teste = "/media/marcos/Data/Tese/Bases/Teste/"
 #nome_base = sys.argv[1]
-nome_base = "Vehicle"
+nome_base = "Wine"
 repeticao = 20
 geracao = 0
 off=[]

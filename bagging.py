@@ -11,7 +11,7 @@ nome_base='Wine'
 def abre_arff(nome_base):
     caminho='/media/marcos/Data/Tese/Bases2/Dataset/'+nome_base+".arff"
     dataset=Marff.abre_arff(caminho)
-    X_data,y_data=Marff.retorna_instacias(dataset,np_array=True)
+    X_data,y_data,_=Marff.retorna_instacias(dataset,np_array=True)
     #print(y_data)
     #exit(0)
     return X_data,y_data
@@ -26,13 +26,15 @@ def SplitDataset(X, y):
     return X_train, y_train, X_test, y_test, X_val,y_val
 
 def new_bags(X_train, y_train,X_val):
-    model = CalibratedClassifierCV(Perceptron(max_iter=10))
-    bagging=BaggingClassifier(model,n_estimators=100,max_samples=.5,random_state=64)
+    model = CalibratedClassifierCV(Perceptron())
+    bagging=BaggingClassifier(model,n_estimators=3,max_samples=.25,random_state=64)
 
     estimators=bagging.fit(X_train,y_train)
+    _,baggingx=bagging.estimators_samples_
+    print((baggingx[0]))
 
    # print(bagging.predict(X_train))
-    print(bagging.estimators_[99].predict(X_test))
+    #print(bagging.estimators_[99].predict(X_test))
 
     return estimators
     #print(bagging.estimators_)
@@ -45,7 +47,7 @@ X_train,y_train,X_test,y_test,X_val,y_val=SplitDataset(X,y)
 
 #print(len(y_train))
 
-pool_classifiers=new_bags(X_train,y_train, X_test)
+pool_classifiers=new_bags(X,y, X_test)
 
 
 

@@ -53,7 +53,7 @@ def abre_arquivo(bag=None, geracao=None, valida=False, teste=False):
        # print(texto[bag])
         #
         indx_bag=texto[:-1].split(" ")
-        #print(len(indx_bag))
+        print((indx_bag))
         arq.close()
 
         indx_bag=indx_bag[1:]
@@ -78,10 +78,11 @@ def monta_arquivo(indx_bag,vet_class=False):
     '''
     Recebe o indice de instancias de um bag
     :param indx_bag:
-    :return:
+    :param vet_classes: false, retorna o vetor de classes
+    :return: X_data, y_data
     '''
     #print(indx_bag)
-    global nome_base
+    global nome_base, classes
 
     #print(indx_bag)
     X_data=[]
@@ -315,11 +316,12 @@ def roda(tipo):
     arq2.close()
     arq.close()
 
-repeticao=1
-nome_base='Ecoli'
-caminho_data="/media/marcos/Data/Tese/GA2/"
+#repeticao=1
+#nome_base='Ecoli'
+#caminho_data="/media/marcos/Data/Tese/GA2/"
 caminho_base="/media/marcos/Data/Tese/Bases2/"
-roda(2)
+classes=[]
+#roda(2)
 #cria_classificadores()
 #bases=open("/home/marcos/PycharmProjects/Tese/tt/Bases/bases3.txt")
 # for i in bases:
