@@ -5,5 +5,4 @@ CTG
 Diabetes
 Laryngeal1
 Laryngeal3
-Faults
 German

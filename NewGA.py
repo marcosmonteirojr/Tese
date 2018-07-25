@@ -40,14 +40,18 @@ def altera_arquivo_marcelo():
     os.system("rm /media/marcos/Data/Tese/GA2/" + str(repeticao) + "/" + nome_base+str(geracao)+".indxTemp")
 
 def distancia(primeira=False,population=None):
-    global classes, off, pop, nome_individuo
-    compx=[]
-    dist = dict()
-    dist['nome'] = list()
-    dist['dist'] = list()
-    arq = open(caminho_bags + str(repeticao) + "/" + nome_base + str(geracao) + ".indx")
+    global classes, off, pop, nome_individuo,dist, geracao, dispersao
+    if(geracao==30 and dispersao==True):
+        arq = open(caminho_bags + str(repeticao) + "/" + nome_base + str(geracao) + "-3.indx")
+    else:
+        arq = open(caminho_bags + str(repeticao) + "/" + nome_base + str(geracao) + ".indx")
+   # print(caminho_bags + str(repeticao) + "/" + nome_base + str(geracao) + ".indx")
     texto = arq.readlines()
     if (primeira and geracao==0):
+        compx = []
+        dist = dict()
+        dist['nome'] = list()
+        dist['dist'] = list()
         print("primeira")
         dist['nome'] = pop
         for i in range(0,100):
@@ -77,59 +81,76 @@ def distancia(primeira=False,population=None):
                     dista += sqrt(sum(((a - b)) ** 2 for a, b in zip(a, b)))
                    # print(j,l)
             dist['dist'].append(dista / 100)
+       # print('tamanho das dist inicial', len(dist['dist']))
 
     if (population!=None):
         print("populacao")
+        compx = []
+        dist = dict()
+        dist['nome'] = list()
+        dist['dist'] = list()
         dist['nome'] = population
-        cont=0
-        for i in range(len(dist['nome'])):
-            print(i)
-            text = texto[cont]
-            indx_bag = text.split(" ")
-            while(i!=indx_bag[0]):
-                cont=cont+1
-                text = texto[cont]
-                indx_bag = text.split(" ")
-            indx_bag = indx_bag[1:]
-            # print(indx_bag)
-            X_29, y_29 = monta_arquivo(indx_bag, True)
-            scaler = MinMaxScaler()
-            scaler.fit(X_29)
-            transformed_data = scaler.transform(X_29)
-            complex = dcol.PPcol(classes=classes)
-            complexidades = complex.xy_measures(transformed_data, y_29)
-            F1 = (np.average(complexidades['F1']))
-            N2 = (np.average(complexidades['N2']))
-            cpx = [F1, N2]
-            compx.append(cpx)
-        for j in range(len(compx)):
+        for i in dist['nome']:
+            #print(i[0])
+            for j in texto:
+               # print(j.split(" ")[0])
+                if (str(i[0]) == j.split(" ")[0]):
+                    indx_bag=j.split(" ")
+                    indx_bag = indx_bag[1:]
+                   # print("teste", str(i[0]), j.split(" ")[0])
+         #           print(indx_bag)
+
+                    X_29, y_29 = monta_arquivo(indx_bag, True)
+
+                    scaler = MinMaxScaler()
+                    scaler.fit(X_29)
+                    transformed_data = scaler.transform(X_29)
+                    complex = dcol.PPcol(classes=classes)
+                    complexidades = complex.xy_measures(transformed_data, y_29)
+                    F1 = (np.average(complexidades['F1']))
+                    N2 = (np.average(complexidades['N2']))
+                    cpx = [F1, N2]
+                    compx.append(cpx)
+       # print('tamanho das compxlation popu', len(compx))
+        for k in range(len(compx)):
             dista = 0
             for l in range(len(compx)):
-                if (j == l):
+                if (k == l):
                     continue
                 else:
-                    a = compx[j]
+                    a = compx[k]
                     b = compx[l]
                     dista += sqrt(sum(((a - b)) ** 2 for a, b in zip(a, b)))
                     # print(j,l)
             dist['dist'].append(dista / len(population))
 
     if(primeira==False and population==None):
-        print("outras")
-        print(nome_individuo)
+        compx = []
+        dist = dict()
+        dist['nome'] = list()
+        dist['dist'] = list()
+        #print("outras")
+        #print(nome_individuo)
         inicio = nome_individuo - numero_individuo
-
+        #print(inicio)
         for i in range(inicio, nome_individuo):
+           # print(i)
             x = []
             x.append(i)
             dist['nome'].append(x)
-        for i in range(inicio, nome_individuo):
-            print(i)
-            text = texto[i]
+       # print(len(texto))
+        #exit(0)
+        for j in range(100,numero_individuo+100):
+            # print(j.split(" ")[0])
+            #print(j)
+
+            text = texto[j]
             indx_bag = text.split(" ")
             indx_bag = indx_bag[1:]
-            # print(indx_bag)
+           # print(indx_bag[0])
+
             X_29, y_29 = monta_arquivo(indx_bag, True)
+           # print("teste")
             scaler = MinMaxScaler()
             scaler.fit(X_29)
             transformed_data = scaler.transform(X_29)
@@ -139,19 +160,24 @@ def distancia(primeira=False,population=None):
             N2 = (np.average(complexidades['N2']))
             cpx = [F1, N2]
             compx.append(cpx)
-        for j in range(len(compx)):
+
+       # print('tamanho das compxlation outras', len(compx))
+        for k in range(len(compx)):
             dista = 0
             for l in range(len(compx)):
-                if (j == l):
+                if (k == l):
                     continue
                 else:
-                    a = compx[j]
+                    a = compx[k]
                     b = compx[l]
                     dista += sqrt(sum(((a - b)) ** 2 for a, b in zip(a, b)))
                     # print(j,l)
-            dist['dist'].append(dista / (numero_individuo))
-
+            dist['dist'].append(dista / numero_individuo)
+        #print('tamanho das dist outras', len(dist['dist']))
+    #print(len(dist['dist']))
+    #print(dist['dist'])
     arq.close()
+    #compx.clear()
     return dist
 
 def abre_arquivo(individuo=None, valida=False):
@@ -239,8 +265,10 @@ def cruza(ind1, ind2):
             individuo_arq.write(j)
 
     if (dispersao == True):
+
         contador_cruzamento = contador_cruzamento + 1
         if (contador_cruzamento == numero_individuo+1):
+            individuo_arq.close()
             contador_cruzamento = 1
             distancia(primeira=False,population=None)
     return creator.Individual(ind1), creator.Individual(ind2)
@@ -293,13 +321,14 @@ def mutacao(ind):
     if (dispersao==True):
         contador_cruzamento = contador_cruzamento + 1
         if (contador_cruzamento == numero_individuo+1):
+            individuo_arq.close()
             contador_cruzamento = 1
             distancia(primeira=False, population=None)
     return ind,
 
 def fitness_f1_n2(individuo):
     global classes
-    print("fitness")
+   #print("fitness")
     indx_individuo=abre_arquivo(individuo[0])
     X_data,y_data=monta_arquivo(indx_individuo)
 
@@ -317,6 +346,31 @@ def fitness_f1_n2(individuo):
     float(score)
     return score, F1, N2,
 
+
+def fitness_dispercao(individuo):
+
+    global dist, classes
+    indx_individuo = abre_arquivo(individuo[0])
+    X_data, y_data = monta_arquivo(indx_individuo)
+    perc = perceptron.Perceptron()
+    perc.fit(X_data, y_data)
+    score = perc.score(X_valida, y_valida)
+    float(score)
+    ind = individuo[0]
+    for i in range(len(dist['nome'])):
+        if dist['nome'][i][0] == ind:
+
+
+            dista = dist['dist'][i]
+            #print(dist['nome'])
+            #print(dist['dist'])
+            #print(dist['nome'][i][0], ind)
+            #print(dista)
+            #exit(0)
+            break
+    #print(dist['nome'], ind)
+    return score, float(dista),
+
 def sequencia():
     global seq
     seq += 1
@@ -330,13 +384,13 @@ def the_function(population, gen, offspring):
     :param offspring: nova populacao
     :return:
     '''
-    global geracao, off, X_valida, y_valida, caminho_bags
+    global geracao, off, X_valida, y_valida, caminho_bags, dispersao
     #print("the_fuction", (population))
     off=[]
     geracao = gen
-    print(population)
-    if(geracao==30):
-        geracao_arq = open(caminho_bags + str(repeticao) + "/" + nome_base + str(geracao) + "-2.indx",
+    #print(population)
+    if(geracao==30 and dispersao==True):
+        geracao_arq = open(caminho_bags + str(repeticao) + "/" + nome_base + str(geracao) + "-3.indx",
                          'a')
     else:
         geracao_arq = open(caminho_bags + str(repeticao) + "/" + nome_base + str(geracao) + ".indx",
@@ -360,7 +414,7 @@ def the_function(population, gen, offspring):
     X_valida, y_valida = monta_arquivo(indx_valida)
     if (dispersao==True):
         distancia(population=population)
-    exit(0)
+    #exit(0)
 
 
 def populacao(populacao_total):
@@ -391,7 +445,7 @@ proba_mutation = 0.01
 
 fit_value1 = 1.0
 fit_value2 = 1.0
-fit_value3 = 1.0
+#fit_value3 = 1.0
 
 
 
@@ -407,7 +461,7 @@ for t in range(1,2):
     indx_valida=abre_arquivo(valida=True)
     X_valida,y_valida=monta_arquivo(indx_valida,vet_class=True)
 
-    creator.create("FitnessMulti", base.Fitness, weights=(fit_value1,fit_value2, fit_value3))
+    creator.create("FitnessMulti", base.Fitness, weights=(fit_value1,fit_value2))
     creator.create("Individual", list, fitness=creator.FitnessMulti)
     toolbox = base.Toolbox()
 
@@ -420,7 +474,7 @@ for t in range(1,2):
     pop = toolbox.population(n=100)
     distancia(primeira=True)
 
-    toolbox.register("evaluate", fitness_f1_n2)
+    toolbox.register("evaluate", fitness_dispercao)
     toolbox.register("mate", cruza)
     toolbox.register("mutate", mutacao)
     toolbox.register("select", tools.selSPEA2 )
