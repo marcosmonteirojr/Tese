@@ -1,4 +1,5 @@
 import Marff
+import multiprocessing
 import random, os
 from sklearn.linear_model import perceptron
 from deap import algorithms
@@ -9,15 +10,16 @@ from sklearn.preprocessing import MinMaxScaler
 import complexity_pcol as dcol
 import numpy as np
 from math import sqrt
+from scoop import futures
 
 def altera_arquivo_marcelo():
     '''
     da nome aos bags nesse caso 1 a 100
     :return: altera os arquivos
     '''
-    global repeticao, nome_base, geracao
-    arq = open("/media/marcos/Data/Tese/GA2/" + str(repeticao) + "/" + nome_base +str(geracao)+ ".indx")
-    arqtemp = open("/media/marcos/Data/Tese/GA2/" + str(repeticao) + "/" + nome_base +str(geracao)+ ".indxTemp", 'w')
+    global repeticao, nome_base, geracao, caminho_bags, caminho_originais
+    arq = open(caminho_originais + "Originais"+str(repeticao) + "/" + nome_base+".idx")
+    arqtemp = open(caminho_originais + "Originais"+str(repeticao) + "/" + nome_base +str(geracao)+ ".indxTemp", 'w')
     cont=1
     for i in arq:
         texto=i
@@ -36,8 +38,8 @@ def altera_arquivo_marcelo():
         cont+=1
     arq.close()
     arqtemp.close()
-    os.system("cp -r /media/marcos/Data/Tese/GA2/" + str(repeticao) + "/" + nome_base + str(geracao)+ ".indxTemp /media/marcos/Data/Tese/GA2/" + str(repeticao) + "/" + nome_base +str(geracao)+ ".indx")
-    os.system("rm /media/marcos/Data/Tese/GA2/" + str(repeticao) + "/" + nome_base+str(geracao)+".indxTemp")
+    os.system("cp -r "+caminho_originais + "Originais"+str(repeticao) + "/" + nome_base + str(geracao)+ ".indxTemp "+caminho_bags + str(repeticao) + "/" + nome_base +str(geracao)+ ".indx")
+    os.system("rm "+caminho_originais + "Originais"+str(repeticao) + "/" + nome_base + str(geracao)+ ".indxTemp")
 
 def distancia(primeira=False,population=None):
     global classes, off, pop, nome_individuo,dist, geracao, dispersao
@@ -129,8 +131,6 @@ def distancia(primeira=False,population=None):
         dist = dict()
         dist['nome'] = list()
         dist['dist'] = list()
-        #print("outras")
-        #print(nome_individuo)
         inicio = nome_individuo - numero_individuo
         #print(inicio)
         for i in range(inicio, nome_individuo):
@@ -138,8 +138,6 @@ def distancia(primeira=False,population=None):
             x = []
             x.append(i)
             dist['nome'].append(x)
-       # print(len(texto))
-        #exit(0)
         for j in range(100,numero_individuo+100):
             # print(j.split(" ")[0])
             #print(j)
@@ -173,9 +171,6 @@ def distancia(primeira=False,population=None):
                     dista += sqrt(sum(((a - b)) ** 2 for a, b in zip(a, b)))
                     # print(j,l)
             dist['dist'].append(dista / numero_individuo)
-        #print('tamanho das dist outras', len(dist['dist']))
-    #print(len(dist['dist']))
-    #print(dist['dist'])
     arq.close()
     #compx.clear()
     return dist
@@ -395,7 +390,6 @@ def the_function(population, gen, offspring):
     else:
         geracao_arq = open(caminho_bags + str(repeticao) + "/" + nome_base + str(geracao) + ".indx",
                            'a')
-   # arq = open("/media/marcos/Data/Tese/GA2/" + str(repeticao) + "/" + nome_base + str(geracao-1) + ".indx")
     for i in range(len(population)):
         off.append(population[i][0])
     for j in population:
@@ -428,16 +422,15 @@ def populacao(populacao_total):
     for i in range(len(populacao_total)):
         j=([i][0])
         off.append(j)
-    #print(off)
     return off
-
-caminho_bags="/media/marcos/Data/Tese/GA2/"
+#caminho_originais="/media/marcos/Data/Tese/GA2/Originais/"
+caminho_bags="/media/marcos/Data/Tese/GA3/"
 caminho_base="/media/marcos/Data/Tese/Bases2/"
 off=[]
 numero_individuo=500
 dispersao=True
 contador_cruzamento=1
-nome_base="Banana"
+nome_base="Wine"
 
 nr_generation = 30
 proba_crossover = 0.99
@@ -447,9 +440,7 @@ fit_value1 = 1.0
 fit_value2 = 1.0
 #fit_value3 = 1.0
 
-
-
-for t in range(1,2):
+for t in range(1,21):
     classes = []
     off = []
     nome_individuo=101
@@ -463,13 +454,12 @@ for t in range(1,2):
 
     creator.create("FitnessMulti", base.Fitness, weights=(fit_value1,fit_value2))
     creator.create("Individual", list, fitness=creator.FitnessMulti)
+
     toolbox = base.Toolbox()
-
+    toolbox.register("map", futures.map)
     toolbox.register("attr_item", sequencia)
-
     toolbox.register("individual", tools.initRepeat, creator.Individual,
                      toolbox.attr_item, 1)
-
     population=toolbox.register("population", tools.initRepeat, list, toolbox.individual)
     pop = toolbox.population(n=100)
     distancia(primeira=True)
@@ -480,12 +470,4 @@ for t in range(1,2):
     toolbox.register("select", tools.selSPEA2 )
     algorithms.eaMuPlusLambda(pop, toolbox, 100, numero_individuo, proba_crossover, proba_mutation, nr_generation, generation_function=the_function, popu=populacao)
 
-    #print(classes)
-    #fitness_f1_n2([5])
-    #print(y_valida)
-    #altera_arquivo_marcelo()
-
-    #cruza([1],[2])
-    #nome_bag()
-    #print(x)
 
