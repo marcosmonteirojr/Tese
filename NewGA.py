@@ -335,7 +335,7 @@ def fitness_f1_n2(individuo):
     complexidades=complex.xy_measures(transformed_data,y_data)
     F1 = np.average(complexidades['F1'])
     N2 = np.average(complexidades['N2'])
-    perc=perceptron.Perceptron()
+    perc=perceptron.Perceptron(max_iter=100)
     perc.fit(X_data,y_data)
     score = perc.score(X_valida,y_valida)
     float(score)
@@ -347,7 +347,7 @@ def fitness_dispercao(individuo):
     global dist, classes
     indx_individuo = abre_arquivo(individuo[0])
     X_data, y_data = monta_arquivo(indx_individuo)
-    perc = perceptron.Perceptron()
+    perc = perceptron.Perceptron(max_iter=100)
     perc.fit(X_data, y_data)
     score = perc.score(X_valida, y_valida)
     float(score)
@@ -393,13 +393,10 @@ def the_function(population, gen, offspring):
     for i in range(len(population)):
         off.append(population[i][0])
     for j in population:
-      #  print (j)
         arq = open(caminho_bags + str(repeticao) + "/" + nome_base + str(geracao - 1) + ".indx")
         for i in arq:
             texto = i
-           # print(str(j[0]), texto.split(" ")[0])
             if (str(j[0]) == texto.split(" ")[0]):
-                #print(i)
                 geracao_arq.write(i)
                 arq.close()
                 break

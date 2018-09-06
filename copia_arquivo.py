@@ -112,4 +112,5 @@ def arruma_cagada_andre_indices():
         exit(0)
     arq.close()
 
-arruma_cagada_andre_indices()
+#arruma_cagada_andre_indices()
+os.system("mv /media/marcos/Marcos/fotos-videos/fotos-12-17-a-10-3-18/*.mp4 /media/marcos/Marcos/fotos-videos/videos-12-17-a-10-3-18/")

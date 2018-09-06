@@ -245,51 +245,51 @@ def roda(tipo):
         accLCAP.append(lcap.score(X_test,y_test))
         accRankB.append(rankb.score(X_test,y_test))
         accRankP.append(rankp.score(X_test,y_test))
-        # knorauB = KNORAU(poolBag)
-        # kneB = KNORAE(poolBag)
-        # olaB = OLA(poolBag)
-        # singleB= SingleBest(poolBag)
-        #
-        # knorauM = KNORAU(poolPgsc)
-        # kneM = KNORAE(poolPgsc)
-        # olaM = OLA(poolPgsc)
-        # singleM = SingleBest(poolPgsc)
+        knorauB = KNORAU(poolBag)
+        kneB = KNORAE(poolBag)
+        olaB = OLA(poolBag)
+        singleB= SingleBest(poolBag)
+
+        knorauM = KNORAU(poolPgsc)
+        kneM = KNORAE(poolPgsc)
+        olaM = OLA(poolPgsc)
+        singleM = SingleBest(poolPgsc)
         #
         # #print(X_valida)
         #
-        # knorauB.fit(X_valida, y_valida)
+        knorauB.fit(X_valida, y_valida)
+
+        kneB.fit(X_valida, y_valida)
+        olaB.fit(X_valida, y_valida)
+        singleB.fit(X_valida, y_valida)
         #
-        # kneB.fit(X_valida, y_valida)
-        # olaB.fit(X_valida, y_valida)
-        # singleB.fit(X_valida, y_valida)
+        knorauM.fit(X_valida, y_valida)
+        kneM.fit(X_valida, y_valida)
+        olaM.fit(X_valida, y_valida)
+        singleM.fit(X_valida, y_valida)
         #
-        # knorauM.fit(X_valida, y_valida)
-        # kneM.fit(X_valida, y_valida)
-        # olaM.fit(X_valida, y_valida)
-        # singleM.fit(X_valida, y_valida)
+        accKUB.append(knorauB.score(X_test,y_test))
+        accKEB.append(kneB.score(X_test,y_test))
+        accOLAB.append(olaB.score(X_test,y_test))
+        accSBB.append(singleB.score(X_test,y_test))
         #
-        # accKUB.append(knorauB.score(X_test,y_test))
-        # accKEB.append(kneB.score(X_test,y_test))
-        # accOLAB.append(olaB.score(X_test,y_test))
-        # accSBB.append(singleB.score(X_test,y_test))
+        accKUM.append(knorauM.score(X_test,y_test))
+        accKEM.append(kneM.score(X_test,y_test))
+        accOLAM.append(olaM.score(X_test,y_test))
+        accSBM.append(singleM.score(X_test,y_test))
         #
-        # accKUM.append(knorauM.score(X_test,y_test))
-        # accKEM.append(kneM.score(X_test,y_test))
-        # accOLAM.append(olaM.score(X_test,y_test))
-        # accSBM.append(singleM.score(X_test,y_test))
-        #
-        # kp,ke=wilcoxon(accKEB,accKEM)
-        # kp2,ku=wilcoxon(accKUB,accKUM)
-        # op,ol=wilcoxon(accOLAB,accOLAM)
-        # sp,sb=wilcoxon(accSBB,accSBM)
+        kp,ke=wilcoxon(accKEB,accKEM)
+        kp2,ku=wilcoxon(accKUB,accKUM)
+        op,ol=wilcoxon(accOLAB,accOLAM)
+        sp,sb=wilcoxon(accSBB,accSBM)
         lca,lc=wilcoxon(accLCAB,accLCAP)
         rk,rkb=wilcoxon(accRankB,accRankP)
         met,mt=wilcoxon(accMetaB,accMetaP)
 
-        kp=ke=0
-        kp2=ku=0
-        op=ol=0
-        sp=sb=0
+        #kp=ke=0
+        #kp2=ku=0
+        #op=ol=0
+        #sp=sb=0
 
         print(i)
 
