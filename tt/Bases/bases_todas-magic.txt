@@ -1,29 +1,29 @@
-Adult ok
-Banana ok
-Blood ok
-CTG ok
-Diabetes ok
-Ecoli 
-Faults ok
-German ok
+Adult
+Banana
+Blood
+CTG
+Diabetes
+Ecoli
+Faults
+German
 Glass
-Haberman ok
-Heart ok
-Laryngeal1 ok
-Laryngeal3 ok
-Lithuanian ok
-Liver ok
-LPD  ok
-Magic ok
-Mammo ok
-Monk ok
-Phoneme ok
-Sonar ok
-Thyroid  ok
-Vehicle ok
-Vertebral ok
-WBC ok
-WDVG ok
-Weaning ok
-Yonosphere ok
-Segmentation ok
+Haberman
+Heart
+Laryngeal1
+Laryngeal3
+Lithuanian
+Liver
+ILPD
+Magic
+Mammo
+Monk
+Phoneme
+Sonar
+Thyroid
+Vehicle
+Vertebral
+WBC
+WDVG
+Weaning
+Ionosphere
+Segmentation

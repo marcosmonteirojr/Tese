@@ -45,3 +45,11 @@ geracao=0
 for i in range(1,21):
     repeticao=i
     altera_arquivo_marcelo()
+
+
+for i in range(1,21):
+    for j in range(1,30):
+        if j<28:
+            os.system("rm /home/projeto/Marcos/GA5/"+str(i)+"Banana"+str(j)+".indx")
+        if j ==29 or j==30:
+            os.system("mv /home/projeto/Marcos/GA5/" + str(i) + "Banana" + str(j) + ".indx" "/home/projeto/Marcos/GA5/" + str(i) + "Banana" + str(j) + "-5.indx")
