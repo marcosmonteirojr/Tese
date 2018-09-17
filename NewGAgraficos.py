@@ -10,8 +10,8 @@ from sklearn.preprocessing import MinMaxScaler
 import complexity_pcol as dcol
 import numpy as np
 from math import sqrt
-from scoop import futures
 from deap.tools import History
+#from scoop import futures
 
 def altera_arquivo_marcelo():
     '''
@@ -44,7 +44,7 @@ def altera_arquivo_marcelo():
 
 def distancia(primeira=False,population=None):
     global classes, off, pop, nome_individuo,dist, geracao, dispersao
-    if(geracao==2 and dispersao==True):
+    if(geracao==30 and dispersao==True):
         arq = open(caminho_bags + str(repeticao) + "/" + nome_base + str(geracao) + "-4.indx")
     else:
         arq = open(caminho_bags + str(repeticao) + "/" + nome_base + str(geracao) + ".indx")
@@ -185,17 +185,14 @@ def abre_arquivo(individuo=None, valida=False):
     '''
     global nome_base, repeticao, geracao, caminho_bags, caminho_base
     if individuo:
-
-        if geracao == 2:
-            arq = open(caminho_bags + str(repeticao) + "/" + nome_base + "arq_todos.indx")
+        if geracao==2:
+            arq=open(caminho_bags+str(repeticao)+"/"+nome_base+"arq_todo.indx")
         else:
-            arq = open(caminho_bags + str(repeticao) + "/" + nome_base + str(geracao) + ".indx")
+            arq=open(caminho_bags+str(repeticao)+"/"+nome_base+str(geracao)+".indx")
         #print(arq)
-        #print('abre arquivo indi', str(individuo))
-        #arq = open(caminho_bags + str(repeticao) + "/" + nome_base + str(geracao) + ".indx")
         for i in arq:
             texto=i
-
+            #print('abre arquivo indi',str(individuo))
             if(str(individuo)==texto.split(" ")[0]):
                 indx_bag=texto.split(" ")
                 arq.close()
@@ -241,12 +238,7 @@ def cruza(ind1, ind2):
     global nome_individuo, repeticao, nome_base, geracao, caminho_bags, dispersao, contador_cruzamento, numero_individuo
     #print("Cruzamento")
     #print(ind1, ind2, geracao)
-    if (geracao == 2):
-        individuo_arq = open(caminho_bags + str(repeticao) + "/" + nome_base + "arq_todos.indx",
-                             'a')
-    else:
-        individuo_arq = open(caminho_bags + str(repeticao) + "/" + nome_base + str(geracao) + ".indx",
-                             'a')
+    individuo_arq = open(caminho_bags + str(repeticao) + "/" + nome_base + str(geracao)+".indx", 'a')
     inicio=fim=0
     ind_out1=[]
     ind_out1.append(str(nome_individuo))
@@ -287,13 +279,8 @@ def mutacao(ind):
     global geracao, off, nome_individuo, repeticao, caminho_bags, dispersao, contador_cruzamento, numero_individuo
    # print("mutacao")
     #print("off", (off))
-
-    if(geracao==2):
-        individuo_arq = open(caminho_bags + str(repeticao) + "/" + nome_base  + "arq_todos.indx",
-                             'a')
-    else:
-        individuo_arq = open(caminho_bags + str(repeticao) + "/" + nome_base + str(geracao) + ".indx",
-                             'a')
+    individuo_arq = open(caminho_bags + str(repeticao) + "/" + nome_base + str(geracao) + ".indx",
+                         'a')
     indx_bag1 = abre_arquivo(ind[0])
     X,y_data=monta_arquivo(indx_bag1)
     ind_out=[]
@@ -352,11 +339,11 @@ def fitness_f1_n2(individuo):
     complexidades=complex.xy_measures(transformed_data,y_data)
     F1 = np.average(complexidades['F1'])
     N2 = np.average(complexidades['N2'])
-    perc=perceptron.Perceptron(max_iter=100)
-    perc.fit(X_data,y_data)
-    score = perc.score(X_valida,y_valida)
-    float(score)
-    return score, F1, N2,
+    #perc=perceptron.Perceptron(max_iter=100)
+    #perc.fit(X_data,y_data)
+    #score = perc.score(X_valida,y_valida)
+    #float(score)
+    return  float(F1),
 
 
 def fitness_dispercao(individuo):
@@ -400,29 +387,32 @@ def the_function(population, gen, offspring):
     #print("the_fuction", (population))
     off=[]
     geracao = gen
-    print(gen)
-
+    print(population)
+    history.update(population)
     if(geracao==2 and dispersao==True):
-        geracao_arq = open(caminho_bags + str(repeticao) + "/" + nome_base + str(geracao) + ".indx",
+        geracao_arq = open(caminho_bags + str(repeticao) + "/" + nome_base + str(geracao) + "-4.indx",
                          'a')
     else:
         geracao_arq = open(caminho_bags + str(repeticao) + "/" + nome_base + str(geracao) + ".indx",
                            'a')
-        arq_todo = open(caminho_bags + str(repeticao) + "/" + nome_base  + "arq_todos.indx",
-                        'a')
     for i in range(len(population)):
         off.append(population[i][0])
     arq = open(caminho_bags + str(repeticao) + "/" + nome_base + str(geracao - 1) + ".indx")
+    arq_todo = open(caminho_bags + str(repeticao) + "/" + nome_base +  "arq_todo.indx",
+                       'a')
+    for i in arq:
+        arq_todo.write(i)
+    arq.close()
+    arq_todo.close()
     for j in population:
+        arq = open(caminho_bags + str(repeticao) + "/" + nome_base + str(geracao - 1) + ".indx")
         for i in arq:
             texto = i
             if (str(j[0]) == texto.split(" ")[0]):
                 geracao_arq.write(i)
-                arq_todo.write(i)
+                arq.close()
                 break
-    arq.close()
     geracao_arq.close()
-    arq_todo.close()
     indx_valida = abre_arquivo(valida=True)
     X_valida, y_valida = monta_arquivo(indx_valida)
     if (dispersao==True):
@@ -446,7 +436,6 @@ caminho_originais="/media/marcos/Data/Tese/Bases2/Originais/"
 caminho_bags="/media/marcos/Data/Tese/GA6/"
 caminho_base="/media/marcos/Data/Tese/Bases2/"
 off=[]
-
 numero_individuo=100
 dispersao=False
 contador_cruzamento=1
@@ -475,49 +464,45 @@ for t in range(1,2):
     indx_valida=abre_arquivo(valida=True)
     X_valida,y_valida=monta_arquivo(indx_valida,vet_class=True)
 
-    creator.create("FitnessMulti", base.Fitness, weights=(fit_value1,fit_value2))
-    creator.create("Individual", list, fitness=creator.FitnessMulti)
+    creator.create("Fitness", base.Fitness, weights=(fit_value1,))
+    creator.create("Individual", list, fitness=creator.Fitness)
 
     toolbox = base.Toolbox()
-    toolbox.register("map", futures.map)
+    #toolbox.register("map", futures.map)
     toolbox.register("attr_item", sequencia)
     toolbox.register("individual", tools.initRepeat, creator.Individual,
                      toolbox.attr_item, 1)
     population=toolbox.register("population", tools.initRepeat, list, toolbox.individual)
     pop = toolbox.population(n=100)
     if dispersao==True:
-         distancia(primeira=True)
+        distancia(primeira=True)
 
     toolbox.register("evaluate", fitness_f1_n2)
     toolbox.register("mate", cruza)
     toolbox.register("mutate", mutacao)
-    toolbox.register("select", tools.selSPEA2 )
+    toolbox.register("select", tools.selBest )
 
     history = History()
-    hof = tools.HallOfFame(1)
     # Decorate the variation operators
     toolbox.decorate("mate", history.decorator)
     toolbox.decorate("mutate", history.decorator)
-    history.update(pop)
-    # Create the population and populate the history
 
 
+    algorithms.eaMuPlusLambda(pop, toolbox, 100, numero_individuo, proba_crossover, proba_mutation, nr_generation, generation_function=the_function, popu=populacao)
 
-    # Do the evolution, the decorators will take care of updating the
-    # history
-    # [...]
-
+    # Decorate the variation operators
+    toolbox.decorate("mate", history.decorator)
+    toolbox.decorate("mutate", history.decorator)
     import matplotlib.pyplot as plt
     import networkx
 
-
-    result, log=algorithms.eaMuPlusLambda(pop, toolbox, 100, numero_individuo, proba_crossover, proba_mutation, nr_generation, generation_function=the_function, popu=populacao, verbose=True,halloffame=hof)
-    print("result", log)
-
+    # Create the population and populate the history
+    # population = toolbox.population(n=POPSIZE)
+    history.update(pop)
     graph = networkx.DiGraph(history.genealogy_tree)
-    graph = graph.reverse()  # Make the grah top-down
-    print(history.genealogy_history)
-    #exit(0)
-    colors = [toolbox.evaluate( history.genealogy_history[i])[0] for i in graph]
+    # graph = graph.reverse()  # Make the grah top-down
+    # colors = [toolbox.evaluate(history.genealogy_history[i])[0] for i in graph]
     networkx.draw(graph)
+
     plt.show()
+

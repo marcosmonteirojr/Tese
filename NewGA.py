@@ -1,7 +1,6 @@
 import Marff
-import multiprocessing
 import random, os
-from sklearn.linear_model import perceptron
+import novo_perceptron as perce
 from deap import algorithms
 from deap import base
 from deap import creator
@@ -10,7 +9,13 @@ from sklearn.preprocessing import MinMaxScaler
 import complexity_pcol as dcol
 import numpy as np
 from math import sqrt
-from scoop import futures
+os.environ['R_HOME'] = '/home/marcos/anaconda3/envs/tese2/lib/R'
+import pandas as pd
+from rpy2.robjects import pandas2ri
+pandas2ri.activate()
+import rpy2.robjects.packages as rpackages
+ecol = rpackages.importr('ECoL')
+import rpy2.robjects as robjects
 
 def altera_arquivo_marcelo():
     '''
@@ -43,7 +48,7 @@ def altera_arquivo_marcelo():
 
 def distancia(primeira=False,population=None):
     global classes, off, pop, nome_individuo,dist, geracao, dispersao
-    if(geracao==2 and dispersao==True):
+    if(geracao==30 and dispersao==True):
         arq = open(caminho_bags + str(repeticao) + "/" + nome_base + str(geracao) + "-4.indx")
     else:
         arq = open(caminho_bags + str(repeticao) + "/" + nome_base + str(geracao) + ".indx")
@@ -333,13 +338,16 @@ def fitness_f1_n2(individuo):
 
     complex=dcol.PPcol(classes=classes)
     complexidades=complex.xy_measures(transformed_data,y_data)
+    dfx = pd.DataFrame(X_data, copy=False)
+    dfy = robjects.IntVector(y_data)
     F1 = np.average(complexidades['F1'])
-    N2 = np.average(complexidades['N2'])
-    perc=perceptron.Perceptron(max_iter=100)
-    perc.fit(X_data,y_data)
-    score = perc.score(X_valida,y_valida)
-    float(score)
-    return score, F1, N2,
+    N2 = ecol.neighborhood(dfx, dfy, measures='N2')
+
+    #perc=perceptron.Perceptron(max_iter=100)
+    #perc.fit(X_data,y_data)
+    #score = perc.score(X_valida,y_valida)
+    #float(score)
+    return F1, N2[0],
 
 
 def fitness_dispercao(individuo):
@@ -347,7 +355,7 @@ def fitness_dispercao(individuo):
     global dist, classes
     indx_individuo = abre_arquivo(individuo[0])
     X_data, y_data = monta_arquivo(indx_individuo)
-    perc = perceptron.Perceptron(max_iter=100)
+    perc = perce.PPerceptron(max_iter=100, n_iter=100)
     perc.fit(X_data, y_data)
     score = perc.score(X_valida, y_valida)
     float(score)
@@ -384,7 +392,7 @@ def the_function(population, gen, offspring):
     off=[]
     geracao = gen
     print(population)
-    if(geracao==30 and dispersao==True):
+    if(geracao==2 and dispersao==True):
         geracao_arq = open(caminho_bags + str(repeticao) + "/" + nome_base + str(geracao) + "-4.indx",
                          'a')
     else:
@@ -392,15 +400,14 @@ def the_function(population, gen, offspring):
                            'a')
     for i in range(len(population)):
         off.append(population[i][0])
-
-    arq = open(caminho_bags + str(repeticao) + "/" + nome_base + str(geracao - 1) + ".indx")
     for j in population:
+        arq = open(caminho_bags + str(repeticao) + "/" + nome_base + str(geracao - 1) + ".indx")
         for i in arq:
             texto = i
             if (str(j[0]) == texto.split(" ")[0]):
                 geracao_arq.write(i)
+                arq.close()
                 break
-    arq.close()
     geracao_arq.close()
     indx_valida = abre_arquivo(valida=True)
     X_valida, y_valida = monta_arquivo(indx_valida)
@@ -422,11 +429,11 @@ def populacao(populacao_total):
         off.append(j)
     return off
 caminho_originais="/media/marcos/Data/Tese/Bases2/Originais/"
-caminho_bags="/media/marcos/Data/Tese/GA6/"
+caminho_bags="/media/marcos/Data/Tese/Bases2/bags/"
 caminho_base="/media/marcos/Data/Tese/Bases2/"
 off=[]
 numero_individuo=100
-dispersao=True
+dispersao=False
 contador_cruzamento=1
 nome_base="Banana"
 
@@ -435,13 +442,15 @@ proba_crossover = 0.99
 proba_mutation = 0.01
 
 fit_value1 = 1.0
-fit_value2 = 1.0
+fit_value2 = -1.0
 #fit_value3 = 1.0
 for i in range(1,21):
+
         repeticao=i
         geracao=0
         altera_arquivo_marcelo()
-for t in range(1,2):
+
+for t in range(1,21):
     classes = []
     off = []
     nome_individuo=101
@@ -453,11 +462,11 @@ for t in range(1,2):
     indx_valida=abre_arquivo(valida=True)
     X_valida,y_valida=monta_arquivo(indx_valida,vet_class=True)
 
-    creator.create("FitnessMulti", base.Fitness, weights=(fit_value1,fit_value2))
+    creator.create("FitnessMulti", base.Fitness, weights=(fit_value1,fit_value2,))
     creator.create("Individual", list, fitness=creator.FitnessMulti)
 
     toolbox = base.Toolbox()
-    toolbox.register("map", futures.map)
+    #toolbox.register("map", futures.map)
     toolbox.register("attr_item", sequencia)
     toolbox.register("individual", tools.initRepeat, creator.Individual,
                      toolbox.attr_item, 1)
@@ -469,7 +478,7 @@ for t in range(1,2):
     toolbox.register("evaluate", fitness_f1_n2)
     toolbox.register("mate", cruza)
     toolbox.register("mutate", mutacao)
-    toolbox.register("select", tools.selSPEA2 )
+    toolbox.register("select", tools.selSPEA2  )
     algorithms.eaMuPlusLambda(pop, toolbox, 100, numero_individuo, proba_crossover, proba_mutation, nr_generation, generation_function=the_function, popu=populacao)
 
 
