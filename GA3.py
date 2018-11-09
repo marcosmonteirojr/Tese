@@ -47,6 +47,41 @@ def altera_arquivo_marcelo():
     arqtemp.close()
     os.system("cp -r "+caminho_originais + "Originais"+str(repeticao) + "/" + nome_base + str(geracao)+ ".indxTemp "+caminho_bags + str(repeticao) + "/" + nome_base +str(geracao)+ ".indx")
     os.system("rm "+caminho_originais + "Originais"+str(repeticao) + "/" + nome_base + str(geracao)+ ".indxTemp")
+def altera_arquivo_geração():
+    '''
+    da nome aos bags nesse caso 1 a 100
+    :return: altera os arquivos
+    '''
+    global repeticao, nome_base, geracao, caminho_bags, caminho_originais
+    arq = open(caminho_bags + str(repeticao) + "/" + nome_base+geracao+"-9.indx")
+    arqtemp = open(caminho_bags +str(repeticao) + "/" + nome_base +str(geracao)+ ".indxTemp", 'w')
+    cont=1
+    for i in arq:
+        texto=i
+        q=texto.split(" ")
+        q=q[1:]
+        q.insert(0,str(cont))
+        #print(q)
+        for j in q:
+           # print(j)
+            if(j!=q[-1]):
+                arqtemp.write(j)
+                arqtemp.write(" ")
+            else:
+                arqtemp.write(j)
+                #arqtemp.write('\n')
+        cont+=1
+    arq.close()
+    arqtemp.close()
+    os.system("cp -r "+caminho_bags +str(repeticao) + "/" + nome_base +str(geracao)+ ".indxTemp " +caminho_bags + str(repeticao) + "/" + nome_base +str(geracao)+ ".indx")
+    os.system("rm "+caminho_bags +str(repeticao) + "/" + nome_base +str(geracao)+ ".indxTemp")
+
+def inter():
+    global X, bags
+    inter = dict()
+    inter['nome']=bags['nome']
+    inter['n_int']=np.zeros((len(X),), dtype=np.int)
+
 
 def distancia(primeira=False,population=None):
     global classes, off, pop, nome_individuo,dist, geracao, dispersao
@@ -212,6 +247,7 @@ def abre_arquivo(individuo=None, valida=False):
     return indx_bag
 
 def monta_arquivo(indx_bag,vet_class=False):
+    global X,y
     '''
     Recebe o indice de instancias de um bag
     :param indx_bag:
@@ -221,14 +257,14 @@ def monta_arquivo(indx_bag,vet_class=False):
     global nome_base, classes, caminho_base
     X_data=[]
     y_data=[]
-    arq2=(caminho_base+"Dataset/"+nome_base+".arff")
-    arq3=Marff.abre_arff(arq2)
-    X,y,_=Marff.retorna_instacias(arq3)
-    if(vet_class):
-        _,classes,_,_=Marff.retorna_classes_existentes(arq3)
+    #arq2=(caminho_base+"Dataset/"+nome_base+".arff")
+
+    #print(len(indx_bag))
     for i in indx_bag:
+       # print(i)
         X_data.append(X[int(i)])
         y_data.append(y[int(i)])
+    #exit(0)
     return X_data, y_data
 
 def cruza(ind1, ind2):
@@ -238,15 +274,19 @@ def cruza(ind1, ind2):
     :param ind2:
     :return:
     '''
-    global nome_individuo, repeticao, nome_base, geracao, caminho_bags, dispersao, contador_cruzamento, numero_individuo
+    global nome_individuo, repeticao, nome_base, geracao, caminho_bags, dispersao, contador_cruzamento, numero_individuo, bags
     #print("Cruzamento")
-    #print(ind1, ind2, geracao)
-    individuo_arq = open(caminho_bags + str(repeticao) + "/" + nome_base + str(geracao)+".indx", 'a')
+    #print(ind1, ind2)
+    #individuo_arq = open(caminho_bags + str(repeticao) + "/" + nome_base + str(geracao)+".indx", 'a')
     inicio=fim=0
     ind_out1=[]
-    ind_out1.append(str(nome_individuo))
-    indx_bag1=abre_arquivo(ind1[0])
-    indx_bag2=abre_arquivo(ind2[0])
+
+    for i in range(len(bags['nome'])):
+        if(bags['nome'][i]==str(ind1[0])):
+            indx_bag1=bags['inst'][i]
+    for i in range(len(bags['nome'])):
+        if (bags['nome'][i] == str(ind1[0])):
+            indx_bag2 = bags['inst'][i]
     X, y_data=monta_arquivo(indx_bag2)
     while (y_data[inicio] == y_data[fim]):
         inicio = random.randint(0, len(y_data) - 1)
@@ -258,36 +298,39 @@ def cruza(ind1, ind2):
             ind_out1.append(indx_bag2[i])
     ind1[0] = nome_individuo
     ind2[0] = nome_individuo
-    nome_individuo+=1
-    for j in ind_out1:
-        if (j != ind_out1[-1]):
-            individuo_arq.write(j)
-            individuo_arq.write(" ")
-        else:
-            individuo_arq.write(j)
+    bags['nome'].append(str(nome_individuo))
 
+    bags['inst'].append(ind_out1)
+    #print(ind_out1)
+    #print(bags['inst'][-1])
+    #print(bags['nome'][-1])
+    #print(bags['inst'][-1])
+    nome_individuo += 1
     if (dispersao == True):
-
         contador_cruzamento = contador_cruzamento + 1
         if (contador_cruzamento == numero_individuo+1):
             individuo_arq.close()
             contador_cruzamento = 1
             distancia(primeira=False,population=None)
+    #print(len(bags['nome']), len(bags['inst']))
     return creator.Individual(ind1), creator.Individual(ind2)
 
 
 
 def mutacao(ind):
 
-    global geracao, off, nome_individuo, repeticao, caminho_bags, dispersao, contador_cruzamento, numero_individuo
-   # print("mutacao")
+    global  off, nome_individuo, dispersao, contador_cruzamento, numero_individuo, bags
+    #   print("mutacao")
     #print("off", (off))
-    individuo_arq = open(caminho_bags + str(repeticao) + "/" + nome_base + str(geracao) + ".indx",
-                         'a')
-    indx_bag1 = abre_arquivo(ind[0])
+    #individuo_arq = open(caminho_bags + str(repeticao) + "/" + nome_base + str(geracao) + ".indx",
+    #                     'a')
+    ind_out = []
+    for i in range(len(bags['nome'])):
+        if (bags['nome'][i] == str(ind[0])):
+            indx_bag1 = bags['inst'][i]
     X,y_data=monta_arquivo(indx_bag1)
-    ind_out=[]
-    ind_out.append(str(nome_individuo))
+    #ind_out=[]
+
     inst = 0
     inst2 = len(y_data)
 
@@ -300,7 +343,10 @@ def mutacao(ind):
         ind2=ind2[0]
 
         # print('mutacaooooo e contador', individuo, ind2, contador_cruzamento)
-    indx_bag2 = abre_arquivo(ind2)
+    for i in range(len(bags['nome'])):
+        if (bags['nome'][i] == str(ind2)):
+            indx_bag2 = bags['inst'][i]
+    #indx_bag2 = abre_arquivo(ind2)
     X2, y2_data = monta_arquivo(indx_bag2)
 
     while y_data[inst] != y2_data[inst2 - 1]:
@@ -311,13 +357,13 @@ def mutacao(ind):
             ind_out.append(indx_bag2[i])
         else:
             ind_out.append(indx_bag1[i])
+   # print(ind_out)
+    bags['nome'].append(str(nome_individuo))
+    bags['inst'].append(ind_out)
+   # print(bags['inst'][-1])
+   # print(len(bags['nome']), len(bags['inst']))
+    #exit(0)
 
-    for j in ind_out:
-        if (j != ind_out[-1]):
-            individuo_arq.write(j)
-            individuo_arq.write(" ")
-        else:
-            individuo_arq.write(j)
     ind[0] = nome_individuo
     nome_individuo += 1
     if (dispersao==True):
@@ -326,13 +372,19 @@ def mutacao(ind):
             individuo_arq.close()
             contador_cruzamento = 1
             distancia(primeira=False, population=None)
+    #print(len(bags['nome']),len(bags['inst']))
     return ind,
 
-def fitness_f1_n2(individuo):
+def fitness_f1_n2(ind1):
     global classes
    #print("fitness")
-    indx_individuo=abre_arquivo(individuo[0])
-    X_data,y_data=monta_arquivo(indx_individuo)
+    #print(ind1[0])
+    for i in range(len(bags['nome'])):
+        if(bags['nome'][i]==str(ind1[0])):
+            indx_bag1=bags['inst'][i]
+            #print(bags['nome'][i],ind1[0])
+    X_data,y_data=monta_arquivo(indx_bag1)
+    #print(indx_bag1)
 
     # scaler = MinMaxScaler()
     # scaler.fit(X_data)
@@ -391,30 +443,61 @@ def the_function(population, gen, offspring):
     :param offspring: nova populacao
     :return:
     '''
-    global geracao, off, X_valida, y_valida, caminho_bags, dispersao
+    global geracao, off, X_valida, y_valida, caminho_bags, dispersao, nr_generation, bags
     #print("the_fuction", (population))
     off=[]
     geracao = gen
     #print(population)
-    if(geracao==2 and dispersao==True):
-        geracao_arq = open(caminho_bags + str(repeticao) + "/" + nome_base + str(geracao) + "-4.indx",
-                         'a')
+    # if(geracao==nr_generation):
+    #     geracao_arq = open(caminho_bags + str(repeticao) + "/" + nome_base + str(geracao) + ".indx",'w')
+    if(geracao==nr_generation-1):
+        arq_ant = (caminho_bags + str(repeticao) + "/" + nome_base + str(geracao - 1) + ".npy")
+        np.save(arq_ant, bags)
+        geracao_arq = open(caminho_bags + str(repeticao) + "/" + nome_base + str(geracao) + ".indx", 'w')
     else:
-        geracao_arq = open(caminho_bags + str(repeticao) + "/" + nome_base + str(geracao) + ".indx",
-                           'a')
+        geracao_arq = open(caminho_bags + str(repeticao) + "/" + nome_base + str(geracao) + ".indx",'w')
+
     for i in range(len(population)):
         off.append(population[i][0])
+
     for j in population:
-        arq = open(caminho_bags + str(repeticao) + "/" + nome_base + str(geracao - 1) + ".indx")
-        for i in arq:
-            texto = i
-            if (str(j[0]) == texto.split(" ")[0]):
-                geracao_arq.write(i)
-                arq.close()
-                break
+        #geracao_arq = open(caminho_bags + str(repeticao) + "/" + nome_base + str(geracao) + ".indx", 'a')
+        geracao_arq.write(str(j[0]))
+        geracao_arq.write(" ")
+
+        for i in range( len(bags['nome'])):
+            if (str(j[0]) == bags['nome'][i]):
+
+               # print(len(bags['inst'][i]))
+               geracao_arq.writelines("%s " % place for place in bags['inst'][i])
+               geracao_arq.write("\n")
+
+                    #print(bags['inst'][i][-1])
+
+
     geracao_arq.close()
-   # indx_valida = abre_arquivo(valida=True)
-    #X_valida, y_valida = monta_arquivo(indx_valida)
+    #exit(0)
+
+    indx_valida = abre_arquivo(valida=True)
+    X_valida, y_valida = monta_arquivo(indx_valida)
+    bags = dict()
+    bags['nome'] = list()
+    bags['inst'] = list()
+
+    arq_bags = open(caminho_bags + str(repeticao) + "/" + nome_base + str(geracao) + ".indx")
+    #for i in arq_bags:
+     #   print((i))
+    #exit(0)
+    for i in arq_bags:
+        text = i
+        bags['nome'].append(text.split(" ")[0])
+        temp = text.split(" ")
+        bags['inst'].append(temp[1:-1])
+   # for i in range(len(bags['nome'])):
+   #     print(bags['nome'][i])
+   #     print((bags['inst'][i]))
+   #     print(len(bags['inst'][i]))
+    #exit(0)
     if (dispersao==True):
         distancia(population=population)
     #exit(0)
@@ -436,26 +519,45 @@ def populacao(populacao_total):
 caminho_originais="/media/marcos/Data/Tese/Bases2/Originais/"
 caminho_bags="/media/marcos/Data/Tese/Bases2/bags/"
 caminho_base="/media/marcos/Data/Tese/Bases2/"
-off=[]
-numero_individuo=100
-dispersao=False
-contador_cruzamento=1
-nome_base="Wine"
+# off=[]
+# numero_individuo=100
+# dispersao=False
+# contador_cruzamento=1
+# nome_base="Wine"
+#
+# nr_generation = 20
+# proba_crossover = .99
+# proba_mutation = 0.01
+#
+# fit_value1 = 1.0
+# fit_value2 = -1.0
+# fit_value3 = 1.0
+# for i in range(1,2):
+# caminho_originais = "/home/projeto/Marcos/Originais/"
+# caminho_bags = "/home/projeto/Marcos/GA9/"
+# caminho_base = "/home/projeto/Marcos/Bases2/"
+
+off = []
+numero_individuo = 100
+dispersao = False
+contador_cruzamento = 1
+nome_base = "Wine"
+comple = "F1,N2,T2"
 
 nr_generation = 10
-proba_crossover = .99
+proba_crossover = 0.99
 proba_mutation = 0.01
 
-fit_value1 = 1.0
-fit_value2 = -1.0
-fit_value3 = 1.0
-for i in range(1,2):
+fit_value1 = -1.0
+fit_value2 = 1.0
+fit_value3 = -1.0
+for i in range(1, 21):
 
         repeticao=i
         geracao=0
         altera_arquivo_marcelo()
 
-for t in range(1,2):
+for t in range(1,21):
     classes = []
     off = []
     nome_individuo=101
@@ -463,8 +565,28 @@ for t in range(1,2):
     print("iteracao", t, nome_base)
     geracao=0
     seq=0
+    bags=dict()
+    bags['nome']=list()
+    bags['inst']=list()
 
-   # indx_valida=abre_arquivo(valida=True)
+    arq_bags=open(caminho_bags + str(repeticao) + "/" + nome_base + str(geracao) + ".indx")
+    for i in arq_bags:
+        text=i
+        bags['nome'].append(text.split(" ")[0])
+        temp=text[:-1].split(" ")
+        bags['inst'].append(temp[1:])
+
+    #print(bags['nome'])
+   # print(bags['inst'])
+    #exit(0)
+    arq_dataset=caminho_base+"Dataset/"+nome_base+".arff"
+    #print(arq_dataset)
+    arq_arff = Marff.abre_arff(arq_dataset)
+    X, y, _ = Marff.retorna_instacias(arq_arff)
+    #_, classes, _, _ = Marff.retorna_classes_existentes(arq_arff)
+
+
+    #indx_valida=abre_arquivo(valida=True)
     #X_valida,y_valida=monta_arquivo(indx_valida,vet_class=True)
 
     creator.create("FitnessMulti", base.Fitness, weights=(fit_value1,fit_value2,fit_value3,))
@@ -487,4 +609,8 @@ for t in range(1,2):
     algorithms.eaMuPlusLambda(pop, toolbox, 100, numero_individuo, proba_crossover, proba_mutation, nr_generation, generation_function=the_function, popu=populacao)
 fim = time.time()
 print(fim - inicio)
+arq_descricoes = open("/home/projeto/Marcos/Descricoes.txt", "a")
+arq_descricoes.write("nome da base,numero de geracoes, tipo de fit1,2,3, fitness_dispersao, caminho bag, quais complexidades\n")
+arq_descricoes.write(" {},{},{},{},{},{},{}\n".format(nome_base, nr_generation, fit_value1,fit_value2,fit_value3, caminho_bags,comple))
+arq_descricoes.close()
 

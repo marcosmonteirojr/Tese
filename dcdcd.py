@@ -1,60 +1,3 @@
-from sklearn.ensemble import BaggingClassifier
-from sklearn.linear_model import Perceptron
-from sklearn.model_selection import train_test_split
-from deslib.des.knora_u import KNORAU
-from deslib.des.knora_e import KNORAE
-from deslib.util.diversity import double_fault
-from sklearn.calibration import CalibratedClassifierCV
-import Marff
-
-nome_base='Wine'
-def abre_arff(nome_base):
-    caminho='/media/marcos/Data/Tese/Bases2/Dataset/'+nome_base+".arff"
-    dataset=Marff.abre_arff(caminho)
-    X_data,y_data,_=Marff.retorna_instacias(dataset,np_array=True)
-    #print(y_data)
-    #exit(0)
-    return X_data,y_data
-
-def SplitDataset(X, y):
-    X_train, X_temp, y_train, y_temp = train_test_split(X, y, test_size=0.5, stratify=y, random_state=64)
-    X_test, X_val, y_test, y_val = train_test_split(X_temp, y_temp, test_size=0.50, stratify=y_temp, random_state=64)
-    del X_temp
-    del y_temp
-    print(y_train)
-    #exit(0)
-    return X_train, y_train, X_test, y_test, X_val,y_val
-
-def new_bags(X_train, y_train,X_val):
-    model = CalibratedClassifierCV(Perceptron())
-    bagging=BaggingClassifier(model,n_estimators=3,max_samples=.25,random_state=64)
-
-    estimators=bagging.fit(X_train,y_train)
-    _,baggingx=bagging.estimators_samples_
-    print((baggingx[0]))
-
-   # print(bagging.predict(X_train))
-    #print(bagging.estimators_[99].predict(X_test))
-
-    return estimators
-    #print(bagging.estimators_)
-
-X,y=abre_arff(nome_base)
-
-#print(len(y))
-
-X_train,y_train,X_test,y_test,X_val,y_val=SplitDataset(X,y)
-
-#print(len(y_train))
-
-pool_classifiers=new_bags(X,y, X_test)
-
-
-
-#print('Classification accuracy KNORA-Union: ', knorau.score(X_test, y_test))
-#print('Classification accuracy KNORA-Eliminate: ', kne.score(X_test, y_test))
-
-
 
 import novo_perceptron as perc
 import sys,  Marff, random
@@ -77,7 +20,7 @@ from mlxtend.classifier import EnsembleVoteClassifier
 #nome_base='Wine'
 
 
-def abre_arquivo(bag=None, geracao=None, valida=False, teste=False, experimento=None,tipo=1):
+def abre_arquivo(bag=None, geracao=None, valida=False, teste=False, experimento=None):
     global nome_base, repeticao, caminho_base, caminho_data
 
     #print(bag, geracao)
@@ -87,23 +30,13 @@ def abre_arquivo(bag=None, geracao=None, valida=False, teste=False, experimento=
         else:
             arq = open(caminho_data + str(repeticao) + "/" + nome_base + str(geracao) + ".indx")
         #print(arq)
-        if(tipo==1):
-            texto = arq.readlines()
-            texto=texto[bag]
-           # print(texto[bag])
-            #
-            indx_bag=texto[:-1].split(" ")
-           # print((indx_bag))
-            arq.close()
-        if (tipo == 2):
-            texto = arq.readlines()
-            texto = texto[bag]
-            # print(texto[bag])
-            #
-            indx_ = texto.split(" ")
-            indx_bag=indx_[1:-1]
-            print((indx_bag))
-            arq.close()
+        texto = arq.readlines()
+        texto=texto[bag]
+       # print(texto[bag])
+        #
+        indx_bag=texto[:-1].split(" ")
+       # print((indx_bag))
+        arq.close()
 
         indx_bag=indx_bag[1:]
         #print((indx_bag))
@@ -245,7 +178,7 @@ def retorna_lista_maiores_distancias(arq, nc, X_val, y_val):
 
     return nome_bag, pool_final
 
-def retorna_vet_dist_pool(arq, tipo=1, dis=True, ord=True,pool_final=True, pool_sc=True,X_val=None,y_val=None):
+def retorna_vet_dist_pool(arq,newga=2, dis=True, ord=True,pool_final=True, pool_sc=True,X_val=None,y_val=None):
     global classes
     '''
     :param arq: arquivo aberto pelo open
@@ -265,31 +198,28 @@ def retorna_vet_dist_pool(arq, tipo=1, dis=True, ord=True,pool_final=True, pool_
     pool=[]
     for i in range(len(texto)):
         text = texto[i]
-
-
-        if tipo ==1:
-            indx_bg = text.split(" ")
-            nome_bag.append(indx_bg[0])
-            indx_bg = text[:-1].split(" ")
-            indx_bag = indx_bg[1:]
-        if tipo ==2:
-            indx_bg = text.split(" ")
-            nome_bag.append(indx_bg[0])
-            indx_bag = indx_bg[1:-1]
-        #print(len(indx_bag))
-        #exit(0)
+        if newga==2:
+            indx_bag = text[:-1].split(" ")
+            nome_bag.append(indx_bag[0])
+            indx_bag = indx_bag[1:]
+            print(indx_bag)
+            exit(0)
+        elif newga==3:
+            indx_bag = text.split(" ")
+            nome_bag.append(indx_bag[0])
+            indx_bag=indx_bag[1:-1]
+            print(indx_bag)
+            exit(0)
         X_29, y_29 = monta_arquivo(indx_bag, True)
-
+        scaler = MinMaxScaler()
         if pool_final:
-            per = perc.PPerceptron(n_jobs=1, max_iter=100)
+            per = perc.PPerceptron(n_jobs=4, max_iter=100)
             pool.append(per.fit(X_29, y_29))
         if pool_sc:
             pool_score.append(per.score(X_val,y_val))
         if dis:
-            scaler = MinMaxScaler()
             scaler.fit(X_29)
             transformed_data = scaler.transform(X_29)
-
             complex = dcol.PPcol(classes=classes)
             complexidades = complex.xy_measures(transformed_data, y_29)
             F1 = (average(complexidades['F1']))
@@ -338,7 +268,8 @@ def divide_pool_espaco(pool_ord,pool,tamanho):
     #print(pool_final)
     return pool_final
 
-def selecao(arquivo):
+
+def selecao(arquivo,ga):
 
     arq = open('SelecaoMedia_desvio_pgcs' + arquivo + '.csv', 'a')
     arq1 = open('SelecaoWilcoxon_pgcs' + arquivo + '.csv', 'a')
@@ -362,7 +293,7 @@ def selecao(arquivo):
 
     accVotingBag = []
     accVotingPgsc = []
-    for i in range(1,2):
+    for i in range(1,21):
         repeticao=i
         base_teste = abre_arquivo(bag=None, geracao=None, valida=False, teste=True)
         base_validacao = abre_arquivo(bag=None, geracao=None, valida=True, teste=False)
@@ -370,13 +301,14 @@ def selecao(arquivo):
         X_valida, y_valida = monta_arquivo(base_validacao)
 
         arq_bags = open(caminho_bags + str(repeticao) + "/" + nome_base + "0.indx")
-        _,poolB,_ = retorna_vet_dist_pool(arq_bags,tipo=1,dis=False,pool_final=True, pool_sc=False)
+        _,poolB,_ = retorna_vet_dist_pool(arq_bags,newga=2,dis=False,pool_final=True, pool_sc=False)
         #print(poolB,len(poolB))
 
         arq_P = open(caminho_data + str(repeticao) + "/" + nome_base + "20-"+arquivo+".indx")
-        _, poolP, _ = retorna_vet_dist_pool(arq_P,tipo=2, dis=False, pool_final=True, pool_sc=False)
+        nome_bag, poolP, _ = retorna_vet_dist_pool(arq_P, newga=ga,dis=False, pool_final=True, pool_sc=False)
         #poolP= divide_pool_espaco(f, poolPP, 10)
-        #print((poolB))
+        #exit(0)
+        print(len(poolP))
         bagging_voting = EnsembleVoteClassifier(clfs=poolB, voting='hard', refit=False)
         bagging_vot = bagging_voting.fit(X_valida, y_valida)
         B = bagging_vot.score(X_test, y_test)
@@ -403,7 +335,7 @@ def selecao(arquivo):
         olaB.fit(X_valida, y_valida)
         singleB.fit(X_valida, y_valida)
 
-        #accMetaB.append(metdB.score(X_test, y_test))
+        accMetaB.append(metdB.score(X_test, y_test))
         accLCAB.append(lcaB.score(X_test, y_test))
         accRankB.append(rankB.score(X_test, y_test))
         accKUB.append(knorauB.score(X_test, y_test))
@@ -420,7 +352,7 @@ def selecao(arquivo):
         kneP = KNORAE(poolP)
         olaP = OLA(poolP)
         singleP = SingleBest(poolP)
-        exit(0)
+
         metdP.fit(X_valida,y_valida)
         lcaP.fit(X_valida,y_valida)
         rankP.fit(X_valida,y_valida)
@@ -451,7 +383,7 @@ def selecao(arquivo):
         print(accKUP)
 
 
-    print(i)
+#    print(i)
 
     #print(accSBB)
     arq1.write('{};{};{};;{};{};;{};{};;{};{};;{};{};;{};{};;{};{};;{};{}\n'.format(nome_base,kp,ke,kp2,ku,op,ol,sp,sb, lca,lc, rk,rkb,met,mt,vot,votc))
@@ -477,17 +409,21 @@ def selecao(arquivo):
     arq1.close()
     arq2.close()
     arq.close()
-#random.seed(64)
+
 repeticao=1
-nome_base='Wine'
-caminho_data="/media/marcos/Data/Tese/Bases2/bags/"
-caminho_base="/media/marcos/Data/Tese/Bases2/"
-caminho_bags="/media/marcos/Data/Tese/Bases2/bags/"
+nome_base='Heart'
+#nome_base=sys.argv[1]
+caminho_data="/home/projeto/Marcos/GA9/"
+caminho_base="/home/projeto/Marcos/Bases2/"
+caminho_bags="/home/projeto/Marcos/GA9/"
 #caminho_data = "/home/monteiro/Marcos/GA3/"
 #caminho_base = "/home/monteiro/Marcos/Bases2/"
 #caminho_bags = "/home/monteiro/Marcos/GA3/"
+print("nome_base")
 classes=[]
-selecao("9")
+selecao("9",3)
 #roda(1)
+
+
 
 

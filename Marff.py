@@ -82,3 +82,14 @@ def cria_arff(info, data, classes,pasta, nome):
         arq = open(pasta+nome+'.arff','w')
         arq.write(arq1)
         arq.close()
+def retorna_dic_data(dataset):
+    #print(dataset)
+    out=dict()
+    #out['data']=list()
+    out['class']=list()
+    out['data']=dataset['data']
+    for i in range(len(dataset['attributes'])):
+
+       # print(dataset['attributes'][i][0])
+        out['class'].append(dataset['attributes'][i][0])
+    return out

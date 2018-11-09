@@ -177,7 +177,7 @@ def retorna_lista_maiores_distancias(arq, nc, X_val, y_val):
 
     return nome_bag, pool_final
 
-def retorna_vet_dist_pool(arq, dis=True, ord=True,pool_final=True, pool_sc=True,X_val=None,y_val=None):
+def retorna_vet_dist_pool(arq, newga=2, dis=True, ord=True,pool_final=True, pool_sc=True,X_val=None,y_val=None):
     global classes
     '''
     :param arq: arquivo aberto pelo open
@@ -199,7 +199,11 @@ def retorna_vet_dist_pool(arq, dis=True, ord=True,pool_final=True, pool_sc=True,
         text = texto[i]
         indx_bag = text.split(" ")
         nome_bag.append(indx_bag[0])
-        indx_bag = indx_bag[1:]
+        if newga==2:
+            indx_bag = indx_bag[1:]
+        elif newga==3:
+            indx_bag=indx_bag[1:-1]
+
         X_29, y_29 = monta_arquivo(indx_bag, True)
         scaler = MinMaxScaler()
         if pool_final:
@@ -323,14 +327,14 @@ def roda(tipo,tipo2=None):
             for j in range(0,100):
                 base_bag = abre_arquivo(bag=j, geracao=0, valida=False, teste=False)
                 X_bag, y_bag = monta_arquivo(base_bag)
-                base_pgsc = abre_arquivo(bag=j, geracao=30, valida=False, teste=False, experimento="-3")
-                X_pgsc, y_pgsc = monta_arquivo(base_pgsc)
+                #base_pgsc = abre_arquivo(bag=j, geracao=30, valida=False, teste=False, experimento="-3")
+                #X_pgsc, y_pgsc = monta_arquivo(base_pgsc)
 
                 percB = perc.PPerceptron(n_jobs=4, max_iter=10)
                 percP = perc.PPerceptron(n_jobs=4,max_iter=10)
 
                 poolBag.append(percB.fit(X_bag,y_bag))
-                poolPgsc.append(percP.fit(X_pgsc,y_pgsc))
+                #poolPgsc.append(percP.fit(X_pgsc,y_pgsc))
         elif (tipo==3):
             arq_bags = open(caminho_bags + str(repeticao) + "/" + nome_base + "29.indx")
             _,poolPgsc = retorna_lista_maiores_distancias(arq_bags,tipo2,X_valida,y_valida)
@@ -353,31 +357,31 @@ def roda(tipo,tipo2=None):
 
 
         #exit(0)
-        bagging_voting = EnsembleVoteClassifier(clfs=poolBag, voting='hard', refit=False)
-        bagging_vot = bagging_voting.fit(X_valida, y_valida)
-        B =  bagging_vot.score(X_test, y_test)
+        #bagging_voting = EnsembleVoteClassifier(clfs=poolBag, voting='hard', refit=False)
+        #bagging_vot = bagging_voting.fit(X_valida, y_valida)
+        #B =  bagging_vot.score(X_test, y_test)
 
 
         #teste=[]
-        Pgsc_voting = EnsembleVoteClassifier(clfs=poolPgsc, voting='hard', refit=False)
-        Pgsc_voting = Pgsc_voting.fit(X_valida, y_valida)
-        P =  Pgsc_voting.score(X_test, y_test)
-        knorauB = KNORAU(poolPgsc)#########33
-        knorauB.fit(X_valida, y_valida)
-        knorauB.score(X_test,y_test)
+        #Pgsc_voting = EnsembleVoteClassifier(clfs=poolPgsc, voting='hard', refit=False)
+        ##Pgsc_voting = Pgsc_voting.fit(X_valida, y_valida)
+        #P =  Pgsc_voting.score(X_test, y_test)
+        #knorauB = KNORAU(poolPgsc)#########33
+        #knorauB.fit(X_valida, y_valida)
+        #knorauB.score(X_test,y_test)
         #for i in range (1,2):
-        teste = []
-        teste.append(X_valida[0])
-        print(len(knorauB.select(teste[0])))
+        #teste = []
+        #teste.append(X_valida[0])
+        #print(len(knorauB.select(teste[0])))
 
-    #     metdb=METADES(poolBag)
+        metdb=METADES(poolBag)
     #     metdp=METADES(poolPgsc)
     #     lcab=LCA(poolBag)
     #     lcap=LCA(poolPgsc)
     #     rankb=Rank(poolBag)
     #     rankp=Rank(poolPgsc)
     #
-    #     metdb.fit(X_valida,y_valida)
+        metdb.fit(X_valida,y_valida)
     #     metdp.fit(X_valida,y_valida)
     #     lcab.fit(X_valida,y_valida)
     #     lcap.fit(X_valida,y_valida)
@@ -460,7 +464,7 @@ def roda(tipo,tipo2=None):
     # arq1.close()
     # arq2.close()
     # arq.close()
-def selecao(arquivo):
+def selecao(arquivo,newga=2):
 
     arq = open('SelecaoMedia_desvio_pgcs' + arquivo + '.csv', 'a')
     arq1 = open('SelecaoWilcoxon_pgcs' + arquivo + '.csv', 'a')
@@ -490,23 +494,24 @@ def selecao(arquivo):
         base_validacao = abre_arquivo(bag=None, geracao=None, valida=True, teste=False)
         X_test, y_test = monta_arquivo(base_teste)
         X_valida, y_valida = monta_arquivo(base_validacao)
+        print(X_test)
 
         arq_bags = open(caminho_bags + str(repeticao) + "/" + nome_base + "0.indx")
-        _,poolB,_ = retorna_vet_dist_pool(arq_bags,dis=False,pool_final=True, pool_sc=False)
+        _,poolB,_ = retorna_vet_dist_pool(arq_bags,newga=2,dis=False,pool_final=True, pool_sc=False)
         #print(poolB,len(poolB))
 
-        arq_P = open(caminho_data + str(repeticao) + "/" + nome_base + "29-"+arquivo+".indx")
-        f, nome_bag, poolPP, _ = retorna_vet_dist_pool(arq_P, dis=True, pool_final=True, pool_sc=False)
-        poolP= divide_pool_espaco(f, poolPP, 10)
-        print(len(poolP))
+       # arq_P = open(caminho_data + str(repeticao) + "/" + nome_base + "29-"+arquivo+".indx")
+       ## f, nome_bag, poolPP, _ = retorna_vet_dist_pool(arq_P, dis=True, pool_final=True, pool_sc=False)
+       # poolP= divide_pool_espaco(f, poolPP, 10)
+       # print(len(poolP))
         bagging_voting = EnsembleVoteClassifier(clfs=poolB, voting='hard', refit=False)
         bagging_vot = bagging_voting.fit(X_valida, y_valida)
         B = bagging_vot.score(X_test, y_test)
 
         # teste=[]
-        Pgsc_voting = EnsembleVoteClassifier(clfs=poolP, voting='hard', refit=False)
-        Pgsc_voting = Pgsc_voting.fit(X_valida, y_valida)
-        P = Pgsc_voting.score(X_test, y_test)
+       # Pgsc_voting = EnsembleVoteClassifier(clfs=poolP, voting='hard', refit=False)
+        #Pgsc_voting = Pgsc_voting.fit(X_valida, y_valida)
+        #P = Pgsc_voting.score(X_test, y_test)
 
 
         metdB=METADES(poolB)
@@ -524,7 +529,7 @@ def selecao(arquivo):
         kneB.fit(X_valida, y_valida)
         olaB.fit(X_valida, y_valida)
         singleB.fit(X_valida, y_valida)
-
+        exit(0)
         accMetaB.append(metdB.score(X_test, y_test))
         accLCAB.append(lcaB.score(X_test, y_test))
         accRankB.append(rankB.score(X_test, y_test))
@@ -599,17 +604,17 @@ def selecao(arquivo):
     arq1.close()
     arq2.close()
     arq.close()
-random.seed(64)
-#repeticao=1
-nome_base='Banana'
-caminho_data="/media/marcos/Data/Tese/GA6/"
+#random.seed(64)
+repeticao=1
+nome_base='Lithuanian'
+caminho_data="/media/marcos/Data/Tese/GA3/"
 caminho_base="/media/marcos/Data/Tese/Bases2/"
-caminho_bags="/media/marcos/Data/Tese/Bases2/bags/"
+caminho_bags="/media/marcos/Data/Tese/GA3/"
 #caminho_data = "/home/monteiro/Marcos/GA3/"
 #caminho_base = "/home/monteiro/Marcos/Bases2/"
 #caminho_bags = "/home/monteiro/Marcos/GA3/"
 classes=[]
 #selecao("6")
-#roda(1)
+roda(2)
 
 

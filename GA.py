@@ -237,8 +237,8 @@ def fitness_andre(individuo):
             #print('nome, distancia', dist['nome'][i][0], distancia)
             break
     X, y, *_ = abre_individuos(ind)
-    perc = perceptron.Perceptron()
-    perc.fit(X, y)
+        perc = perceptron.Perceptron()
+        perc.fit(X, y)
     #print(len(dist_medias))
     out = float(perc.score(X_val, y_val) + distancia)
 
