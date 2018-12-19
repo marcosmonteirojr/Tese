@@ -12,13 +12,8 @@ from math import sqrt
 
 os.environ['R_HOME'] = '/home/marcos/anaconda3/envs/tese2/lib/R'
 import pandas as pd
-from rpy2.robjects import pandas2ri
 
-pandas2ri.activate()
-import rpy2.robjects.packages as rpackages
 
-ecol = rpackages.importr('ECoL')
-import rpy2.robjects as robjects
 import time, Cpx
 
 inicio = time.time()
@@ -72,11 +67,16 @@ def distancia(primeira=False, population=None):
         print('primeira')
         dist = dict()
         dist['nome'] = pop
+        #print(dist['nome'])
         dist['dist'] = list()
-        for i in dist['nome']:
-            x = i[0]
+        #   print(len(dist['nome']))
+        for i in range(len(dist['nome'])):
+
+            print(i)
+
             # print(bags['inst'][x])
-            indx_bag1 = bags['inst'][x]
+            indx_bag1 = bags['inst'][i]
+            print(indx_bag1)
             X_bag, y_bag = monta_arquivo(indx_bag1)
             # print(type(X_bag[0]))
             w = Cpx.biuld_dic(X_bag, y_bag, dic)
@@ -86,7 +86,7 @@ def distancia(primeira=False, population=None):
             cpx.append(Cpx.complexity_data())
         dist['dist'] = Cpx.dispersion(cpx)
        # exit(0)
-        return dist
+        return
         # print('tamanho das dist inicial', len(dist['dist']))
 
     if (population != None):
@@ -103,7 +103,7 @@ def distancia(primeira=False, population=None):
                     Cpx.generate_csv(w)
                     cpx.append(Cpx.complexity_data())
         dist['dist'] = Cpx.dispersion(cpx)
-        return dist
+        return
 
     if (primeira == False and population == None):
 
@@ -124,7 +124,7 @@ def distancia(primeira=False, population=None):
             Cpx.generate_csv(w)
             cpx.append(Cpx.complexity_data())
         dist['dist'] = Cpx.dispersion(cpx)
-        return dist
+        return
 
 
 def abre_arquivo(individuo=None, valida=False):
@@ -232,7 +232,7 @@ def mutacao(ind):
     inst2 = len(y_data)
 
     if (geracao == 0 and off == []):
-        ind2 = random.randint(1, 100)
+        ind2 = random.randint(0, 99)
         # print("entrei")
     else:
         # print("entreiIIIIIIIIIIII")
@@ -293,17 +293,30 @@ def fitness_f1_n2(ind1):
 
 def fitness_dispercao(ind1):
     global dist, classes
+    x=len(dist['nome'])
+    #print(len(dist['nome']),len(dist['dist']))
     for i in range(len(bags['nome'])):
         if (bags['nome'][i] == str(ind1[0])):
             indx_bag1 = bags['inst'][i]
+            break
+    for i in range(x):
+#        print(dist['nome'][0][i],dist['dist'][i])
+        if (dist['nome'][0][i] == ind1[0]):
+            print(i,"ok")
+            dst = dist['dist'][i]
+            print(dst)
+            break
+        #print(dist['dist'])
+        #print(dist['dist'][i])
+
     X_data, y_data = monta_arquivo(indx_bag1)
     perc, score, predict = Cpx.biuld_classifier(X_data, y_data, X_vali, y_vali)
-    return score, float(dist),
-
+    return score,dst,
 
 def sequencia():
     global seq
     seq += 1
+
     return seq
 
 
@@ -319,7 +332,7 @@ def the_function(population, gen, offspring):
     print("the_fuction", (population))
     off = []
     geracao = gen
-    base_name=nome_base+geracao
+    base_name=nome_base+str(geracao)
 
 
     for i in range(len(population)):
@@ -390,7 +403,7 @@ off = []
 numero_individuo = 100
 dispersao = True
 contador_cruzamento = 1
-nome_base = "Banana"
+nome_base = "Wine"
 comple = "F1,N2,T2"
 
 nr_generation = 10
@@ -417,11 +430,11 @@ for t in range(1, 21):
 
     geracao = 0
     print(geracao)
-    seq = 0
+    seq = -1
 
     X_train, y_train, X_test, y_test, X_vali, y_vali, dic = Cpx.routine_save_bags(local_dataset, local, nome_base,
                                                                                   repeticao)
-    bags = Cpx.open_bag("/media/marcos/Data/Tese/Bases3/Bags/" + str(repeticao) + "/", nome_base)
+    #bags = Cpx.open_bag("/media/marcos/Data/Tese/Bases3/Bags/" + str(repeticao) + "/", nome_base)
     arq_dataset = caminho_base + "Dataset/" + nome_base + ".arff"
     arq_arff = Marff.abre_arff(arq_dataset)
     X, y, _ = Marff.retorna_instacias(arq_arff)
@@ -436,11 +449,12 @@ for t in range(1, 21):
                      toolbox.attr_item, 1)
     population = toolbox.register("population", tools.initRepeat, list, toolbox.individual)
     pop = toolbox.population(n=100)
+    print(pop)
 
     if dispersao == True:
         distancia(primeira=True)
 
-    toolbox.register("evaluate", dispersao)
+    toolbox.register("evaluate", fitness_dispercao)
     toolbox.register("mate", cruza)
     toolbox.register("mutate", mutacao)
     toolbox.register("select", tools.selNSGA2)

@@ -79,7 +79,7 @@ def complexity_data():
                             stdout=subprocess.PIPE, shell=True)
     (cont_arq, err) = proc.communicate()
     cont_arq = (cont_arq.decode("utf-8"))
-    print('cpx')
+   # print(cont_arq)
     cont_arq = cont_arq.split()
     complex = []
    # x=[]
@@ -121,6 +121,7 @@ def biuld_classifier(X_train, y_train, X_val, y_val):
 def dispersion(complexity):
 
     result=[]
+
     for i in range(len(complexity)):
         dist = []
         for j in range(len(complexity)):
@@ -216,7 +217,7 @@ def routine_save_bags(local_dataset, local ,base_name, iteration ):
     save_bag(id_train, 'train', local+"/Treino/",base_name,(iteration))
     save_bag(id_vali, 'validation', local+"/Validacao/",base_name,str(iteration))
     save_bag(id_test, 'test', local+"/Teste/",base_name,str(iteration))
-    for i in range(1, 101):
+    for i in range(0, 100):
         X_bag, y_bag, id = biuld_bags(y_train, X_data=X_data, y_data=y_data, ind=id_train, types="ind")
         id.insert(0,i)
         #print(id)
