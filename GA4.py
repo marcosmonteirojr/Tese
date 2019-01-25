@@ -5,10 +5,9 @@ from deap import algorithms
 from deap import base
 from deap import creator
 from deap import tools
-from sklearn.preprocessing import MinMaxScaler
-import complexity_pcol as dcol
+
 import numpy as np
-from math import sqrt
+
 
 os.environ['R_HOME'] = '/home/marcos/anaconda3/envs/tese2/lib/R'
 import pandas as pd
@@ -59,71 +58,80 @@ def inter():
 
 
 def distancia(primeira=False, population=None):
-    global classes, off, pop, nome_individuo, dist, geracao, dispersao, bags, dic
+    global classes, off, pop, nome_individuo, dist, geracao, dispersao, bags, dic, min_score
     cpx = []
-    if (geracao == 30 and dispersao == True):
-        None
-    if (primeira and geracao == 0):
+    min_score=0
+   # print("entrei",primeira)
+    if (primeira==True and geracao == 0):
+       # print("entrei")
         print('primeira')
         dist = dict()
         dist['nome'] = pop
-        #print(dist['nome'])
+
         dist['dist'] = list()
-        #   print(len(dist['nome']))
+        dist['score']=list()
         for i in range(len(dist['nome'])):
-
-            print(i)
-
-            # print(bags['inst'][x])
             indx_bag1 = bags['inst'][i]
-            print(indx_bag1)
             X_bag, y_bag = monta_arquivo(indx_bag1)
-            # print(type(X_bag[0]))
             w = Cpx.biuld_dic(X_bag, y_bag, dic)
-            # print(w)
-            # exit(0)
+            _, score, _ = Cpx.biuld_classifier(X_bag, y_bag, X_vali, y_vali)
+            dist['score'].append(score)
             Cpx.generate_csv(w)
             cpx.append(Cpx.complexity_data())
-        dist['dist'] = Cpx.dispersion(cpx)
-       # exit(0)
-        return
-        # print('tamanho das dist inicial', len(dist['dist']))
-
-    if (population != None):
-        print("populacao")
-        dist = dict()
-        dist['nome'] = population
-        dist['dist'] = list()
-        for i in population:
-            for j in range(len(bags['nome'])):
-                if i[0] == bags['inst'][j]:
-                    indx_bag = bags['inst'][j]
-                    X, y = monta_arquivo(indx_bag)
-                    w = Cpx.biuld_dic(X, y, dic)
-                    Cpx.generate_csv(w)
-                    cpx.append(Cpx.complexity_data())
-        dist['dist'] = Cpx.dispersion(cpx)
+        min_score=np.around(min(dist['score']),2)
+        dist['dist'] = Cpx.dispersion(cpx, nome_base)
         return
 
     if (primeira == False and population == None):
 
         dist = dict()
+        temp=[]
         dist['nome'] = list()
         dist['dist'] = list()
+        dist['score']=list()
         inicio = nome_individuo - numero_individuo
         print("diferente")
-        dist['nome'] = range(inicio, nome_individuo)
+
+        for i in range(inicio, nome_individuo):
+            x = []
+            x.append(i)
+            dist['nome'].append(x)
         for j in range(100, numero_individuo + 100):
-            # print(j.split(" ")[0])
-            # print(j)
+
             indx_bag = bags['inst'][j]
-            # print(indx_bag[0])
 
             X, y = monta_arquivo(indx_bag)
             w = Cpx.biuld_dic(X, y, dic)
             Cpx.generate_csv(w)
             cpx.append(Cpx.complexity_data())
-        dist['dist'] = Cpx.dispersion(cpx)
+            _, score, _ = Cpx.biuld_classifier(X, y, X_vali, y_vali)
+
+            dist['score'].append(score)
+        min_score = np.around(min(dist['score']), 2)
+        dist['dist'] = Cpx.dispersion(cpx,nome_base)
+       # exit(0)
+        return
+    if (population != None):
+        print("populacao the function")
+        dist = dict()
+        dist['nome'] = population
+        dist['dist'] = list()
+        dist['score']=list()
+        for i in population:
+            for j in range(len(bags['nome'])):
+
+                if str(i[0]) == str(bags['nome'][j]):
+
+                    indx_bag = bags['inst'][j]
+                    X, y = monta_arquivo(indx_bag)
+                    w = Cpx.biuld_dic(X, y, dic)
+                    Cpx.generate_csv(w)
+                    cpx.append(Cpx.complexity_data())
+                    _, score, _ = Cpx.biuld_classifier(X, y, X_vali, y_vali)
+
+                    dist['score'].append(score)
+        min_score = np.around(min(dist['score']), 2)
+        dist['dist'] = Cpx.dispersion(cpx, nome_base)
         return
 
 
@@ -136,10 +144,10 @@ def abre_arquivo(individuo=None, valida=False):
     global nome_base, repeticao, geracao, caminho_bags, caminho_base
     if individuo:
         arq = open(caminho_bags + str(repeticao) + "/" + nome_base + str(geracao) + ".indx")
-        # print(arq)
+
         for i in arq:
             texto = i
-            # print('abre arquivo indi',str(individuo))
+
             if (str(individuo) == texto.split(" ")[0]):
                 indx_bag = texto.split(" ")
                 arq.close()
@@ -151,8 +159,6 @@ def abre_arquivo(individuo=None, valida=False):
         texto = arq.readline()
         indx_bag = texto.split(" ")
         arq.close()
-
-    # print(indx_bag)
     return indx_bag
 
 
@@ -211,7 +217,6 @@ def cruza(ind1, ind2):
         if (contador_cruzamento == numero_individuo + 1):
             contador_cruzamento = 1
             distancia(primeira=False, population=None)
-    # print(len(bags['nome']), len(bags['inst']))
     return creator.Individual(ind1), creator.Individual(ind2)
 
 
@@ -257,9 +262,6 @@ def mutacao(ind):
             # print(ind_out)
     bags['nome'].append(str(nome_individuo))
     bags['inst'].append(ind_out)
-    # print(bags['inst'][-1])
-    # print(len(bags['nome']), len(bags['inst']))
-    # exit(0)
 
     ind[0] = nome_individuo
     nome_individuo += 1
@@ -269,7 +271,7 @@ def mutacao(ind):
 
             contador_cruzamento = 1
             distancia(primeira=False, population=None)
-    # print(len(bags['nome']),len(bags['inst']))
+
     return ind,
 
 
@@ -292,25 +294,18 @@ def fitness_f1_n2(ind1):
 
 
 def fitness_dispercao(ind1):
-    global dist, classes
+    global dist, min_score
     x=len(dist['nome'])
-    #print(len(dist['nome']),len(dist['dist']))
-    for i in range(len(bags['nome'])):
-        if (bags['nome'][i] == str(ind1[0])):
-            indx_bag1 = bags['inst'][i]
-            break
-    for i in range(x):
-#        print(dist['nome'][0][i],dist['dist'][i])
-        if (dist['nome'][0][i] == ind1[0]):
-            print(i,"ok")
-            dst = dist['dist'][i]
-            print(dst)
-            break
-        #print(dist['dist'])
-        #print(dist['dist'][i])
 
-    X_data, y_data = monta_arquivo(indx_bag1)
-    perc, score, predict = Cpx.biuld_classifier(X_data, y_data, X_vali, y_vali)
+    for i in range(x):
+       # print(i)
+        if (dist['nome'][i][0] == ind1[0]):
+           dst = dist['dist'][i]
+           score=dist["score"][i]
+           break
+    if score<=min_score:
+        dst=0.0
+
     return score,dst,
 
 def sequencia():
@@ -332,36 +327,33 @@ def the_function(population, gen, offspring):
     print("the_fuction", (population))
     off = []
     geracao = gen
+    gg=gen
+    print(gen, nr_generation)
     base_name=nome_base+str(geracao)
-
-
+    bags2=bags
+    bags=dict()
+    bags['nome']=list()
+    bags['inst']=list()
+    for j in population:
+        for i in range(len(bags2['nome'])):
+            if str(j[0]) == str(bags2['nome'][i]):
+                bags['nome'].append(bags2['nome'][i])
+                bags['inst'].append(bags2['inst'][i])
+                break
+    del bags2
     for i in range(len(population)):
         off.append(population[i][0])
-    if (geracao==nr_generation):
+    if (gg==nr_generation):
         for j in population:
             for i in range(len(bags['nome'])):
-                if (j[0] == bags['nome'][i]):
-                    nm=[]
-                    nm.append(bags['nome'][i])
-                    nm.append(bags['inst'][i])
-
+                print(str(j[0]),str(bags[ 'nome'][i]))
+                if (str(j[0]) == str(bags['nome'][i])):
+                    nm=bags['inst'][i]
+                    nm.insert(0,str(bags['nome'][i]))
                     Cpx.save_bag(nm,'bags',local+"/Bags/",base_name,repeticao)
 
-    # indx_valida = abre_arquivo(valida=True)
-    # X_valida, y_valida = monta_arquivo(indx_valida)
-    # bags = dict()
-    # bags['nome'] = list()
-    # bags['inst'] = list()
-    #
-    # arq_bags = open(caminho_bags + str(repeticao) + "/" + nome_base + str(geracao) + ".indx")
-    # for i in arq_bags:
-    #     text = i
-    #     bags['nome'].append(text.split(" ")[0])
-    #     temp = text.split(" ")
-    #     bags['inst'].append(temp[1:-1])
-    if (dispersao == True):
+    if (dispersao == True and gg!=nr_generation):
         distancia(population=population)
-        # exit(0)
 
 
 def populacao(populacao_total):
@@ -378,50 +370,29 @@ def populacao(populacao_total):
     return off
 
 
-caminho_originais = "/media/marcos/Data/Tese/Bases2/Originais/"
-caminho_bags = "/media/marcos/Data/Tese/Bases3/bags/"
+
 caminho_base = "/media/marcos/Data/Tese/Bases2/"
-# off=[]
-# numero_individuo=100
-# dispersao=False
-# contador_cruzamento=1
-# nome_base="Wine"
-#
-# nr_generation = 20
-# proba_crossover = .99
-# proba_mutation = 0.01
-#
-# fit_value1 = 1.0
-# fit_value2 = -1.0
-# fit_value3 = 1.0
-# for i in range(1,2):
-# caminho_originais = "/home/projeto/Marcos/Originais/"
-# caminho_bags = "/home/projeto/Marcos/GA9/"
-# caminho_base = "/home/projeto/Marcos/Bases2/"
 
 off = []
 numero_individuo = 100
-dispersao = True
+
 contador_cruzamento = 1
 nome_base = "Wine"
-comple = "F1,N2,T2"
 
-nr_generation = 10
+
+nr_generation = 20
 proba_crossover = 0.99
 proba_mutation = 0.01
 
-fit_value1 = -1.0
+fit_value1 = 1.0
 fit_value2 = 1.0
-# fit_value3 = -1.0
 local_dataset = "/media/marcos/Data/Tese/Bases2/Dataset/"
 local = "/media/marcos/Data/Tese/Bases3"
-
-
-
+min_score=0
 
 ########
-
-for t in range(1, 21):
+dispersao = True
+for t in range(3, 21):
     classes = []
     off = []
     nome_individuo = 101
@@ -434,12 +405,10 @@ for t in range(1, 21):
 
     X_train, y_train, X_test, y_test, X_vali, y_vali, dic = Cpx.routine_save_bags(local_dataset, local, nome_base,
                                                                                   repeticao)
-    #bags = Cpx.open_bag("/media/marcos/Data/Tese/Bases3/Bags/" + str(repeticao) + "/", nome_base)
     arq_dataset = caminho_base + "Dataset/" + nome_base + ".arff"
     arq_arff = Marff.abre_arff(arq_dataset)
     X, y, _ = Marff.retorna_instacias(arq_arff)
     bags = Cpx.open_bag("/media/marcos/Data/Tese/Bases3/Bags/" + str(repeticao) + "/", nome_base)
-
     creator.create("FitnessMulti", base.Fitness, weights=(fit_value1, fit_value2,))
     creator.create("Individual", list, fitness=creator.FitnessMulti)
 
@@ -449,7 +418,6 @@ for t in range(1, 21):
                      toolbox.attr_item, 1)
     population = toolbox.register("population", tools.initRepeat, list, toolbox.individual)
     pop = toolbox.population(n=100)
-    print(pop)
 
     if dispersao == True:
         distancia(primeira=True)
@@ -462,10 +430,3 @@ for t in range(1, 21):
                               generation_function=the_function, popu=populacao)
 fim = time.time()
 print(fim - inicio)
-arq_descricoes = open("/home/projeto/Marcos/Descricoes.txt", "a")
-arq_descricoes.write(
-    "nome da base,numero de geracoes, tipo de fit1,2,3, fitness_dispersao, caminho bag, quais complexidades\n")
-arq_descricoes.write(
-    " {},{},{},{},{},{},{}\n".format(nome_base, nr_generation, fit_value1, fit_value2, caminho_bags,
-                                     comple))
-arq_descricoes.close()

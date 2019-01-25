@@ -7,9 +7,10 @@ import Marff, subprocess
 import csv, random, os
 from sklearn.utils import check_random_state
 from scipy.spatial import distance
+from multiprocessing import Pool
 
-base_name="Haberman"
-local_data="/media/marcos/Data/Tese/Bases2/Dataset/"
+#base_name="Haberman"
+#local_data="/media/marcos/Data/Tese/Bases2/Dataset/"
 
 
 def open_data(base_name, local_data):
@@ -75,7 +76,7 @@ def generate_csv(dic):
 
 def complexity_data():
 
-    proc = subprocess.Popen(['Rscript /home/marcos/Documentos/new_3.r'],
+    proc = subprocess.Popen(['Rscript /home/marcos/Documentos/new_8.r'],
                             stdout=subprocess.PIPE, shell=True)
     (cont_arq, err) = proc.communicate()
     cont_arq = (cont_arq.decode("utf-8"))
@@ -94,6 +95,14 @@ def complexity_data():
     #exit(0)
     return complex
 
+def paralell_process(process):
+   y=[]
+   x=os.popen('Rscript {}'.format(process)).read()
+   x=x.split()
+  # print(x)
+   y.append(x)
+
+   return y
 def biuld_dic(X,y, dic):
     #constroi o dicionario para o construir o csv do R (instancias e classes)
     d = dict()
@@ -118,10 +127,20 @@ def biuld_classifier(X_train, y_train, X_val, y_val):
 
     return perc, score, predict
 
-def dispersion(complexity):
+def dispersion(complexity,base_name):
 
     result=[]
+    # print(complexity)
+    # print(len(complexity))
 
+    # for i in range(len(complexity)):
+    #     for j in range(len(complexity[i])):
+    #        # print(len(complexity[i]))
+    #         if type(complexity[i][j]) is not float:
+    #             complexity[i][j]=0.0
+    #             x=open("error.txt",'a')
+    #             x.write("erro de complexidade {},{},{}\n".format(i,j,base_name))
+    #             x.close()
     for i in range(len(complexity)):
         dist = []
         for j in range(len(complexity)):
@@ -153,7 +172,7 @@ def diversitys(y_test,predicts):
 
 def biuld_csv_result(complexity_result,score,Q_test, Df,disp):
     global base_name
-    header=['overlapping.F1', 'overlapping.F1v', 'overlapping.F2', 'overlapping.F3', 'overlapping.F4', 'neighborhood.N1', 'neighborhood.N2', 'neighborhood.N3', 'neighborhood.N4', 'neighborhood.T1', 'neighborhood.LSCAvg', 'linearity.L1', 'linearity.L2', 'linearity.L3', 'dimensionality.T2', 'dimensionality.T3', 'dimensionality.T4', 'balance.C1', 'balance.C2', 'network.Density', 'network.ClsCoef', 'network.Hubs','Score', 'Q_test','DoubleFault','Disper']
+    header=['overlapping.F1', 'overlapping.F1v', 'overlapping.F2', 'overlapping.F3', 'overlapping.F4', 'neighborhood.N1', 'neighborhood.N2', 'neighborhood.N3', 'neighborhood.N4', 'neighborhood.T1', 'neighborhood.LSCAvg', 'linearity.L1', 'linearity.L2', 'linearity.L3', '000000.T2', 'dimensionality.T3', 'dimensionality.T4', 'balance.C1', 'balance.C2', 'network.Density', 'network.ClsCoef', 'network.Hubs','Score', 'Q_test','DoubleFault','Disper']
     for i in range(len(complexity_result)):
         complexity_result[i].append(score[i])
         complexity_result[i].append(Q_test[i])
@@ -210,6 +229,7 @@ def oracle(predict,y_val):
     return result
 
 def routine_save_bags(local_dataset, local ,base_name, iteration ):
+
     #rotina para criar treino teste e validaçao alem dos 100 bags, local e onde esta o dataset orig
     X_data, y_data, dataset, dic = open_data(base_name, local_dataset)
     X_train, y_train, X_test, y_test, X_vali, y_vali, id_train, id_test, id_vali = split_data(X_data, y_data)
@@ -220,7 +240,8 @@ def routine_save_bags(local_dataset, local ,base_name, iteration ):
     for i in range(0, 100):
         X_bag, y_bag, id = biuld_bags(y_train, X_data=X_data, y_data=y_data, ind=id_train, types="ind")
         id.insert(0,i)
-        #print(id)
+       # print(id)
+        #exit(0)
         save_bag(id, 'bags', local+"/Bags/", base_name, str(iteration))
     return  X_train, y_train, X_test, y_test, X_vali, y_vali, dic
 
@@ -240,10 +261,10 @@ def open_bag(local_bag, base_name):
 
 def main():
     import time
-    inicio = time.time()
-    X_data, y_data, dataset, dic = open_data(base_name, local_data)
-    X_train, y_train, X_test, y_test, X_vali, y_vali, id_train, id_test, id_vali = split_data(X_data, y_data)
-    complexity_result=[]
+    #inicio = time.time()
+    #X_data, y_data, dataset, dic = open_data(base_name, local_data)
+    #X_train, y_train, X_test, y_test, X_vali, y_vali, id_train, id_test, id_vali = split_data(X_data, y_data)
+    #complexity_result=[]
     score=[]
     predict=[]
    # exit(0)
@@ -252,13 +273,13 @@ def main():
 
    # for i in range(1,10):
     #print(i)
-    X_bag,y_bag=biuld_bags(y_train=y_train,X_train=X_train,types="sample")
+    #X_bag,y_bag=biuld_bags(y_train=y_train,X_train=X_train,types="sample")
         #print((X_bag))
         #exit(0)
-    newdic=biuld_dic(X_bag,y_bag,dic)
-    generate_csv(newdic)
+    #newdic=biuld_dic(X_bag,y_bag,dic)
+    #generate_csv(newdic)
         #save_bag(id_train,'train',"/media/marcos/Data/Tese/Bases3/Treino",base_name)
-    complexity_result.append(complexity_data())
+    #complexity_result.append(complexity_data())
        # _,sc,pre=biuld_classifier(X_bag,y_bag,X_vali,y_vali)
        # score.append(sc)
        ##oracle(pre,y_vali)
@@ -269,12 +290,23 @@ def main():
     complexity_result = []
     score = []
     predict = []
-    fim = time.time()
-    print((fim - inicio)/60)
+    #fim = time.time()
+    #print((fim - inicio)/60)
     #print(complexity_result)
     #print((disp))
     #print(len(q))
-
+    inicio = time.time()
+    process=("/home/marcos/Documentos/new_1.r","/home/marcos/Documentos/new_2.r","/home/marcos/Documentos/new_3.r","/home/marcos/Documentos/new_4.r","/home/marcos/Documentos/new_5.r","/home/marcos/Documentos/new_6.r")
+    pool = Pool(processes=8)
+    y=pool.map(paralell_process,process)
+    print(y)
+    fim = time.time()
+    print((fim - inicio) / 60)
+    inicio = time.time()
+    complexity_data()
+    #complexity_data2()
+    fim = time.time()
+    print((fim - inicio) / 60)
 
 
 

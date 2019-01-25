@@ -1,11 +1,51 @@
 import os,sys
-caminho1='/media/marcos/Data/Tese//'
-caminho2='/media/marcos/Data/Tese/Bases2/Validacao/'
-nome_base=sys.argv[1]
+caminho1='/media/marcos/OS/Users/marca/Documents/Minhas-Imagens/Fotos-videosMiguel/celular26-12/card/DCIM/Camera/'
+caminho2=' /media/marcos/OS/Users/marca/Documents/Minhas-Imagens/Fotos-videosMiguel/ate23-12-18/'
+caminho3=' /media/marcos/OS/Users/marca/Documents/Minhas-Imagens/Fotos-videosMiguel/videos/'
+#nome_base=sys.argv[1]
 #nome_base="ILPD"
-#for i in range(1,21):
-   # if (os.path.exists(caminho2+"/"+str(i)) == False):
-        #os.system("mkdir -p " + caminho2+"/"+str(i))
+print(caminho2+"/"+str(1))
+for i in range(1,13):
+    if (os.path.exists(caminho2+"/"+str(i)) == False):
+        os.system("mkdir -p " + caminho2+"/"+str(i))
+
+x=open(caminho1+'teste.txt')
+#print(caminho1+" " + caminho2 + "/1/")
+
+for i in x:
+        c=i.split("\n")[0]
+        if c[-1]=="4":
+            os.system("mv " + caminho1 + c + caminho3 )
+        #exit(0)
+        print(c[4:6])
+        if c[4:6]=="01":
+            os.system("mv "+caminho1+c+caminho2+ "1/")
+        if c[4:6] == "02":
+            os.system("mv " + caminho1 + c + caminho2 + "2/")
+        if c[4:6]=="03":
+            os.system("mv "+caminho1+c+caminho2+ "3/")
+        if c[4:6]=="04":
+            os.system("mv "+caminho1+c+caminho2+ "4/")
+        if c[4:6]=="05":
+            os.system("mv "+caminho1+c+caminho2+ "5/")
+        if c[4:6]=="06":
+            os.system("mv "+caminho1+c+caminho2+ "6/")
+        if c[4:6]=="07":
+            os.system("mv "+caminho1+c+caminho2+ "7/")
+        if c[4:6]=="08":
+            os.system("mv "+caminho1+c+caminho2+ "8/")
+        if c[4:6]=="09":
+            os.system("mv "+caminho1+c+caminho2+ "9/")
+        if c[4:6]=="10":
+            os.system("mv "+caminho1+c+caminho2+ "10/")
+        if c[4:6]=="11":
+            os.system("mv "+caminho1+c+caminho2+ "11/")
+        if c[4:6]=="12":
+            os.system("mv "+caminho1+c+caminho2+ "12/")
+#print(c[0])
+#c=x.split("\n")
+
+exit(0)
 #for i in range(1,21):
     #os.system("cp -r "+ caminho1+str(i)+"/validation/* " +caminho2+str(i)+"/")
     #os.system("rm -rf "+caminho1+"/" +str(i) + "/*.indx" )
