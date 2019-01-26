@@ -8,6 +8,7 @@ import csv, random, os
 from sklearn.utils import check_random_state
 from scipy.spatial import distance
 from multiprocessing import Pool
+from sklearn.metrics import pairwise_distances
 
 #base_name="Haberman"
 #local_data="/media/marcos/Data/Tese/Bases2/Dataset/"
@@ -85,11 +86,15 @@ def complexity_data():
     complex = []
    # x=[]
     for i in cont_arq:
+
         if (i[:3] == "ove" or i[:3] == "nei" or i[:3] == "dim" or i[:3] == "lin" or i[:3] == "bal" or i[:3] == "net"):
             #x.append(i)
             continue
         else:
-            #print(i)
+            if i == "Inf":
+                #print(type(i))
+                i=0.0
+                print("ERROR")
             complex.append(float(i))
    # print(x)
     #exit(0)
@@ -141,14 +146,14 @@ def dispersion(complexity,base_name):
     #             x=open("error.txt",'a')
     #             x.write("erro de complexidade {},{},{}\n".format(i,j,base_name))
     #             x.close()
-    for i in range(len(complexity)):
-        dist = []
-        for j in range(len(complexity)):
-            if i==j:
-                continue
-            else:
-                dist.append(distance.euclidean(complexity[i],complexity[j]))
-        result.append(np.mean(dist))
+    y = np.array(complexity)
+    dist = pairwise_distances(y, n_jobs=4)
+    dist = dist.tolist()
+    for i in dist:
+        h = i.index(0)
+        del i[h]
+        # print(h)
+        result.append(np.mean(i))
 
     return result
 
