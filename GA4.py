@@ -5,6 +5,7 @@ from deap import base
 from deap import creator
 from deap import tools
 import numpy as np
+import collections
 
 #os.environ['R_HOME'] = '/home/marcos/anaconda3/envs/tese2/lib/R'
 
@@ -178,19 +179,17 @@ def cruza(ind1, ind2):
     #print(indx, indx2)
     indx_bag1 = bags['inst'][indx]
     indx_bag2 = bags['inst'][indx2]
-    #print(indx_bag1)
-    #print(indx_bag2)
-    # for i in range(len(bags['nome'])):
-    #     if (bags['nome'][i] == str(ind1[0])):
-    #         indx_bag1 = bags['inst'][i]
-    # for i in range(len(bags['nome'])):
-    #     if (bags['nome'][i] == str(ind1[0])):
-    #         indx_bag2 = bags['inst'][i]
     _, y_data = monta_arquivo(indx_bag1)
+    cont=0
     while (individual!=True):
-    ind_out1=short_cross(y_data,indx_bag1,indx_bag2)
-    print(ind_out1)
-    exit(0)
+
+        ind_out1=short_cross(y_data,indx_bag1,indx_bag2)
+        individual=verifica_data(ind_out1)
+        cont = cont + 1
+        if cont==30:
+            print("erro de numero de classes")
+    #print(ind_out1)
+            exit(0)
     ind1[0] = nome_individuo
     ind2[0] = nome_individuo
     bags['nome'].append(str(nome_individuo))
@@ -210,7 +209,7 @@ def short_cross(y_data,indx_bag1,indx_bag2):
     while (y_data[inicio] == y_data[fim]):
         inicio = random.randint(0, len(y_data) - 1)
         fim = random.randint(inicio, len(y_data) - 1)
-    for i in range(len(X)):
+    for i in range(len(y_data)):
         if (i <= inicio or i >= fim):
             ind_out1.append(indx_bag1[i])
         else:
@@ -218,7 +217,16 @@ def short_cross(y_data,indx_bag1,indx_bag2):
     return ind_out1
 
 def verifica_data(ind_out):
-    exit(0)
+    global classes
+    _,y=monta_arquivo(ind_out)
+    counter = collections.Counter(y)
+    #print(counter.values(), min(counter.values()))
+    if len(counter.values())==len(classes) and min(counter.values())>=2:
+        return True
+    else:return False
+
+
+    #exit(0)
 
 def mutacao(ind):
     global off, nome_individuo, dispersao, contador_cruzamento, numero_individuo, bags

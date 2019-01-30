@@ -30,6 +30,7 @@ def retorna_classes_existentes(dataset):
         if(tmp not in classes):
            classes.append(tmp)
            num_class+=1
+
     classes.sort()
 
 
