@@ -6,18 +6,16 @@ from deap import creator
 from deap import tools
 import numpy as np
 
-#os.environ['R_HOME'] = '/home/marcos/anaconda3/envs/tese2/lib/R'
+os.environ['R_HOME'] = '/home/marcos/anaconda3/envs/tese2/lib/R'
 
 import time, Cpx
 
-
+inicio = time.time()
 
 def distancia(primeira=False, population=None):
-
     global classes, off, pop, nome_individuo, dist, geracao, dispersao, bags, dic, min_score
     cpx = []
     min_score=0
-    inicio = time.time()
    # print("entrei",primeira)
     if (primeira==True and geracao == 0):
        # print("entrei")
@@ -30,25 +28,13 @@ def distancia(primeira=False, population=None):
         for i in range(len(dist['nome'])):
             indx_bag1 = bags['inst'][i]
             X_bag, y_bag = monta_arquivo(indx_bag1)
-            cpx.append(Cpx.complexity_data2(X_bag,y_bag))
+            w = Cpx.biuld_dic(X_bag, y_bag, dic)
             _, score, _ = Cpx.biuld_classifier(X_bag, y_bag, X_vali, y_vali)
             dist['score'].append(score)
-
-
-            # indx_bag1 = bags['inst'][i]
-            # X_bag, y_bag = monta_arquivo(indx_bag1)
-            # w = Cpx.biuld_dic(X_bag, y_bag, dic)
-            # _, score, _ = Cpx.biuld_classifier(X_bag, y_bag, X_vali, y_vali)
-            # dist['score'].append(score)
-            # Cpx.generate_csv(w)
-            # cpx.append(Cpx.complexity_data())
-       # print(cpx)
+            Cpx.generate_csv(w)
+            cpx.append(Cpx.complexity_data())
         min_score=np.around(min(dist['score']),2)
-        fim = time.time()
-        print(fim - inicio)
-       # exit(0)
-        dist['dist']=Cpx.dispersion(cpx)
-        print(dist['dist'],len(dist['dist']),len(dist['nome']))
+        dist['dist'] = Cpx.dispersion(cpx, nome_base)
         return
 
     if (primeira == False and population == None):
@@ -67,22 +53,17 @@ def distancia(primeira=False, population=None):
             dist['nome'].append(x)
         for j in range(100, numero_individuo + 100):
            # print(j)
-           #  indx_bag = bags['inst'][j]
-           #
-           #  X, y = monta_arquivo(indx_bag)
-           #  w = Cpx.biuld_dic(X, y, dic)
-           #  Cpx.generate_csv(w)
-           #  cpx.append(Cpx.complexity_data())
-           #  _, score, _ = Cpx.biuld_classifier(X, y, X_vali, y_vali)
-           #
-           #  dist['score'].append(score)
-           indx_bag1 = bags['inst'][j]
-           X_bag, y_bag = monta_arquivo(indx_bag1)
-           cpx.append(Cpx.complexity_data2(X_bag, y_bag))
-           _, score, _ = Cpx.biuld_classifier(X_bag, y_bag, X_vali, y_vali)
-           dist['score'].append(score)
+            indx_bag = bags['inst'][j]
+
+            X, y = monta_arquivo(indx_bag)
+            w = Cpx.biuld_dic(X, y, dic)
+            Cpx.generate_csv(w)
+            cpx.append(Cpx.complexity_data())
+            _, score, _ = Cpx.biuld_classifier(X, y, X_vali, y_vali)
+
+            dist['score'].append(score)
         min_score = np.around(min(dist['score']), 2)
-        dist['dist'] = Cpx.dispersion(cpx)
+        dist['dist'] = Cpx.dispersion(cpx,nome_base)
        # exit(0)
         return
     if (population != None):
@@ -94,25 +75,21 @@ def distancia(primeira=False, population=None):
         for i in population:
 
             indx=bags['nome'].index(str(i[0]))
-            # indx_bag = bags['inst'][indx]
-            # # for j in range(len(bags['nome'])):
-            #
-            #     # if str(i[0]) == str(bags['nome'][j]):
-            #
-            #         # indx_bag = bags['inst'][j]
-            # X, y = monta_arquivo(indx_bag)
-            # w = Cpx.biuld_dic(X, y, dic)
-            # Cpx.generate_csv(w)
-            # cpx.append(Cpx.complexity_data())
-            # _, score, _ = Cpx.biuld_classifier(X, y, X_vali, y_vali)
-            #dist['score'].append(score)
-            indx_bag1 = bags['inst'][indx]
-            X_bag, y_bag = monta_arquivo(indx_bag1)
-            cpx.append(Cpx.complexity_data2(X_bag, y_bag))
-            _, score, _ = Cpx.biuld_classifier(X_bag, y_bag, X_vali, y_vali)
+            indx_bag = bags['inst'][indx]
+            # for j in range(len(bags['nome'])):
+
+                # if str(i[0]) == str(bags['nome'][j]):
+
+                    # indx_bag = bags['inst'][j]
+            X, y = monta_arquivo(indx_bag)
+            w = Cpx.biuld_dic(X, y, dic)
+            Cpx.generate_csv(w)
+            cpx.append(Cpx.complexity_data())
+            _, score, _ = Cpx.biuld_classifier(X, y, X_vali, y_vali)
+
             dist['score'].append(score)
         min_score = np.around(min(dist['score']), 2)
-        dist['dist'] = Cpx.dispersion(cpx)
+        dist['dist'] = Cpx.dispersion(cpx, nome_base)
         return
 
 
@@ -170,9 +147,9 @@ def cruza(ind1, ind2):
     global nome_individuo, repeticao, nome_base, geracao, caminho_bags, dispersao, contador_cruzamento, numero_individuo, bags
     #print('cruza')
     #print(ind1,ind2)
+    inicio = fim = 0
+    ind_out1 = []
 
-
-    individual=False
     indx=bags['nome'].index(str(ind1[0]))
     indx2 = bags['nome'].index(str(ind2[0]))
     #print(indx, indx2)
@@ -186,11 +163,16 @@ def cruza(ind1, ind2):
     # for i in range(len(bags['nome'])):
     #     if (bags['nome'][i] == str(ind1[0])):
     #         indx_bag2 = bags['inst'][i]
-    _, y_data = monta_arquivo(indx_bag1)
-    while (individual!=True):
-    ind_out1=short_cross(y_data,indx_bag1,indx_bag2)
-    print(ind_out1)
-    exit(0)
+    X, y_data = monta_arquivo(indx_bag1
+                              )
+    while (y_data[inicio] == y_data[fim]):
+        inicio = random.randint(0, len(y_data) - 1)
+        fim = random.randint(inicio, len(y_data) - 1)
+    for i in range(len(X)):
+        if (i <= inicio or i >= fim):
+            ind_out1.append(indx_bag1[i])
+        else:
+            ind_out1.append(indx_bag2[i])
     ind1[0] = nome_individuo
     ind2[0] = nome_individuo
     bags['nome'].append(str(nome_individuo))
@@ -204,21 +186,6 @@ def cruza(ind1, ind2):
             distancia(primeira=False, population=None)
     return creator.Individual(ind1), creator.Individual(ind2)
 
-def short_cross(y_data,indx_bag1,indx_bag2):
-    inicio = fim = 0
-    ind_out1=[]
-    while (y_data[inicio] == y_data[fim]):
-        inicio = random.randint(0, len(y_data) - 1)
-        fim = random.randint(inicio, len(y_data) - 1)
-    for i in range(len(X)):
-        if (i <= inicio or i >= fim):
-            ind_out1.append(indx_bag1[i])
-        else:
-            ind_out1.append(indx_bag2[i])
-    return ind_out1
-
-def verifica_data(ind_out):
-    exit(0)
 
 def mutacao(ind):
     global off, nome_individuo, dispersao, contador_cruzamento, numero_individuo, bags
@@ -255,7 +222,7 @@ def mutacao(ind):
 
     while y_data[inst] != y2_data[inst2 - 1]:
         inst = random.randint(0, len(y_data) - 1)
-
+        inst2 = random.randint(0, len(y2_data) - 1)
     for i in range(len(indx_bag1)):
         if (i == inst):
             ind_out.append(indx_bag2[i])
@@ -385,17 +352,11 @@ fit_value2 = 1.0
 local_dataset = "/media/marcos/Data/Tese/Bases2/Dataset/"
 local = "/media/marcos/Data/Tese/Bases3"
 caminho_base = "/media/marcos/Data/Tese/Bases2/"
-cpx_caminho="/media/marcos/Data/Tese/Bases3/Bags/"
 min_score=0
-
-#local_dataset = "/home/projeto/Marcos/Bases2/Dataset/"
-#local = "/home/projeto/Marcos/Bases3"
-#caminho_base = "/home/projeto/Marcos/Bases2/"
-#cpx_caminho="home/projeto/Marcos/Bases3/Bags/"
 
 ########
 dispersao = True
-for t in range(13, 14):
+for t in range(14, 21):
     classes = []
     off = []
     nome_individuo = 101
@@ -411,11 +372,7 @@ for t in range(13, 14):
     arq_dataset = caminho_base + "Dataset/" + nome_base + ".arff"
     arq_arff = Marff.abre_arff(arq_dataset)
     X, y, _ = Marff.retorna_instacias(arq_arff)
-    _,classes = Marff.retorna_classes_existentes(arq_arff)
-    print(classes)
-    #exit(0)
-    bags = Cpx.open_bag(cpx_caminho + str(repeticao) + "/", nome_base)
-
+    bags = Cpx.open_bag("/media/marcos/Data/Tese/Bases3/Bags/" + str(repeticao) + "/", nome_base)
     creator.create("FitnessMulti", base.Fitness, weights=(fit_value1, fit_value2,))
     creator.create("Individual", list, fitness=creator.FitnessMulti)
 
@@ -435,4 +392,5 @@ for t in range(13, 14):
     toolbox.register("select", tools.selNSGA2)
     algorithms.eaMuPlusLambda(pop, toolbox, 100, numero_individuo, proba_crossover, proba_mutation, nr_generation,
                               generation_function=the_function, popu=populacao)
-
+fim = time.time()
+print(fim - inicio)

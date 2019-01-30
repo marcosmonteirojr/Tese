@@ -6,9 +6,16 @@ from deslib.util import diversity
 import Marff, subprocess
 import csv, random, os
 from sklearn.utils import check_random_state
-from scipy.spatial import distance
 from multiprocessing import Pool
 from sklearn.metrics import pairwise_distances
+os.environ['R_HOME'] = '/home/marcos/anaconda3/envs/tese2/lib/R'
+import pandas as pd
+from rpy2.robjects import pandas2ri
+pandas2ri.activate()
+import rpy2.robjects.packages as rpackages
+ecol = rpackages.importr('ECoL')
+import rpy2.robjects as robjects
+
 
 #base_name="Haberman"
 #local_data="/media/marcos/Data/Tese/Bases2/Dataset/"
@@ -100,6 +107,22 @@ def complexity_data():
     #exit(0)
     return complex
 
+def complexity_data2(X_data,y_data):
+    #comp = []
+    dfx = pd.DataFrame(X_data, copy=False)
+    dfy = robjects.IntVector(y_data)
+    complex = ecol.complexity(dfx, dfy, type="class")
+    #print(complex)
+    complex = np.asarray(complex)
+    complex=complex.tolist()
+    #print(complex)
+    #exit(0)
+
+
+    #print(complex)
+   # exit(0)
+    return complex
+
 def paralell_process(process):
    y=[]
    x=os.popen('Rscript {}'.format(process)).read()
@@ -108,6 +131,7 @@ def paralell_process(process):
    y.append(x)
 
    return y
+
 def biuld_dic(X,y, dic):
     #constroi o dicionario para o construir o csv do R (instancias e classes)
     d = dict()
@@ -125,14 +149,14 @@ def biuld_dic(X,y, dic):
 
 def biuld_classifier(X_train, y_train, X_val, y_val):
     #constroi os classificadores, e retorna classificador, score e predict
-    perc = perceptron.Perceptron(n_jobs=4, max_iter=100)
+    perc = perceptron.Perceptron(n_jobs=7, max_iter=1000, tol=5.0)
     perc.fit(X_train, y_train)
     score=perc.score(X_val,y_val)
     predict=perc.predict(X_val)
 
     return perc, score, predict
 
-def dispersion(complexity,base_name):
+def dispersion(complexity):
 
     result=[]
     # print(complexity)
@@ -147,14 +171,11 @@ def dispersion(complexity,base_name):
     #             x.write("erro de complexidade {},{},{}\n".format(i,j,base_name))
     #             x.close()
     y = np.array(complexity)
-    dist = pairwise_distances(y, n_jobs=4)
+
+    dist = pairwise_distances(y, n_jobs=6)
     dist = dist.tolist()
     for i in dist:
-        h = i.index(0)
-        del i[h]
-        # print(h)
         result.append(np.mean(i))
-
     return result
 
 def diversitys(y_test,predicts):
@@ -264,6 +285,31 @@ def open_bag(local_bag, base_name):
    # print(bags['inst'][0])
     return bags
 
+def biuld_x_y(indx_bag,X,y):
+
+    '''
+    Recebe o indice de instancias de um bag
+    :param indx_bag:
+    :param vet_classes: false, retorna o vetor de classes
+    :return: X_data, y_data
+    '''
+    global nome_base, classes, caminho_base
+    X_data = []
+    y_data = []
+    for i in indx_bag:
+        X_data.append(X[int(i)])
+        y_data.append(y[int(i)])
+    return X_data, y_data
+
+def open_test_vali(local,base_name,iteration):
+    with open(local + "Teste/"+str(iteration)+"/"+base_name+'.csv','r') as f:
+        reader = csv.reader(f)
+        teste = list(reader)
+    with open(local + "Validacao/"+str(iteration)+"/"+base_name+'.csv','r') as f:
+        reader = csv.reader(f)
+        vali = list(reader)
+    return teste[0], vali[0]
+
 def main():
     import time
     #inicio = time.time()
@@ -318,52 +364,3 @@ def main():
 if __name__ == "__main__":
     main()
 
-
-# dic=(biuld_dic(X_vali,y_vali, dic))
-# generate_csv(dic)
-# print(complexity_data())
-#
-# perc, score, predict= biuld_classifier(X_train,y_train,X_test,y_test)
-# perc1, score1, predict1= biuld_classifier(X_train,y_train,X_test,y_test)
-#
-#
-# #print(perc)
-# print(score)
-# print(predict)
-# #print(perc1)
-# print(score1)
-# print(predict1)
-# print(diversity.double_fault(y_test,predict,predict1))
-# print(diversity.Q_statistic(y_test,predict,predict1))
-# #print(y_data)
-
-#dic['data']=np.reshape(dic['data'],(len(dic['data']),len(dic['data'][0])))
-#print(dic['data'])
-
-#dfx = pd.DataFrame(X_data)
-#y_targ = robjects.IntVector(y_data)
-#y_dat=str(y_data)
-#y_data=str(y_data).strip('[]')
-#y_data= ''.join(map(str, y_data))
-#print(y_data)
-#exit(0)
-#y_data=(str(dic['class']).strip('[]'))
-#dfx.columns=dic['class']
-#print(dfx)
-
-#y_data=str(dic['class'])
-
-#X_data=pd.DataFrame.to_string(dfx,index=False)
-#print(X_data)
-#X_data=str(dic['data'])
-#print(dic['class'])
-
-
-#command='Rscript'
-##path='/home/marcos/Documentos/new_3.r'
-#args=["/media/marcos/Data/Tese/teste.csv"]
-#cmd=[command, path] + args
-#print(cmd)
-#my_env = os.environ.copy()
-#my_env['R_HOME'] = '/home/marcos/anaconda3/envs/tese2/lib/R' + my_env['R_HOME']
-#x=subprocess.check_output(cmd,universal_newlines=True,env=my_env)

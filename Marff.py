@@ -23,24 +23,17 @@ def retorna_classes_existentes(dataset):
     classes=[]#vetor com as classes
 
     num_class=0
-    elem_p_classes=[]
-    total_elementos = (len(dataset['data']))
+
+
     for i in dataset['data']:
         tmp=i[-1]
         if(tmp not in classes):
            classes.append(tmp)
-           elem_p_classes.append(0)
            num_class+=1
     classes.sort()
-    for i in dataset['data']:
-        tmp=i[-1]
-        for j in classes:
-            #print(classes[j])
-            if(classes[j]==tmp):
-                elem_p_classes[j]=elem_p_classes[j]+1
-                break
 
-    return num_class, classes, elem_p_classes,total_elementos
+
+    return num_class, classes
 
 def retorna_instacias(dataset,np_array=False):
     """
