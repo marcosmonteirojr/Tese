@@ -1,6 +1,6 @@
 import os, shutil
 def copia_arquivos():
-    for l in range(2,21):
+    for l in range(1,21):
         arq=open('LogPop'+str(l)+'.csv')
         caminho_todas = "/media/marcos/Data/Tese/AG/"+str(l)+"/"
         if (os.path.exists("/media/marcos/Data/Tese/AG/"+str(l)+"/"+str(l)+"-finais_complex") == False):
@@ -18,10 +18,10 @@ def copia_arquivos():
 
                 #print(k)
 def limpa_pasta():
-    for l in range(1,30):
+    for l in range(1,21):
          #os.system ("cp -r /media/marcos/Data/Tese/AG/"+str(l)+"/"+str(l)+"-finais /media/marcos/Marcos/Tese/GA1Distancia" )
-         for i in range(1,30):
-             os.system ("rm -rf /media/marcos/Data/Tese/AG/" + str(l) + "/"+str(i))
+         #for i in range(1,30):
+             os.system ("rm -r /media/marcos/Data/Tese/Bases3/Bags/" + str(l)+"/Wine20sc.csv" )
 
 #limpa_pasta()
 
@@ -113,4 +113,5 @@ def arruma_cagada_andre_indices():
     arq.close()
 
 #arruma_cagada_andre_indices()
-os.system("mv /media/marcos/Marcos/fotos-videos/fotos-12-17-a-10-3-18/*.mp4 /media/marcos/Marcos/fotos-videos/videos-12-17-a-10-3-18/")
+#os.system("mv /media/marcos/Marcos/fotos-videos/fotos-12-17-a-10-3-18/*.mp4 /media/marcos/Marcos/fotos-videos/videos-12-17-a-10-3-18/")
+limpa_pasta()

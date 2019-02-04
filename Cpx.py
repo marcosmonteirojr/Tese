@@ -159,17 +159,7 @@ def biuld_classifier(X_train, y_train, X_val, y_val):
 def dispersion(complexity):
 
     result=[]
-    # print(complexity)
-    # print(len(complexity))
 
-    # for i in range(len(complexity)):
-    #     for j in range(len(complexity[i])):
-    #        # print(len(complexity[i]))
-    #         if type(complexity[i][j]) is not float:
-    #             complexity[i][j]=0.0
-    #             x=open("error.txt",'a')
-    #             x.write("erro de complexidade {},{},{}\n".format(i,j,base_name))
-    #             x.close()
     y = np.array(complexity)
 
     dist = pairwise_distances(y, n_jobs=6)
@@ -278,11 +268,12 @@ def open_bag(local_bag, base_name):
     with open(local_bag+base_name+'.csv', 'r') as f:
         reader = csv.reader(f)
         indx = list(reader)
+       # print(indx)
     for i in indx:
         bags['nome'].append(i[0])
         bags['inst'].append(i[1:])
     #print(indx[0])
-   # print(bags['inst'][0])
+    #print(bags['nome'])
     return bags
 
 def biuld_x_y(indx_bag,X,y):

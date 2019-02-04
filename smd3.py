@@ -36,9 +36,9 @@ X, y, _ = Marff.retorna_instacias(arq_arff)
 
 
 
-arq = open('SelecaoMedia_desvio_pgcs_ga4.csv', 'a')
-arq1 = open('SelecaoWilcoxon_pgcs_ga4.csv', 'a')
-arq2 = open('SelecaoTabela_pgcs_ga4.csv', 'a')
+arq = open('SelecaoMedia_desvio_pgcs_ga5.csv', 'a')
+arq1 = open('SelecaoWilcoxon_pgcs_ga5.csv', 'a')
+arq2 = open('SelecaoTabela_pgcs_ga5.csv', 'a')
 accKUB = []
 accKEB = []
 accOLAB = []
@@ -59,7 +59,7 @@ accMetaP = []
 accVotingBag = []
 accVotingPgsc = []
 
-for j in range(1,3):
+for j in range(1,21):
 
     poolBag = []
     poolPgsc = []
@@ -67,8 +67,10 @@ for j in range(1,3):
     calibrated_poolP = []
 
     bags = Cpx.open_bag(cpx_caminho+str(j)+"/", nome_base)
-    bags2 = Cpx.open_bag(cpx_caminho+str(j)+"/", nome_base + "20")
-
+    #print(cpx_caminho+str(j)+"/", nome_base + "20sc")
+    bags2 = Cpx.open_bag(cpx_caminho+str(j)+"/", nome_base + "20sc")
+    print(bags)
+    #exit(0)
     teste, validacao=Cpx.open_test_vali(local,nome_base,1)
 
     X_test,y_test=Cpx.biuld_x_y(teste,X,y)
@@ -82,7 +84,7 @@ for j in range(1,3):
     for i in range(100):
 
         X_bag,y_bag=Cpx.biuld_x_y(bags['inst'][i],X,y)
-        print(X_bag[1])
+       # print(X_bag[1])
         X_bag2, y_bags2 = Cpx.biuld_x_y(bags2['inst'][i], X, y)
         print(X_bag2[1],"\n")
         X_bag = scaler.transform(X_bag)
@@ -166,8 +168,8 @@ for j in range(1,3):
    
     accVotingBag.append(B)
     accVotingPgsc.append(P)
-    print((accKEP,accKEB))
-exit(0)
+    print(j)
+#exit(0)
     
     #     singleM = SingleBest(poolPgsc)
     #     #
