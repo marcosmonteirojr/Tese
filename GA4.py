@@ -71,7 +71,7 @@ def distancia(primeira=False, population=None):
         #d = Parallel(n_jobs=-2,verbose=5)(delayed(parallel_distance2)(j,bags) for j in range(100, numero_individuo + 100))
 
 
-         ini = time.time()
+
         for j in range(100, numero_individuo + 100):
              indx_bag1 = bags['inst'][j]
              X_bag, y_bag = monta_arquivo(indx_bag1)
@@ -142,7 +142,6 @@ def monta_arquivo(indx_bag):
         X_data.append(X[int(i)])
         y_data.append(y[int(i)])
     return X_data, y_data
-
 
 def cruza(ind1, ind2):
     '''
@@ -225,9 +224,9 @@ def mutacao(ind):
 
     if (geracao == 0 and off == []):
         ind2 = random.randint(0, 99)
-        # print("entrei")
+
     else:
-        # print("entreiIIIIIIIIIIII")
+
         ind2 = random.sample(off, 1)
         ind2 = ind2[0]
 
@@ -259,22 +258,22 @@ def mutacao(ind):
     return ind,
 
 
-def fitness_f1_n2(ind1):
-    global classes
-
-    for i in range(len(bags['nome'])):
-        if (bags['nome'][i] == str(ind1[0])):
-            indx_bag1 = bags['inst'][i]
-
-    X_data, y_data = monta_arquivo(indx_bag1)
-
-    dfx = pd.DataFrame(X_data, copy=False)
-    dfy = robjects.IntVector(y_data)
-    F1 = ecol.overlapping(dfx, dfy, measures='F1')
-    N2 = ecol.neighborhood(dfx, dfy, measures='N2')
-    T1 = ecol.dimensionality(dfx, dfy, measures='T2')
-
-    return F1[0], N2[0], T1[0],
+# def fitness_f1_n2(ind1):
+#     global classes
+#
+#     for i in range(len(bags['nome'])):
+#         if (bags['nome'][i] == str(ind1[0])):
+#             indx_bag1 = bags['inst'][i]
+#
+#     X_data, y_data = monta_arquivo(indx_bag1)
+#
+#     dfx = pd.DataFrame(X_data, copy=False)
+#     dfy = robjects.IntVector(y_data)
+#     F1 = ecol.overlapping(dfx, dfy, measures='F1')
+#     N2 = ecol.neighborhood(dfx, dfy, measures='N2')
+#     T1 = ecol.dimensionality(dfx, dfy, measures='T2')
+#
+#     return F1[0], N2[0], T1[0],
 
 
 def fitness_dispercao(ind1):

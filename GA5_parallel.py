@@ -348,9 +348,12 @@ for t in range(1, 21):
     geracao = 0
    # print(geracao)
     seq = -1
+
+    if os.path.isfile(local+"/Bags/"+str(repeticao)+"/"+nome_base+".csv")==False:
+        print("entrei")
     ##################Criar bags############################################
-    X_train, y_train, X_test, y_test, X_vali, y_vali, dic = Cpx.routine_save_bags(local_dataset, local, nome_base,
-                                                                                  repeticao)
+        X_train, y_train, X_test, y_test, X_vali, y_vali, dic = Cpx.routine_save_bags(local_dataset, local, nome_base,
+                                                                                      repeticao)
     #########################################################################
     arq_dataset = caminho_base + "Dataset/" + nome_base + ".arff"
     arq_arff = Marff.abre_arff(arq_dataset)
