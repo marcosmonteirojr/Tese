@@ -1,10 +1,10 @@
 import Marff, Cpx, csv
 import numpy as np
-import novo_perceptron as perc
+#import novo_perceptron as perc
 from deslib.static.single_best import SingleBest
 from sklearn.preprocessing import StandardScaler
 from sklearn.calibration import CalibratedClassifierCV
-#from sklearn.linear_model import perceptron as perc
+from sklearn.linear_model import perceptron as perc
 from deslib.des.knora_u import KNORAU
 from deslib.des.knora_e import KNORAE
 from deslib.dcs.ola import OLA
@@ -13,10 +13,10 @@ from deslib.dcs.lca import LCA
 from deslib.dcs.rank import Rank
 from scipy.stats import wilcoxon
 from numpy import average,std, array, argsort
-
+import sys
 from mlxtend.classifier import EnsembleVoteClassifier
 
-nome_base="Wine"
+nome_base="Blood"
 local_dataset = "/media/marcos/Data/Tese/Bases2/Dataset/"
 local = "/media/marcos/Data/Tese/Bases3/"
 caminho_base = "/media/marcos/Data/Tese/Bases2/"
@@ -26,7 +26,7 @@ cpx_caminho="/media/marcos/Data/Tese/Bases3/Bags/"
 #local_dataset = "/home/projeto/Marcos/Bases2/Dataset/"
 #local = "/home/projeto/Marcos/Bases3/"
 #caminho_base = "/home/projeto/Marcos/Bases2/"
-#cpx_caminho="home/projeto/Marcos/Bases3/Bags/"
+#cpx_caminho="/home/projeto/Marcos/Bases3/Bags/"
 
 
 arq_dataset = caminho_base + "Dataset/" + nome_base + ".arff"
@@ -68,25 +68,30 @@ for j in range(1,21):
 
     bags = Cpx.open_bag(cpx_caminho+str(j)+"/", nome_base)
     #print(cpx_caminho+str(j)+"/", nome_base + "20sc")
-    bags2 = Cpx.open_bag(cpx_caminho+str(j)+"/", nome_base + "20sc")
-    print(bags)
+    bags2 = Cpx.open_bag(cpx_caminho+str(j)+"/", nome_base + "20")
+    #print(bags)
     #exit(0)
-    teste, validacao=Cpx.open_test_vali(local,nome_base,1)
+    teste, validacao=Cpx.open_test_vali(local,nome_base,j)
 
     X_test,y_test=Cpx.biuld_x_y(teste,X,y)
     X_valida,y_valida=Cpx.biuld_x_y(validacao,X,y)
     X_test=np.array(X_test)
     X_valida=np.array(X_valida)
+
+    y_test = np.array(y_test)
+    y_valida = np.array(y_valida)
+
     scaler = StandardScaler()
+    sca=StandardScaler()
     X_valida = scaler.fit_transform(X_valida)
-    X_test = scaler.transform(X_test)
+    X_test = sca.fit_transform(X_test)
 
     for i in range(100):
-
+        print(i)
         X_bag,y_bag=Cpx.biuld_x_y(bags['inst'][i],X,y)
        # print(X_bag[1])
         X_bag2, y_bags2 = Cpx.biuld_x_y(bags2['inst'][i], X, y)
-        print(X_bag2[1],"\n")
+        #print(X_bag2[1],"\n")
         X_bag = scaler.transform(X_bag)
         #print(X_bag[0])
         X_bag2 = scaler.transform(X_bag2)
@@ -97,7 +102,10 @@ for j in range(1,21):
         poolBag.append(percB.fit(X_bag, y_bag))
         poolPgsc.append(percP.fit(X_bag2, y_bags2))
 
+    orc=Cpx.oracle(poolBag,X_valida,y_valida,X_test,y_test)
 
+    print(orc)
+    exit(0)
     for clf in poolBag:
         calibrated = CalibratedClassifierCV(base_estimator=clf, cv='prefit')
         calibrated.fit(X_valida, y_valida)

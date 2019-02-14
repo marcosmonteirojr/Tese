@@ -400,7 +400,7 @@ for t in range(1, 21):
     _,classes = Marff.retorna_classes_existentes(arq_arff)
     bags = Cpx.open_bag(cpx_caminho + str(repeticao) + "/", nome_base)
 
-    creator.create("FitnessMax", base.Fitness, weights=(fit_value1,))
+    creator.create("FitnessMult", base.Fitness, weights=(fit_value1,))
     creator.create("Individual", list, fitness=creator.FitnessMax)
 
     toolbox = base.Toolbox()

@@ -1,160 +1,117 @@
-from scipy.stats import  friedmanchisquare
-import numpy, csv, pandas
+import  Cpx, Marff, os, numpy as np
+from sklearn.externals.joblib import Parallel, delayed
+local_dataset = "/media/marcos/Data/Tese/Bases2/Dataset/"
+local = "/media/marcos/Data/Tese/Bases3/"
+caminho_base = "/media/marcos/Data/Tese/Bases2/"
+cpx_caminho="/media/marcos/Data/Tese/Bases3/Bags/"
+#min_score=0
+nome_base='Wine'
+#local_dataset = "/home/projeto/Marcos/Bases2/Dataset/"
+#local = "/home/projeto/Marcos/Bases3"
+#caminho_base = "/home/projeto/Marcos/Bases2/"
+#cpx_caminho="home/projeto/Marcos/Bases3/Bags/"
+for repeticao in range(1,21):
+    if os.path.isfile(local + "/Bags/" + str(repeticao) + "/" + nome_base + ".csv") == False:
+        print(repeticao)
+        ##################Criar bags############################################
+        X_train, y_train, X_test, y_test, X_vali, y_vali, dic = Cpx.routine_save_bags(local_dataset, local, nome_base,
+                                                                                      repeticao)
+#########################################################################
 
 
-def open_csv(base_name, arq):
-    a=[]
-    b=[]
-    c=[]
-    d=[]
-    e=[]
-    file = '/media/marcos/Data/Tese/Resultados Complexidade/'+base_name+"/csv_fridman/"+arq+".csv"
-    with open(file, newline='') as csvfile:
-        reader = csv.DictReader(csvfile)
-        for row in reader:
-            a.append(row["a"])
-            b.append(row['b'])
-            c.append(row["c"])
-            d.append(row["d"])
-            e.append(row["e"])
-    return a,b,c,d,e
+arq_dataset = caminho_base + "Dataset/" + nome_base + ".arff"
+arq_arff = Marff.abre_arff(arq_dataset)
+X, y, _ = Marff.retorna_instacias(arq_arff)
+header=['overlapping.F1', 'overlapping.F1v', 'overlapping.F2', 'overlapping.F3', 'overlapping.F4', 'neighborhood.N1', 'neighborhood.N2', 'neighborhood.N3', 'neighborhood.N4', 'neighborhood.T1', 'neighborhood.LSCAvg', 'linearity.L1', 'linearity.L2', 'linearity.L3', '000000.T2', 'dimensionality.T3', 'dimensionality.T4', 'balance.C1', 'balance.C2', 'network.Density', 'network.ClsCoef', 'network.Hubs','Score', 'Q_test','DoubleFault','Disper']
+##exit(0)
 
-def new_result(base_name):
-    #base_name="Banana"
-    x=open('/media/marcos/Data/Tese/Resultados Complexidade/'+base_name+"/Resultados_"+base_name+"_repeticao.csv","r")
-    f1 =[]
-    f1v = []
-    f2 = []
-    f3 = []
-    f4 = []
-    n1 =[]
-    n2 = []
-    n3 = []
-    n4 =[]
-    t1=[]
-    lsc=[]
-    l1=[]
-    l2=[]
-    l3=[]
-    c1=[]
-    c2=[]
-    den=[]
-    cls=[]
-    hub=[]
-    for y in x:
 
-        y=y.split(',')
-        if(y[0]!="overlapping.F1"):
-            f1.append(y[0])
-        if(y[1]!="overlapping.F1v"):
-            f1v.append(y[1])
-        if(y[2]!="overlapping.F2"):
-            f2.append(y[2])
-        if(y[3]!="overlapping.F3"):
-            f3.append(y[3])
-        if (y[4] != "overlapping.F4"):
-            f4.append(y[4])
-        if(y[5]!="neighborhood.N1"):
-            n1.append(y[5])
-        if (y[6] != "neighborhood.N2"):
-            n2.append(y[6])
-        if (y[7] != "neighborhood.N3"):
-            n3.append(y[7])
-        if (y[8] != "neighborhood.N4"):
-            n4.append(y[8])
-        if (y[9] != "neighborhood.T1"):
-            t1.append(y[9])
-        if (y[10] != "neighborhood.LSCAvg"):
-            lsc.append(y[10])
-        if (y[11] != "linearity.L1"):
-            l1.append(y[11])
-        if (y[12] != "linearity.L2"):
-            l2.append(y[12])
-        if (y[13] != "linearity.L3"):
-            l3.append(y[13])
-        if (y[17] != "balance.C1"):
-            c1.append(y[17])
-        if (y[18] != "balance.C2"):
-            c2.append(y[18])
-        if (y[19] != "network.Density"):
-            den.append(y[19])
-        if (y[20] != "network.ClsCoef"):
-            cls.append(y[20])
-        if (y[21] != "network.Hubs"):
-            hub.append(y[21])
-    return   f1 ,f1v, f2 , f3 , f4 , n1 , n2 ,n3 ,n4, t1,lsc, l1, l2, l3, c1, c2, den, cls,hub
+def complexidades(y_train,X_train):
+   # print(y_train)
+    X_bag, y_bag = Cpx.biuld_bags(y_train, X_train, types="sample")
+    cpx=Cpx.complexity_data2(X_bag,y_bag)
 
-def div_col(lista, base_name, arq):
-    a=[]
-    for i in range(0,100):    #exit(0)
-            j=i
-            a.append(lista[j])
-            j=i
-            a.append(lista[j+100])
-            j = i
-            a.append(lista[j + 200])
-            j = i
-            a.append(lista[j + 300])
-            j = i
-            a.append(lista[j + 400])
+    return cpx
 
-    b=["a","b","c","d", "e"]
-    x=chunks(a,5)
+def reject_outliers(data, m = 2.):
+    d = np.abs(data - np.median(data))
+    mdev = np.median(d)
+    s = d/mdev if mdev else 0.
+    return data[s<m]
 
-    with open("/media/marcos/Data/Tese/Resultados Complexidade/"+base_name+"/csv_fridman/"+str(arq)+".csv", 'w') as g:
-        w = csv.writer(g)
-        w.writerow(b)
-        w.writerows(x)
-    del b, a, x
+def parallel_distance(i,bags,X,y,X_vali,y_vali):
 
-def chunks(lista, n):
-    for i in range(0, len(lista), n):
-        yield lista[i:i + n]
+    indx_bag1 = bags['inst'][i]
+    X_bag, y_bag = Cpx.biuld_x_y(indx_bag1,X,y)
+    cpx=(Cpx.complexity_data2(X_bag, y_bag))
+   # _, score, pred = Cpx.biuld_classifier(X_bag, y_bag, X_vali, y_vali)
 
-def exec_csv(base_name):
-    f1, f1v, f2, f3, f4, n1, n2, n3, n4, t1, lsc, l1, l2, l3, c1, c2, den, cls, hub = new_result(base_name)
-    div_col(f1, base_name, 1)
-    div_col(f1v, base_name, 2)
-    div_col(f2, base_name, 3)
-    div_col(f3, base_name, 4)
-    div_col(f4, base_name, 5)
-    div_col(n1, base_name, 6)
-    div_col(n2, base_name, 7)
-    div_col(n3, base_name, 8)
-    div_col(n4, base_name, 9)
-    div_col(t1, base_name, 10)
-    div_col(lsc, base_name, 11)
-    div_col(l1, base_name, 12)
-    div_col(l2, base_name, 13)
-    div_col(l3, base_name, 14)
-    div_col(c1, base_name, 15)
-    div_col(c2, base_name, 16)
-    div_col(den, base_name, 17)
-    div_col(cls, base_name, 18)
-    div_col(hub, base_name, 19)
+    return cpx #score, pred
 
-def main():
-    base_name="Haberman"
-    exec_csv(base_name)
-    p_value=[]
-    #head=["Dataset","F1", "F1v", "F2", "F3",  "F4", "N1", "N2", "N3", "N4", "T1", "LSC", "L1", "L2", "L3", "C1", "C2", "Den", "CLS"
-    #    , "HUB"]
-    p_value.append(base_name)
-    for i in range(1,20):
-        a,b,c,d,e=open_csv(base_name,str(i) )
-        q,p=friedmanchisquare(a,b,c,d,e)
-        p_value.append(round(p,2))
-        alpha = 0.05
+def vote_complexity(X_data,y_data):
+    voto = [0] * 22
+    for i in range(1,11):
+        print(i)
+        if os.path.isfile(local + "/Bags/" + str(i) + "/" + nome_base + ".csv") == False:
+            print("Não exite Bags/treino/validation/teste")
+            return 0
+        stad = []
+        comp=[]
+        #ind=Cpx.open_training(local,nome_base,i)
+        #X_train, y_train =Cpx.biuld_x_y(ind,X_data,y_data)
+        # cp=Parallel(n_jobs=6)(delayed(complexidades)(y_train,X_train) for j in range(100))
+        _,vali=Cpx.open_test_vali(local,nome_base,i)
+        X_vali,y_vali=Cpx.biuld_x_y(vali,X_data,y_data)
+        bags=Cpx.open_bag(local + "/Bags/" + str(i) + "/",nome_base)
+        cp = Parallel(n_jobs=6, verbose=5)(delayed(parallel_distance)(j, bags,X_data,y_data,X_vali,y_vali) for j in range(len(bags['nome'])))
+        #cp, ac, pre = zip(*r)
+        #print(len(ac))
+        #print(len(pre))
+        #print(len(cp))
+        #exit(0)
+        comp.append(cp)
 
-        if p > alpha:
-            print('Same distributions (fail to reject H0)')
-        else:
-            print('Different distributions (reject H0)')
-    with open("/media/marcos/Data/Tese/Resultados Complexidade/Result.csv",
-              'a') as g:
-        w = csv.writer(g)
-    #    w.writerow(head)
-        w.writerow(p_value)
+        #comp=np.append(comp,cp)
+        cpx=np.squeeze(comp)
+        cpx=cpx.T
+        #print(comp)
+        for k in cpx:
+            #print(len(k))
+            stad.append(np.std(k))
+        #print(stad)
 
-if __name__ == "__main__":
-    main()
+        overlapping=stad[0:5]
+        neighborhood=stad[5:11]
+        linearity=stad[11:14]
+        dimensionality=stad[14:17]
+        balance=stad[17:19]
+        network=stad[19:22]
+        o=np.argmax(overlapping)
+        nei=np.argmax(neighborhood)
+        lin=np.argmax(linearity)
+        dim=np.argmax(dimensionality)
+        bal=np.argmax(balance)
+        net=np.argmax(network)
+        voto[o]=voto[o]+1
+        voto[nei+5]=voto[nei+5]+1
+        voto[lin+11]=voto[lin+11]+1
+        voto[dim+14]=voto[dim+14]+1
+        voto[bal+17]=voto[bal+17]+1
+        voto[net+19]=voto[net+19]+1
+        text = ''
+        for carro, cor in zip(header, voto):
+            text += '{} {}, '.format(carro, cor)
+        #print(text)
+    return voto, text
+
+voto,text=vote_complexity(X,y)
+print(voto)
+#print(voto)
+# print(comp[0][0])a
+# print((comp[0][1]))
+# s=np.squeeze(comp)
+# .s=s.tolist()
+# print(s[0])
+# print(s[1])
+# print(s)
+#print(np.reshape(comp,(200,-1)))

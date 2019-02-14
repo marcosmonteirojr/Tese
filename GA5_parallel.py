@@ -13,11 +13,11 @@ from sklearn.externals.joblib import Parallel, delayed
 import time, Cpx
 
 
-
 def distancia(primeira=False, population=None):
 
-    global pop, nome_individuo, dist,  bags,  min_score
-    cpx = []
+    global pop, nome_individuo, dist,  bags,  min_score, grupo, tipos
+    #grupo=["overlapping","neighborhood"]
+    #tipos=["F4","N1"]
     min_score=0
 
     if (primeira==True and geracao == 0):
@@ -27,13 +27,16 @@ def distancia(primeira=False, population=None):
         dist['nome'] = pop
         dist['dist'] = list()
        ################
-       # dist['score']=list()
+        dist['score']=list()
         ###############
 
-        c = Parallel(n_jobs=-2,verbose=5)(delayed(parallel_distance)(i,bags) for i in range(len(dist['nome'])))
-
+        r = Parallel(n_jobs=-2,verbose=5)(delayed(parallel_distance2)(i,bags,grupo,tipos) for i in range(len(dist['nome'])))
+        c, score = zip(*r)
+        dist['score']=(score)
         dist['dist']=Cpx.dispersion(c)
-
+        min_score = np.around(min(dist['score']), 2)
+        #print(score)
+       # exit(0)
         return
 
     if (primeira == False and population == None):
@@ -42,7 +45,7 @@ def distancia(primeira=False, population=None):
         dist['nome'] = list()
         dist['dist'] = list()
         ############################
-        #dist['score']=list()
+        dist['score']=list()
         #############################
         inicio = nome_individuo - numero_individuo
         print("diferente")
@@ -52,9 +55,12 @@ def distancia(primeira=False, population=None):
             x.append(i)
             dist['nome'].append(x)
 
-        d = Parallel(n_jobs=-2,verbose=5)(delayed(parallel_distance)(j,bags) for j in range(100, numero_individuo + 100))
-        dist['dist'] = Cpx.dispersion(d)
-
+        r = Parallel(n_jobs=-2,verbose=5)(delayed(parallel_distance2)(j,bags,grupo,tipos) for j in range(100, numero_individuo + 100))
+        c, score = zip(*r)
+        dist['dist'] = Cpx.dispersion(c)
+        dist['score']=score
+        min_score = np.around(min(dist['score']), 2)
+        #exit(0)
         return
 
     if (population != None):
@@ -63,15 +69,17 @@ def distancia(primeira=False, population=None):
         dist['nome'] = population
         dist['dist'] = list()
         #######################
-        #dist['score']=list()
+        dist['score']=list()
         ######################
         indices=[]
         for i in population:
             indices.append(bags['nome'].index(str(i[0])))
-        c = Parallel(n_jobs=-2,verbose=5)(delayed(parallel_distance)(i,bags) for i in indices)
-
+        r = Parallel(n_jobs=-2,verbose=5)(delayed(parallel_distance2)(i,bags,grupo,tipos) for i in indices)
+        c, score = zip(*r)
 
         dist['dist'] = Cpx.dispersion(c)
+        dist['score']=score
+        min_score = np.around(min(dist['score']), 2)
        # exit(0)
         return
 
@@ -80,8 +88,19 @@ def parallel_distance(i,bags):
     indx_bag1 = bags['inst'][i]
     X_bag, y_bag = monta_arquivo(indx_bag1)
     cpx=(Cpx.complexity_data2(X_bag, y_bag))
+    _, score, _ = Cpx.biuld_classifier(X_bag, y_bag, X_vali, y_vali)
 
-    return cpx
+    return cpx,score
+
+def parallel_distance2(i,bags,grupo, tipos):
+
+    indx_bag1 = bags['inst'][i]
+    X_bag, y_bag = monta_arquivo(indx_bag1)
+    cpx=(Cpx.complexity_data3(X_bag, y_bag,grupo,tipos))
+    #exit(0)
+    _, score, _ = Cpx.biuld_classifier(X_bag, y_bag, X_vali, y_vali)
+
+    return cpx,score
 
 def monta_arquivo(indx_bag):
     global X, y
@@ -240,12 +259,12 @@ def fitness_dispercao(ind1):
         if (dist['nome'][i][0] == ind1[0]):
            dst = dist['dist'][i]
            ###########################
-    #        score=dist["score"][i]
-    #        break
-    # if score<=min_score:
-    #     dst=0.0
+           score=dist["score"][i]
+           break
+    if score<=min_score:
+        dst=0.0
     ###############################
-    return dst,
+    return dst, score
 
 def sequencia():
     global seq
@@ -260,7 +279,7 @@ def the_function(population, gen, offspring):
     :param offspring: nova populacao
     :return:
     '''
-    global geracao, off, dispersao, nr_generation, bags, local
+    global geracao, off, dispersao, nr_generation, bags, local, arquivo_de_saida
     print("the_fuction")
     off = []
     geracao = gen
@@ -295,7 +314,7 @@ def the_function(population, gen, offspring):
             #print(len(nm),"\n")
             name.extend(nm)
 
-            Cpx.save_bag(name,'bags',local+"/Bags/",base_name+"sc",repeticao)
+            Cpx.save_bag(name,'bags',local+"/Bags/",base_name+arquivo_de_saida,repeticao)
 
     if (dispersao == True and gg!=nr_generation):
         distancia(population=population)
@@ -317,11 +336,13 @@ def populacao(populacao_total):
 off = []
 numero_individuo = 100
 contador_cruzamento = 1
-nome_base = "Haberman"
+nome_base = "Adult"
 
 nr_generation = 20
 proba_crossover = 0.99
 proba_mutation = 0.01
+
+arquivo_de_saida="ep"
 
 fit_value1 = 1.0
 fit_value2 = 1.0
@@ -337,6 +358,9 @@ min_score=0
 #cpx_caminho="home/projeto/Marcos/Bases3/Bags/"
 
 ########
+
+grupo=["overlapping","neighborhood"]
+tipos=["F4","N1"]
 dispersao = True
 for t in range(1, 21):
     classes = []
@@ -348,25 +372,27 @@ for t in range(1, 21):
     geracao = 0
    # print(geracao)
     seq = -1
-
+    arq_dataset = caminho_base + "Dataset/" + nome_base + ".arff"
+    arq_arff = Marff.abre_arff(arq_dataset)
+    X, y, _ = Marff.retorna_instacias(arq_arff)
+    _, classes = Marff.retorna_classes_existentes(arq_arff)
     if os.path.isfile(local+"/Bags/"+str(repeticao)+"/"+nome_base+".csv")==False:
         print("entrei")
     ##################Criar bags############################################
         X_train, y_train, X_test, y_test, X_vali, y_vali, dic = Cpx.routine_save_bags(local_dataset, local, nome_base,
                                                                                       repeticao)
     #########################################################################
-    arq_dataset = caminho_base + "Dataset/" + nome_base + ".arff"
-    arq_arff = Marff.abre_arff(arq_dataset)
-    X, y, _ = Marff.retorna_instacias(arq_arff)
-    _,classes = Marff.retorna_classes_existentes(arq_arff)
+    else:
+        _, validation=Cpx.open_test_vali(local+"/",nome_base,repeticao)
+        X_vali,y_vali=Cpx.biuld_x_y(validation,X,y)
     #print(classes)
     #exit(0)
 
     bags = Cpx.open_bag(cpx_caminho + str(repeticao) + "/", nome_base)
 
 
-    creator.create("FitnessMax", base.Fitness, weights=(fit_value1,))
-    creator.create("Individual", list, fitness=creator.FitnessMax)
+    creator.create("FitnessMult", base.Fitness, weights=(fit_value1,fit_value2))
+    creator.create("Individual", list, fitness=creator.FitnessMult)
 
     toolbox = base.Toolbox()
     toolbox.register("attr_item", sequencia)
@@ -381,7 +407,7 @@ for t in range(1, 21):
     toolbox.register("evaluate", fitness_dispercao)
     toolbox.register("mate", cruza)
     toolbox.register("mutate", mutacao)
-    toolbox.register("select", tools.selRoulette)
+    toolbox.register("select", tools.selSPEA2)
     algorithms.eaMuPlusLambda(pop, toolbox, 100, numero_individuo, proba_crossover, proba_mutation, nr_generation,
                               generation_function=the_function, popu=populacao)
 

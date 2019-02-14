@@ -1,6 +1,7 @@
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import perceptron
 #from sklearn.ensemble import bagging
+from deslib.static.oracle import Oracle
 import numpy as np
 from deslib.util import diversity
 import Marff, subprocess
@@ -40,13 +41,10 @@ def split_data(X_data,y_data):
     return X_train,y_train,X_test,y_test,X_vali,y_vali,id_train,id_test,id_vali
 
 def biuld_bags(y_train, X_train=None, X_data=None, y_data=None,ind=None,types="ind"):
-    #constroi os bags de forma randomica, duas formas por indices do traino, ou por instancias
+    #constroi os bags de forma randomica, duas formas por indices do treino, ou por instancias
     X = []
     y = []
     if types=="sample":
-
-       # X_train=X_train.tolist()
-       # y_train=y_train.tolist()
 
         max_samples=int(round((len(y_train)*0.5),1))
         random_state = check_random_state(random.seed())
@@ -55,25 +53,18 @@ def biuld_bags(y_train, X_train=None, X_data=None, y_data=None,ind=None,types="i
         for i in indices:
            X.append(X_train[i])
            y.append(y_train[i])
-        #X=np.array(X)
-        #y=np.array(y)
-        #print(X)
+        #print(y)
+
         return X, y
 
     if types=="ind":
-        #print(X_data)
 
-        #X_data=X_data.tolist()
-        #y_data=y_data.tolist()
         idx=random.choices(ind,k=int(round((len(y_train)*0.5),1)))
         for i in idx:
             X.append(X_data[i])
             y.append(y_data[i])
 
-       # print(X)
         return X,y,idx
-    #exit(0)
-    #print(y)
 
 def generate_csv(dic):
     #grava um arquivo csv com o nome dos atributos na primeira linha, e das instancias, arquivo para script do R
@@ -113,16 +104,28 @@ def complexity_data2(X_data,y_data):
     dfy = robjects.IntVector(y_data)
     complex = ecol.complexity(dfx, dfy, type="class")
     #print(complex)
-    complex = np.asarray(complex)
-    complex=complex.tolist()
-    #print(complex)
     #exit(0)
-
-
+    complex = np.asarray(complex)
     #print(complex)
-   # exit(0)
+    #complex=complex.tolist()
+    #exit(0)
     return complex
+def complexity_data3(X_data,y_data,grupo,tipo):
+    #complex=[]
+    dfx = pd.DataFrame(X_data, copy=False)
+    dfy = robjects.IntVector(y_data)
+    #print(tipo[1])
 
+    if grupo[0]=="overlapping":
+        complex=ecol.overlapping(dfx,dfy,measures=tipo[0])
+    if grupo[1]=="neighborhood":
+        comp=ecol.neighborhood(dfx,dfy,measures=tipo[1])
+    complex = np.asarray(complex)
+    comp = np.asarray(comp)
+    complex=np.append(complex,comp[0])
+    #print (complex,comp)
+    #exit(0)
+    return complex
 def paralell_process(process):
    y=[]
    x=os.popen('Rscript {}'.format(process)).read()
@@ -139,8 +142,6 @@ def biuld_dic(X,y, dic):
     g.append(y)
     g = np.array(g)
     g.astype(int)
-    # X=np.array(X)
-   # print(g)
     d['class'] = dic['class']
     d['data'] = np.concatenate((X, g.T), axis=1)
     d['data'] = d['data'].tolist()
@@ -160,9 +161,9 @@ def dispersion(complexity):
 
     result=[]
 
-    y = np.array(complexity)
+    #y = np.array(complexity)
 
-    dist = pairwise_distances(y, n_jobs=6)
+    dist = pairwise_distances(complexity, n_jobs=6)
     dist = dist.tolist()
     for i in dist:
         result.append(np.mean(i))
@@ -230,19 +231,11 @@ def save_bag(inds,types,local,base_name, iteration):
                 w = csv.writer(f)
                 w.writerow(inds)
 
-def oracle(predict,y_val):
-    a=[]
-    result=[]
-
-    for i in range(len(predict)):
-        for j in range(predict[i]):
-            if predict[i][j]==y_val[j]:
-                print(predict[i][j],y_val)
-                a.append(1)
-            else:
-                a.append(0)
-        result.append(a)
-    return result
+def oracle(poll,X,y,X_test,y_test):
+    orc = Oracle(poll)
+    orc.fit(X,y)
+    #orc.predict(X_test,y_test)
+    return orc.score(X_test,y_test)
 
 def routine_save_bags(local_dataset, local ,base_name, iteration ):
 
@@ -256,8 +249,6 @@ def routine_save_bags(local_dataset, local ,base_name, iteration ):
     for i in range(0, 100):
         X_bag, y_bag, id = biuld_bags(y_train, X_data=X_data, y_data=y_data, ind=id_train, types="ind")
         id.insert(0,i)
-       # print(id)
-        #exit(0)
         save_bag(id, 'bags', local+"/Bags/", base_name, str(iteration))
     return  X_train, y_train, X_test, y_test, X_vali, y_vali, dic
 
@@ -272,8 +263,7 @@ def open_bag(local_bag, base_name):
     for i in indx:
         bags['nome'].append(i[0])
         bags['inst'].append(i[1:])
-    #print(indx[0])
-    #print(bags['nome'])
+
     return bags
 
 def biuld_x_y(indx_bag,X,y):
@@ -284,7 +274,7 @@ def biuld_x_y(indx_bag,X,y):
     :param vet_classes: false, retorna o vetor de classes
     :return: X_data, y_data
     '''
-    global nome_base, classes, caminho_base
+    #global nome_base, classes, caminho_base
     X_data = []
     y_data = []
     for i in indx_bag:
@@ -300,6 +290,13 @@ def open_test_vali(local,base_name,iteration):
         reader = csv.reader(f)
         vali = list(reader)
     return teste[0], vali[0]
+
+def open_training(local,base_name,iteration):
+    with open(local + "Treino/"+str(iteration)+"/"+base_name+'.csv','r') as f:
+        reader = csv.reader(f)
+        treino=list(reader)
+    return treino[0]
+
 
 def main():
     import time
