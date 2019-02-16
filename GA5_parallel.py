@@ -32,6 +32,8 @@ def distancia(primeira=False, population=None):
 
         r = Parallel(n_jobs=-2,verbose=5)(delayed(parallel_distance2)(i,bags,grupo,tipos) for i in range(len(dist['nome'])))
         c, score = zip(*r)
+        print(c)
+        exit(0)
         dist['score']=(score)
         dist['dist']=Cpx.dispersion(c)
         min_score = np.around(min(dist['score']), 2)
@@ -407,7 +409,7 @@ for t in range(1, 21):
     toolbox.register("evaluate", fitness_dispercao)
     toolbox.register("mate", cruza)
     toolbox.register("mutate", mutacao)
-    toolbox.register("select", tools.selSPEA2)
+    toolbox.register("select", tools.selNSGA2)
     algorithms.eaMuPlusLambda(pop, toolbox, 100, numero_individuo, proba_crossover, proba_mutation, nr_generation,
                               generation_function=the_function, popu=populacao)
 

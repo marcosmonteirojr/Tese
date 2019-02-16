@@ -9,6 +9,7 @@ import csv, random, os
 from sklearn.utils import check_random_state
 from multiprocessing import Pool
 from sklearn.metrics import pairwise_distances
+from sklearn.metrics import pairwise
 os.environ['R_HOME'] = '/home/marcos/anaconda3/envs/tese2/lib/R'
 import pandas as pd
 from rpy2.robjects import pandas2ri
@@ -110,6 +111,7 @@ def complexity_data2(X_data,y_data):
     #complex=complex.tolist()
     #exit(0)
     return complex
+
 def complexity_data3(X_data,y_data,grupo,tipo):
     #complex=[]
     dfx = pd.DataFrame(X_data, copy=False)
@@ -126,6 +128,7 @@ def complexity_data3(X_data,y_data,grupo,tipo):
     #print (complex,comp)
     #exit(0)
     return complex
+
 def paralell_process(process):
    y=[]
    x=os.popen('Rscript {}'.format(process)).read()
@@ -156,7 +159,18 @@ def biuld_classifier(X_train, y_train, X_val, y_val):
     predict=perc.predict(X_val)
 
     return perc, score, predict
+def dispersion2(complexity):
+    result=[]
+    s=[]
+    for i in len(complexity):
+        t = []
+        for j in complexity:
+            t.append(abs(i - j))
+        s.append(t)
 
+    for i in s:
+        result.append(np.mean(i))
+    return result
 def dispersion(complexity):
 
     result=[]
@@ -300,6 +314,13 @@ def open_training(local,base_name,iteration):
 
 def main():
     import time
+
+    x=[]
+    y=[1,2,3,4]
+    x.append(y)
+    x.append(y)
+    k=dispersion2(x)
+    print(k)
     #inicio = time.time()
     #X_data, y_data, dataset, dic = open_data(base_name, local_data)
     #X_train, y_train, X_test, y_test, X_vali, y_vali, id_train, id_test, id_vali = split_data(X_data, y_data)
@@ -335,17 +356,17 @@ def main():
     #print((disp))
     #print(len(q))
     inicio = time.time()
-    process=("/home/marcos/Documentos/new_1.r","/home/marcos/Documentos/new_2.r","/home/marcos/Documentos/new_3.r","/home/marcos/Documentos/new_4.r","/home/marcos/Documentos/new_5.r","/home/marcos/Documentos/new_6.r")
-    pool = Pool(processes=8)
-    y=pool.map(paralell_process,process)
-    print(y)
-    fim = time.time()
-    print((fim - inicio) / 60)
-    inicio = time.time()
-    complexity_data()
+    #process=("/home/marcos/Documentos/new_1.r","/home/marcos/Documentos/new_2.r","/home/marcos/Documentos/new_3.r","/home/marcos/Documentos/new_4.r","/home/marcos/Documentos/new_5.r","/home/marcos/Documentos/new_6.r")
+    #pool = Pool(processes=8)
+    #y=pool.map(paralell_process,process)
+    #print(y)
+    #fim = time.time()
+    #print((fim - inicio) / 60)
+    #inicio = time.time()
+    #complexity_data()
     #complexity_data2()
-    fim = time.time()
-    print((fim - inicio) / 60)
+    #fim = time.time()
+    #print((fim - inicio) / 60)
 
 
 
