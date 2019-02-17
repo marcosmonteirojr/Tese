@@ -104,6 +104,7 @@ def complexity_data2(X_data,y_data):
     dfx = pd.DataFrame(X_data, copy=False)
     dfy = robjects.IntVector(y_data)
     complex = ecol.complexity(dfx, dfy, type="class")
+
     #print(complex)
     #exit(0)
     complex = np.asarray(complex)
@@ -116,16 +117,64 @@ def complexity_data3(X_data,y_data,grupo,tipo):
     #complex=[]
     dfx = pd.DataFrame(X_data, copy=False)
     dfy = robjects.IntVector(y_data)
-    #print(tipo[1])
+   # print(grupo,tipo)
+    over=nei=line=dim=bal=net=None
+    complex = np.array([])
+    if grupo[0]=='overlapping':
+        over=ecol.overlapping(dfx,dfy,measures=tipo[0])
+        over = np.asarray(over)
+       # print(over)
 
-    if grupo[0]=="overlapping":
-        complex=ecol.overlapping(dfx,dfy,measures=tipo[0])
+        complex = np.append(complex, over[0])
+        #print(complex)
+        #exit(0)
     if grupo[1]=="neighborhood":
-        comp=ecol.neighborhood(dfx,dfy,measures=tipo[1])
-    complex = np.asarray(complex)
-    comp = np.asarray(comp)
-    complex=np.append(complex,comp[0])
-    #print (complex,comp)
+        nei=ecol.neighborhood(dfx,dfy,measures=tipo[1])
+        nei = np.asarray(nei)
+
+        complex = np.append(complex, nei[0])
+    if grupo[2]=="linearity":
+        line=ecol.linearity(dfx,dfy,measures=tipo[2])
+        line = np.asarray(line)
+        complex = np.append(complex, line[0])
+    if grupo[3] == "dimensionality":
+        dim = ecol.dimensionality(dfx, dfy, measures=tipo[3])
+        dim = np.asarray(dim)
+        complex = np.append(complex, dim[0])
+    if grupo[4] == "balance":
+        bal = ecol.balance(dfx, dfy, measures=tipo[4])
+        bal = np.asarray(bal)
+        complex = np.append(complex, bal[0])
+    if grupo[5] == "network":
+        net = ecol.network(dfx, dfy, measures=tipo[5])
+        net = np.asarray(net)
+        complex = np.append(complex, net[0])
+
+    # if over !=None:
+    #      over = np.asarray(over)
+    #     # print(over)
+    #      complex = np.append(complex, over[0])
+    # if nei !=None:
+    #      nei=np.asarray(nei)
+    #      complex = np.append(complex, nei[0])
+    # if line !=None:
+    #      line=np.asarray(line)
+    #      complex = np.append(complex, line[0])
+    # #
+    # if dim!=None:
+    #     dim=np.asarray(dim)
+    #     complex = np.append(complex, dim[0])
+    # #
+    # if bal!=None:
+    #      bal=np.asarray(bal)
+    #      complex = np.append(complex, bal[0])
+    # #
+    # if net !=None:
+    #      net = np.asarray(net)
+    #      complex = np.append(complex, net[0])
+    complex=complex.tolist()
+
+    #print (complex)
     #exit(0)
     return complex
 
@@ -159,18 +208,7 @@ def biuld_classifier(X_train, y_train, X_val, y_val):
     predict=perc.predict(X_val)
 
     return perc, score, predict
-def dispersion2(complexity):
-    result=[]
-    s=[]
-    for i in len(complexity):
-        t = []
-        for j in complexity:
-            t.append(abs(i - j))
-        s.append(t)
 
-    for i in s:
-        result.append(np.mean(i))
-    return result
 def dispersion(complexity):
 
     result=[]
@@ -178,9 +216,33 @@ def dispersion(complexity):
     #y = np.array(complexity)
 
     dist = pairwise_distances(complexity, n_jobs=6)
+    #x=np.indices(dist.diagonal())
+
+    #exit(0)
     dist = dist.tolist()
     for i in dist:
         result.append(np.mean(i))
+    return result
+
+def dispersion2(complexity):
+    print(complexity)
+    #retorna a dipersao de 1 valor (a-b) entrada ex: ([valor],[valor]....)
+    result=[]
+    s=[]
+    complexity = list(complexity)
+
+    for i in range(len(complexity)):
+
+        t = []
+        for j in range(len(complexity)):
+            if i==j:
+                continue
+            else:
+                t.append(abs(complexity[i][0] - complexity[j][0]))
+        s.append(t)
+    for i in s:
+        result.append(np.mean(i))
+
     return result
 
 def diversitys(y_test,predicts):

@@ -30,15 +30,14 @@ def distancia(primeira=False, population=None):
         dist['score']=list()
         ###############
 
-        r = Parallel(n_jobs=-2,verbose=5)(delayed(parallel_distance2)(i,bags,grupo,tipos) for i in range(len(dist['nome'])))
+        r = Parallel(n_jobs=jobs,verbose=5)(delayed(parallel_distance2)(i,bags,grupo,tipos) for i in range(len(dist['nome'])))
         c, score = zip(*r)
-        print(c)
-        exit(0)
+        #print(c)
         dist['score']=(score)
-        dist['dist']=Cpx.dispersion(c)
+        dist['dist']=Cpx.dispersion2(c)
         min_score = np.around(min(dist['score']), 2)
-        #print(score)
-       # exit(0)
+        #print( dist['dist'])
+        #exit(0)
         return
 
     if (primeira == False and population == None):
@@ -57,9 +56,9 @@ def distancia(primeira=False, population=None):
             x.append(i)
             dist['nome'].append(x)
 
-        r = Parallel(n_jobs=-2,verbose=5)(delayed(parallel_distance2)(j,bags,grupo,tipos) for j in range(100, numero_individuo + 100))
+        r = Parallel(n_jobs=jobs,verbose=5)(delayed(parallel_distance2)(j,bags,grupo,tipos) for j in range(100, numero_individuo + 100))
         c, score = zip(*r)
-        dist['dist'] = Cpx.dispersion(c)
+        dist['dist'] = Cpx.dispersion2(c)
         dist['score']=score
         min_score = np.around(min(dist['score']), 2)
         #exit(0)
@@ -76,10 +75,10 @@ def distancia(primeira=False, population=None):
         indices=[]
         for i in population:
             indices.append(bags['nome'].index(str(i[0])))
-        r = Parallel(n_jobs=-2,verbose=5)(delayed(parallel_distance2)(i,bags,grupo,tipos) for i in indices)
+        r = Parallel(n_jobs=jobs,verbose=5)(delayed(parallel_distance2)(i,bags,grupo,tipos) for i in indices)
         c, score = zip(*r)
 
-        dist['dist'] = Cpx.dispersion(c)
+        dist['dist'] = Cpx.dispersion2(c)
         dist['score']=score
         min_score = np.around(min(dist['score']), 2)
        # exit(0)
@@ -89,7 +88,7 @@ def parallel_distance(i,bags):
 
     indx_bag1 = bags['inst'][i]
     X_bag, y_bag = monta_arquivo(indx_bag1)
-    cpx=(Cpx.complexity_data2(X_bag, y_bag))
+    cpx=(Cpx.complexity_data(X_bag, y_bag))
     _, score, _ = Cpx.biuld_classifier(X_bag, y_bag, X_vali, y_vali)
 
     return cpx,score
@@ -338,8 +337,8 @@ def populacao(populacao_total):
 off = []
 numero_individuo = 100
 contador_cruzamento = 1
-nome_base = "Adult"
-
+nome_base = "Haberman"
+jobs=2
 nr_generation = 20
 proba_crossover = 0.99
 proba_mutation = 0.01
@@ -361,8 +360,8 @@ min_score=0
 
 ########
 
-grupo=["overlapping","neighborhood"]
-tipos=["F4","N1"]
+grupo=["overlapping",'','','','','']#ATECAO TESTEI PARA DUAS MEDIDAS DE DIFERENTES GRUPOS SOMENTE
+tipos=["F1",'','','','','']
 dispersao = True
 for t in range(1, 21):
     classes = []

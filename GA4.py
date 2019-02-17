@@ -42,6 +42,8 @@ def distancia(primeira=False, population=None):
              _, score, _ = Cpx.biuld_classifier(X_bag, y_bag, X_vali, y_vali)
 
              dist['score'].append(score)
+        print(cpx)
+        exit(0)
         min_score = np.around(min(dist['score']), 2)
             #######################
 
@@ -400,7 +402,7 @@ for t in range(1, 21):
     _,classes = Marff.retorna_classes_existentes(arq_arff)
     bags = Cpx.open_bag(cpx_caminho + str(repeticao) + "/", nome_base)
 
-    creator.create("FitnessMult", base.Fitness, weights=(fit_value1,))
+    creator.create("FitnessMax", base.Fitness, weights=(fit_value1,))
     creator.create("Individual", list, fitness=creator.FitnessMax)
 
     toolbox = base.Toolbox()

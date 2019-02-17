@@ -5,7 +5,7 @@ local = "/media/marcos/Data/Tese/Bases3/"
 caminho_base = "/media/marcos/Data/Tese/Bases2/"
 cpx_caminho="/media/marcos/Data/Tese/Bases3/Bags/"
 #min_score=0
-nome_base='Wine'
+nome_base='Haberman'
 #local_dataset = "/home/projeto/Marcos/Bases2/Dataset/"
 #local = "/home/projeto/Marcos/Bases3"
 #caminho_base = "/home/projeto/Marcos/Bases2/"
@@ -78,8 +78,10 @@ def vote_complexity(X_data,y_data):
         for k in cpx:
             #print(len(k))
             stad.append(np.std(k))
-        #print(stad)
-
+        g=np.argmax(stad)
+        print(stad)
+        print(header[g])
+        exit(0)
         overlapping=stad[0:5]
         neighborhood=stad[5:11]
         linearity=stad[11:14]
