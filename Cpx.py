@@ -40,6 +40,34 @@ def split_data(X_data,y_data):
     del X_data,y_data,X_temp,y_temp, id_temp
 
     return X_train,y_train,X_test,y_test,X_vali,y_vali,id_train,id_test,id_vali
+def biuld_bags_stratify(y_train, X_train=None, X_data=None, y_data=None,ind=None,types="ind"):
+    print('atencao pq nao e a funcao de bag oficial')
+    X = []
+    y = []
+    if types == "sample":
+
+        max_samples = int(round((len(y_train) * 0.5), 1))
+        random_state = check_random_state(random.seed())
+        indices = random_state.randint(0, len(y_train), max_samples)
+
+        for i in indices:
+            X.append(X_train[i])
+            y.append(y_train[i])
+        # print(y)
+
+        return X, y
+
+    if types == "ind":
+        indices=ind
+        X_bag,xx,y_bag,yy,idx,idxx=train_test_split(X_train, y_train, indices, test_size=0.5, stratify=y_train)
+       # print(indices)
+       # print(idx)
+        idx=idx.tolist()
+        for i in idx:
+            X.append(X_data[i])
+            y.append(y_data[i])
+        #exit(0)
+        return X, y, idx
 
 def biuld_bags(y_train, X_train=None, X_data=None, y_data=None,ind=None,types="ind"):
     #constroi os bags de forma randomica, duas formas por indices do treino, ou por instancias
@@ -117,10 +145,11 @@ def complexity_data3(X_data,y_data,grupo,tipo):
     #complex=[]
     dfx = pd.DataFrame(X_data, copy=False)
     dfy = robjects.IntVector(y_data)
-   # print(grupo,tipo)
+    #print(X_data)
     over=nei=line=dim=bal=net=None
     complex = np.array([])
     if grupo[0]=='overlapping':
+       # print('entrei')
         over=ecol.overlapping(dfx,dfy,measures=tipo[0])
         over = np.asarray(over)
        # print(over)
@@ -131,13 +160,14 @@ def complexity_data3(X_data,y_data,grupo,tipo):
     if grupo[1]=="neighborhood":
         nei=ecol.neighborhood(dfx,dfy,measures=tipo[1])
         nei = np.asarray(nei)
-
+       # print('entre')
         complex = np.append(complex, nei[0])
     if grupo[2]=="linearity":
         line=ecol.linearity(dfx,dfy,measures=tipo[2])
         line = np.asarray(line)
         complex = np.append(complex, line[0])
     if grupo[3] == "dimensionality":
+        #print('entrei')
         dim = ecol.dimensionality(dfx, dfy, measures=tipo[3])
         dim = np.asarray(dim)
         complex = np.append(complex, dim[0])
@@ -225,7 +255,7 @@ def dispersion(complexity):
     return result
 
 def dispersion2(complexity):
-    print(complexity)
+   # print(complexity)
     #retorna a dipersao de 1 valor (a-b) entrada ex: ([valor],[valor]....)
     result=[]
     s=[]
@@ -318,12 +348,14 @@ def routine_save_bags(local_dataset, local ,base_name, iteration ):
     #rotina para criar treino teste e validaçao alem dos 100 bags, local e onde esta o dataset orig
     X_data, y_data, dataset, dic = open_data(base_name, local_dataset)
     X_train, y_train, X_test, y_test, X_vali, y_vali, id_train, id_test, id_vali = split_data(X_data, y_data)
-
+    #print('mudar as saidas')
     save_bag(id_train, 'train', local+"/Treino/",base_name,(iteration))
     save_bag(id_vali, 'validation', local+"/Validacao/",base_name,str(iteration))
     save_bag(id_test, 'test', local+"/Teste/",base_name,str(iteration))
     for i in range(0, 100):
+        #       X_bag, y_bag, id = biuld_bags_stratify(y_train,X_train=X_train, X_data=X_data, y_data=y_data, ind=id_train, types="ind")
         X_bag, y_bag, id = biuld_bags(y_train, X_data=X_data, y_data=y_data, ind=id_train, types="ind")
+        #print(len(id))
         id.insert(0,i)
         save_bag(id, 'bags', local+"/Bags/", base_name, str(iteration))
     return  X_train, y_train, X_test, y_test, X_vali, y_vali, dic
@@ -359,6 +391,7 @@ def biuld_x_y(indx_bag,X,y):
     return X_data, y_data
 
 def open_test_vali(local,base_name,iteration):
+    print("open bag/teste_vali mudar as saidas")
     with open(local + "Teste/"+str(iteration)+"/"+base_name+'.csv','r') as f:
         reader = csv.reader(f)
         teste = list(reader)
@@ -375,14 +408,21 @@ def open_training(local,base_name,iteration):
 
 
 def main():
-    import time
+    #import time
+  #  local_dataset = "/media/marcos/Data/Tese/Bases2/Dataset/"
+   # local = "/media/marcos/Data/Tese/Bases3"
+    caminho_base = "/media/marcos/Data/Tese/Bases2/"
+    cpx_caminho = "/media/marcos/Data/Tese/Bases3/Bags/"
+    #for i in range(1,21):
+   #     X_train, y_train, X_test, y_test, X_vali, y_vali, dic = routine_save_bags(local_dataset, local, "Wine",
+    #                                                                              i)
 
-    x=[]
-    y=[1,2,3,4]
-    x.append(y)
-    x.append(y)
-    k=dispersion2(x)
-    print(k)
+   # x=[]
+   # y=[1,2,3,4]
+   # x.append(y)
+   # x.append(y)
+   # k=dispersion2(x)
+   # print(k)
     #inicio = time.time()
     #X_data, y_data, dataset, dic = open_data(base_name, local_data)
     #X_train, y_train, X_test, y_test, X_vali, y_vali, id_train, id_test, id_vali = split_data(X_data, y_data)
@@ -434,4 +474,6 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
 

@@ -5,7 +5,7 @@ local = "/media/marcos/Data/Tese/Bases3/"
 caminho_base = "/media/marcos/Data/Tese/Bases2/"
 cpx_caminho="/media/marcos/Data/Tese/Bases3/Bags/"
 #min_score=0
-nome_base='Haberman'
+nome_base='Wine'
 #local_dataset = "/home/projeto/Marcos/Bases2/Dataset/"
 #local = "/home/projeto/Marcos/Bases3"
 #caminho_base = "/home/projeto/Marcos/Bases2/"
@@ -22,7 +22,7 @@ for repeticao in range(1,21):
 arq_dataset = caminho_base + "Dataset/" + nome_base + ".arff"
 arq_arff = Marff.abre_arff(arq_dataset)
 X, y, _ = Marff.retorna_instacias(arq_arff)
-header=['overlapping.F1', 'overlapping.F1v', 'overlapping.F2', 'overlapping.F3', 'overlapping.F4', 'neighborhood.N1', 'neighborhood.N2', 'neighborhood.N3', 'neighborhood.N4', 'neighborhood.T1', 'neighborhood.LSCAvg', 'linearity.L1', 'linearity.L2', 'linearity.L3', '000000.T2', 'dimensionality.T3', 'dimensionality.T4', 'balance.C1', 'balance.C2', 'network.Density', 'network.ClsCoef', 'network.Hubs','Score', 'Q_test','DoubleFault','Disper']
+header=['overlapping.F1', 'overlapping.F1v', 'overlapping.F2', 'overlapping.F3', 'overlapping.F4', 'neighborhood.N1', 'neighborhood.N2', 'neighborhood.N3', 'neighborhood.N4', 'neighborhood.T1', 'neighborhood.LSCAvg', 'linearity.L1', 'linearity.L2', 'linearity.L3', '000000.T2', 'dimensionality.T3', 'dimensionality.T4', 'balance.C1', 'balance.C2', 'network.Density', 'network.ClsCoef', 'network.Hubs']
 ##exit(0)
 
 
@@ -78,10 +78,9 @@ def vote_complexity(X_data,y_data):
         for k in cpx:
             #print(len(k))
             stad.append(np.std(k))
-        g=np.argmax(stad)
-        print(stad)
-        print(header[g])
-        exit(0)
+        max=np.argsort(stad)
+        max=max[::-1]
+
         overlapping=stad[0:5]
         neighborhood=stad[5:11]
         linearity=stad[11:14]
@@ -104,10 +103,12 @@ def vote_complexity(X_data,y_data):
         for carro, cor in zip(header, voto):
             text += '{} {}, '.format(carro, cor)
         #print(text)
-    return voto, text
+    return voto, text, max, stad
 
-voto,text=vote_complexity(X,y)
-print(voto)
+voto,text, max, std=vote_complexity(X,y)
+for i in max:
+    print(header[i])
+print(std)
 #print(voto)
 # print(comp[0][0])a
 # print((comp[0][1]))
@@ -115,5 +116,5 @@ print(voto)
 # .s=s.tolist()
 # print(s[0])
 # print(s[1])
-# print(s)
+# print(s)pr
 #print(np.reshape(comp,(200,-1)))

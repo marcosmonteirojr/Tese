@@ -1,8 +1,1 @@
-Adult
-Banana
-Blood
-CTG
-Diabetes
-Laryngeal1
-Laryngeal3
-German
+

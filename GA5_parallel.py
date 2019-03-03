@@ -32,12 +32,12 @@ def distancia(primeira=False, population=None):
 
         r = Parallel(n_jobs=jobs,verbose=5)(delayed(parallel_distance2)(i,bags,grupo,tipos) for i in range(len(dist['nome'])))
         c, score = zip(*r)
-        #print(c)
+       # print(c)
         dist['score']=(score)
-        dist['dist']=Cpx.dispersion2(c)
+        dist['dist']=Cpx.dispersion(c)
         min_score = np.around(min(dist['score']), 2)
         #print( dist['dist'])
-        #exit(0)
+       # exit(0)
         return
 
     if (primeira == False and population == None):
@@ -58,7 +58,7 @@ def distancia(primeira=False, population=None):
 
         r = Parallel(n_jobs=jobs,verbose=5)(delayed(parallel_distance2)(j,bags,grupo,tipos) for j in range(100, numero_individuo + 100))
         c, score = zip(*r)
-        dist['dist'] = Cpx.dispersion2(c)
+        dist['dist'] = Cpx.dispersion(c)
         dist['score']=score
         min_score = np.around(min(dist['score']), 2)
         #exit(0)
@@ -78,7 +78,7 @@ def distancia(primeira=False, population=None):
         r = Parallel(n_jobs=jobs,verbose=5)(delayed(parallel_distance2)(i,bags,grupo,tipos) for i in indices)
         c, score = zip(*r)
 
-        dist['dist'] = Cpx.dispersion2(c)
+        dist['dist'] = Cpx.dispersion(c)
         dist['score']=score
         min_score = np.around(min(dist['score']), 2)
        # exit(0)
@@ -88,7 +88,7 @@ def parallel_distance(i,bags):
 
     indx_bag1 = bags['inst'][i]
     X_bag, y_bag = monta_arquivo(indx_bag1)
-    cpx=(Cpx.complexity_data(X_bag, y_bag))
+    cpx=(Cpx.complexity_data2(X_bag, y_bag))
     _, score, _ = Cpx.biuld_classifier(X_bag, y_bag, X_vali, y_vali)
 
     return cpx,score
@@ -111,7 +111,6 @@ def monta_arquivo(indx_bag):
     :param vet_classes: false, retorna o vetor de classes
     :return: X_data, y_data
     '''
-    global nome_base, classes, caminho_base
     X_data = []
     y_data = []
     for i in indx_bag:
@@ -337,13 +336,13 @@ def populacao(populacao_total):
 off = []
 numero_individuo = 100
 contador_cruzamento = 1
-nome_base = "Haberman"
-jobs=2
+nome_base = "CTG"
+jobs=-2
 nr_generation = 20
 proba_crossover = 0.99
 proba_mutation = 0.01
 
-arquivo_de_saida="ep"
+arquivo_de_saida="sgc"
 
 fit_value1 = 1.0
 fit_value2 = 1.0
@@ -356,12 +355,17 @@ min_score=0
 #local_dataset = "/home/projeto/Marcos/Bases2/Dataset/"
 #local = "/home/projeto/Marcos/Bases3"
 #caminho_base = "/home/projeto/Marcos/Bases2/"
-#cpx_caminho="home/projeto/Marcos/Bases3/Bags/"
+#cpx_caminho="/home/projeto/Marcos/Bases3/Bags/"
 
 ########
-
-grupo=["overlapping",'','','','','']#ATECAO TESTEI PARA DUAS MEDIDAS DE DIFERENTES GRUPOS SOMENTE
-tipos=["F1",'','','','','']
+#overlapping.F1'	overlapping.F1v'	overlapping.F2'	overlapping.F3'	overlapping.F4'
+# neighborhood.N1'	neighborhood.N2'	neighborhood.N3'	neighborhood.N4'	neighborhood.T1'	neighborhood.LSCAvg'
+# linearity.L1'	linearity.L2'	linearity.L3'	000000.T2'
+# dimensionality.T3'	dimensionality.T4'
+# balance.C1'	balance.C2'
+# network.Density'	network.ClsCoef'	network.Hubs'
+grupo=["overlapping",'neighborhood','','','','']#ATECAO TESTEI PARA DUAS MEDIDAS DE DIFERENTES GRUPOS SOMENTE
+tipos=["F1",'N2','','','','']
 dispersao = True
 for t in range(1, 21):
     classes = []
@@ -373,10 +377,14 @@ for t in range(1, 21):
     geracao = 0
    # print(geracao)
     seq = -1
-    arq_dataset = caminho_base + "Dataset/" + nome_base + ".arff"
+    arq_dataset = local_dataset + nome_base + ".arff"
     arq_arff = Marff.abre_arff(arq_dataset)
     X, y, _ = Marff.retorna_instacias(arq_arff)
     _, classes = Marff.retorna_classes_existentes(arq_arff)
+    #########################################################333
+
+        #MUDAR O BAGX
+    ################################################################
     if os.path.isfile(local+"/Bags/"+str(repeticao)+"/"+nome_base+".csv")==False:
         print("entrei")
     ##################Criar bags############################################
@@ -409,6 +417,13 @@ for t in range(1, 21):
     toolbox.register("mate", cruza)
     toolbox.register("mutate", mutacao)
     toolbox.register("select", tools.selNSGA2)
-    algorithms.eaMuPlusLambda(pop, toolbox, 100, numero_individuo, proba_crossover, proba_mutation, nr_generation,
-                              generation_function=the_function, popu=populacao)
+    stats = tools.Statistics(key=lambda ind: ind.fitness.values)
+    stats.register("avg", np.mean, axis=0)
+    stats.register("std", np.std, axis=0)
+    stats.register("min", np.min, axis=0)
+    stats.register("max", np.max, axis=0)
 
+    pop,log=algorithms.eaMuPlusLambda(pop, toolbox, 100, numero_individuo, proba_crossover, proba_mutation, nr_generation,
+                              generation_function=the_function, popu=populacao)
+    record = stats.compile(pop)
+    print(record)

@@ -16,11 +16,17 @@ from numpy import average,std, array, argsort
 import sys
 from mlxtend.classifier import EnsembleVoteClassifier
 
-nome_base="Blood"
+#nome_base=sys.argv[1]
+#
+#print(bags_ga)
+#exit(0)
+
+nome_base='Wine'
 local_dataset = "/media/marcos/Data/Tese/Bases2/Dataset/"
 local = "/media/marcos/Data/Tese/Bases3/"
 caminho_base = "/media/marcos/Data/Tese/Bases2/"
-cpx_caminho="/media/marcos/Data/Tese/Bases3/Bags/"
+cpx_caminho="/media/marcos/Data/Tese/Bases3/Bagsx/"
+bags_ga="20sgc"
 #min_score=0
 
 #local_dataset = "/home/projeto/Marcos/Bases2/Dataset/"
@@ -36,9 +42,9 @@ X, y, _ = Marff.retorna_instacias(arq_arff)
 
 
 
-arq = open('SelecaoMedia_desvio_pgcs_ga5.csv', 'a')
-arq1 = open('SelecaoWilcoxon_pgcs_ga5.csv', 'a')
-arq2 = open('SelecaoTabela_pgcs_ga5.csv', 'a')
+arq = open('SelecaoMedia_desvio_pgcs_gax.csv', 'a')
+arq1 = open('SelecaoWilcoxon_pgcs_gax.csv', 'a')
+arq2 = open('SelecaoTabela_pgcs_gax.csv', 'a')
 accKUB = []
 accKEB = []
 accOLAB = []
@@ -68,7 +74,7 @@ for j in range(1,21):
 
     bags = Cpx.open_bag(cpx_caminho+str(j)+"/", nome_base)
     #print(cpx_caminho+str(j)+"/", nome_base + "20sc")
-    bags2 = Cpx.open_bag(cpx_caminho+str(j)+"/", nome_base + "20")
+    bags2 = Cpx.open_bag(cpx_caminho+str(j)+"/", nome_base + bags_ga)
     #print(bags)
     #exit(0)
     teste, validacao=Cpx.open_test_vali(local,nome_base,j)
@@ -87,7 +93,7 @@ for j in range(1,21):
     X_test = sca.fit_transform(X_test)
 
     for i in range(100):
-        print(i)
+       # print(i)
         X_bag,y_bag=Cpx.biuld_x_y(bags['inst'][i],X,y)
        # print(X_bag[1])
         X_bag2, y_bags2 = Cpx.biuld_x_y(bags2['inst'][i], X, y)
@@ -104,8 +110,8 @@ for j in range(1,21):
 
     orc=Cpx.oracle(poolBag,X_valida,y_valida,X_test,y_test)
 
-    print(orc)
-    exit(0)
+    #print(orc)
+    #exit(0)
     for clf in poolBag:
         calibrated = CalibratedClassifierCV(base_estimator=clf, cv='prefit')
         calibrated.fit(X_valida, y_valida)
@@ -157,7 +163,7 @@ for j in range(1,21):
 
     singleP.fit(X_valida, y_valida)
     singleB.fit(X_valida, y_valida)
-    
+
     #     #exit(0)
     accMetaB.append(metdb.score(X_test,y_test))
     accMetaP.append(metdp.score(X_test,y_test))
@@ -173,17 +179,17 @@ for j in range(1,21):
     accOLAP.append(olaP.score(X_test, y_test))
     accSBP.append(singleP.score(X_test, y_test))
     accSBB.append(singleB.score(X_test, y_test))
-   
+
     accVotingBag.append(B)
     accVotingPgsc.append(P)
     print(j)
 #exit(0)
-    
+
     #     singleM = SingleBest(poolPgsc)
     #     #
-  
+
     #     #
-   
+
     #     #
 kp,ke=wilcoxon(accKEB,accKEP)
 kp2,ku=wilcoxon(accKUB,accKUP)
