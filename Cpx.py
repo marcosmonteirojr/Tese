@@ -40,6 +40,7 @@ def split_data(X_data,y_data):
     del X_data,y_data,X_temp,y_temp, id_temp
 
     return X_train,y_train,X_test,y_test,X_vali,y_vali,id_train,id_test,id_vali
+
 def biuld_bags_stratify(y_train, X_train=None, X_data=None, y_data=None,ind=None,types="ind"):
     print('atencao pq nao e a funcao de bag oficial')
     X = []
@@ -232,7 +233,7 @@ def biuld_dic(X,y, dic):
 
 def biuld_classifier(X_train, y_train, X_val, y_val):
     #constroi os classificadores, e retorna classificador, score e predict
-    perc = perceptron.Perceptron(n_jobs=7, max_iter=1000, tol=5.0)
+    perc = perceptron.Perceptron(n_jobs=7, max_iter=100, tol=10.0)
     perc.fit(X_train, y_train)
     score=perc.score(X_val,y_val)
     predict=perc.predict(X_val)
@@ -288,11 +289,14 @@ def diversitys(y_test,predicts):
             else:
                q.append(diversity.Q_statistic(y_test,predicts[i],predicts[j]))
                db.append(diversity.double_fault(y_test,predicts[i],predicts[j]))
+               print(q)
         q_test.append(np.mean(q))
         double_faults.append(np.mean(db))
 
     return q_test, double_faults
-
+def diversity2(y_test,predicts,function):
+    div=diversity.compute_pairwise_diversity(y_test,predicts,function)
+    return div
 def biuld_csv_result(complexity_result,score,Q_test, Df,disp):
     global base_name
     header=['overlapping.F1', 'overlapping.F1v', 'overlapping.F2', 'overlapping.F3', 'overlapping.F4', 'neighborhood.N1', 'neighborhood.N2', 'neighborhood.N3', 'neighborhood.N4', 'neighborhood.T1', 'neighborhood.LSCAvg', 'linearity.L1', 'linearity.L2', 'linearity.L3', '000000.T2', 'dimensionality.T3', 'dimensionality.T4', 'balance.C1', 'balance.C2', 'network.Density', 'network.ClsCoef', 'network.Hubs','Score', 'Q_test','DoubleFault','Disper']
@@ -310,32 +314,34 @@ def biuld_csv_result(complexity_result,score,Q_test, Df,disp):
 def save_bag(inds,types,local,base_name, iteration):
 
     if types=='validation':
+        #print('entreivali')
         if (os.path.exists(local+"/Validacao/"+str(iteration)) == False):
             os.system("mkdir -p " + local+"/"+str(iteration))
-            with open(local+"/" +str(iteration)+"/"+ base_name + ".csv", 'w') as f:
-                w = csv.writer(f)
-                w.writerow(inds)
+        with open(local+"/" +str(iteration)+"/"+ base_name + ".csv", 'w') as f:
+           # print('entreivali')
+            w = csv.writer(f)
+            w.writerow(inds)
 
     if types=="test":
         if (os.path.exists(local + "/Teste/"+str(iteration)) == False):
             os.system("mkdir -p " + local+"/"+str(iteration))
-            with open(local+"/"+str(iteration)+"/" + base_name + ".csv", 'w') as f:
-                w = csv.writer(f)
-                w.writerow(inds)
+        with open(local+"/"+str(iteration)+"/" + base_name + ".csv", 'w') as f:
+            w = csv.writer(f)
+            w.writerow(inds)
 
     if types=="train":
         if (os.path.exists(local + "/Treino/"+str(iteration)) == False):
             os.system("mkdir -p " + local+"/"+str(iteration))
-            with open(local+"/" +str(iteration)+"/"+ base_name + ".csv", 'w') as f:
-                w = csv.writer(f)
-                w.writerow(inds)
+        with open(local+"/" +str(iteration)+"/"+ base_name + ".csv", 'w') as f:
+            w = csv.writer(f)
+            w.writerow(inds)
 
     if types == "bags":
         if (os.path.exists(local + "/Bags/"+str(iteration)) == False):
             os.system("mkdir -p " + local+"/"+str(iteration))
-            with open(local + "/" +str(iteration)+"/"+ base_name + ".csv", 'a') as f:
-                w = csv.writer(f)
-                w.writerow(inds)
+        with open(local + "/" +str(iteration)+"/"+ base_name + ".csv", 'a') as f:
+            w = csv.writer(f)
+            w.writerow(inds)
 
 def oracle(poll,X,y,X_test,y_test):
     orc = Oracle(poll)
@@ -385,13 +391,14 @@ def biuld_x_y(indx_bag,X,y):
     #global nome_base, classes, caminho_base
     X_data = []
     y_data = []
+   # print(indx_bag)
     for i in indx_bag:
         X_data.append(X[int(i)])
         y_data.append(y[int(i)])
     return X_data, y_data
 
 def open_test_vali(local,base_name,iteration):
-    print("open bag/teste_vali mudar as saidas")
+   # print("open bag/teste_vali mudar as saidas")
     with open(local + "Teste/"+str(iteration)+"/"+base_name+'.csv','r') as f:
         reader = csv.reader(f)
         teste = list(reader)
@@ -409,10 +416,47 @@ def open_training(local,base_name,iteration):
 
 def main():
     #import time
-  #  local_dataset = "/media/marcos/Data/Tese/Bases2/Dataset/"
-   # local = "/media/marcos/Data/Tese/Bases3"
+    base_name='Wine'
+    repeticao="4/"
+    local_dataset = "/media/marcos/Data/Tese/Bases2/Dataset/"
+    local = "/media/marcos/Data/Tese/Bases3/"
     caminho_base = "/media/marcos/Data/Tese/Bases2/"
     cpx_caminho = "/media/marcos/Data/Tese/Bases3/Bags/"
+
+    X,y,_,_=open_data(base_name,local_dataset)
+    test,vali=open_test_vali(local,base_name,repeticao)
+    X_test,y_test=biuld_x_y(test,X,y)
+    X_vali,y_vali=biuld_x_y(vali,X,y)
+    df=[]
+    qt=[]
+    pred=[]
+    bags= open_bag(cpx_caminho+repeticao,base_name)
+    for i in bags['inst']:
+
+        X_bag,y_bag=biuld_x_y(i,X,y)
+        _,_, pre= biuld_classifier(X_bag,y_bag,X_test,y_test)
+        pre=pre.tolist()
+        pred.append(pre)
+
+
+        #pre=pre.split(' ')
+        #y_test=np.array(y_test)
+        #print(pre)
+        #print(y_test)
+    pred = np.array(pred)
+   # print(len(pre))
+    #q,d=diversitys(y_test,pred)
+    #df.append(d)
+        #qt.append(q)
+    print(pred)
+    #pred=np.array(pred)
+    pred=(pred.T)
+    #print(pred)
+    a=diversity2(y_test,pred,diversity.Q_statistic)
+    print(a)
+    #print(df)
+
+
     #for i in range(1,21):
    #     X_train, y_train, X_test, y_test, X_vali, y_vali, dic = routine_save_bags(local_dataset, local, "Wine",
     #                                                                              i)
@@ -457,7 +501,7 @@ def main():
     #print(complexity_result)
     #print((disp))
     #print(len(q))
-    inicio = time.time()
+    #inicio = time.time()
     #process=("/home/marcos/Documentos/new_1.r","/home/marcos/Documentos/new_2.r","/home/marcos/Documentos/new_3.r","/home/marcos/Documentos/new_4.r","/home/marcos/Documentos/new_5.r","/home/marcos/Documentos/new_6.r")
     #pool = Pool(processes=8)
     #y=pool.map(paralell_process,process)

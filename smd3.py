@@ -17,16 +17,16 @@ import sys
 from mlxtend.classifier import EnsembleVoteClassifier
 
 #nome_base=sys.argv[1]
-#
-#print(bags_ga)
+#bags_ga=sys.argv[2]
+#print(bags_ga.split(','))
 #exit(0)
 
 nome_base='Wine'
 local_dataset = "/media/marcos/Data/Tese/Bases2/Dataset/"
 local = "/media/marcos/Data/Tese/Bases3/"
 caminho_base = "/media/marcos/Data/Tese/Bases2/"
-cpx_caminho="/media/marcos/Data/Tese/Bases3/Bagsx/"
-bags_ga="20sgc"
+cpx_caminho="/media/marcos/Data/Tese/Bases3/Bags/"
+bags_ga="20andre"
 #min_score=0
 
 #local_dataset = "/home/projeto/Marcos/Bases2/Dataset/"
@@ -42,9 +42,9 @@ X, y, _ = Marff.retorna_instacias(arq_arff)
 
 
 
-arq = open('SelecaoMedia_desvio_pgcs_gax.csv', 'a')
-arq1 = open('SelecaoWilcoxon_pgcs_gax.csv', 'a')
-arq2 = open('SelecaoTabela_pgcs_gax.csv', 'a')
+arq = open('SelecaoMedia_desvio_pgcs_gandre.csv', 'a')
+arq1 = open('SelecaoWilcoxon_pgcs_gandre.csv', 'a')
+arq2 = open('SelecaoTabela_pgcs_gandre.csv', 'a')
 accKUB = []
 accKEB = []
 accOLAB = []

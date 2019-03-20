@@ -7,7 +7,7 @@ from deap import tools
 import numpy as np
 import collections
 from sklearn.externals.joblib import Parallel, delayed
-
+import sys
 #os.environ['R_HOME'] = '/home/marcos/anaconda3/envs/tese2/lib/R'
 
 import time, Cpx
@@ -23,6 +23,7 @@ def distancia(primeira=False, population=None):
     if (primeira==True and geracao == 0):
        # print("entrei")
         print('primeira')
+        #print(len(bags['nome']))
         dist = dict()
         dist['nome'] = pop
         dist['dist'] = list()
@@ -30,7 +31,7 @@ def distancia(primeira=False, population=None):
         dist['score']=list()
         ###############
 
-        r = Parallel(n_jobs=jobs,verbose=5)(delayed(parallel_distance2)(i,bags,grupo,tipos) for i in range(len(dist['nome'])))
+        r = Parallel(n_jobs=jobs)(delayed(parallel_distance2)(i,bags,grupo,tipos) for i in range(len(dist['nome'])))
         c, score = zip(*r)
        # print(c)
         dist['score']=(score)
@@ -50,13 +51,13 @@ def distancia(primeira=False, population=None):
         #############################
         inicio = nome_individuo - numero_individuo
         print("diferente")
-
+        #print(len(bags['nome']))
         for i in range(inicio, nome_individuo):
             x = []
             x.append(i)
             dist['nome'].append(x)
 
-        r = Parallel(n_jobs=jobs,verbose=5)(delayed(parallel_distance2)(j,bags,grupo,tipos) for j in range(100, numero_individuo + 100))
+        r = Parallel(n_jobs=jobs)(delayed(parallel_distance2)(j,bags,grupo,tipos) for j in range(100, numero_individuo + 100))
         c, score = zip(*r)
         dist['dist'] = Cpx.dispersion(c)
         dist['score']=score
@@ -66,6 +67,7 @@ def distancia(primeira=False, population=None):
 
     if (population != None):
         print("populacao the function")
+        #print((bags['inst'][0]))
         dist = dict()
         dist['nome'] = population
         dist['dist'] = list()
@@ -75,7 +77,8 @@ def distancia(primeira=False, population=None):
         indices=[]
         for i in population:
             indices.append(bags['nome'].index(str(i[0])))
-        r = Parallel(n_jobs=jobs,verbose=5)(delayed(parallel_distance2)(i,bags,grupo,tipos) for i in indices)
+        #print(indices)
+        r = Parallel(n_jobs=jobs)(delayed(parallel_distance2)(i,bags,grupo,tipos) for i in indices)
         c, score = zip(*r)
 
         dist['dist'] = Cpx.dispersion(c)
@@ -87,6 +90,7 @@ def distancia(primeira=False, population=None):
 def parallel_distance(i,bags):
 
     indx_bag1 = bags['inst'][i]
+
     X_bag, y_bag = monta_arquivo(indx_bag1)
     cpx=(Cpx.complexity_data2(X_bag, y_bag))
     _, score, _ = Cpx.biuld_classifier(X_bag, y_bag, X_vali, y_vali)
@@ -96,6 +100,7 @@ def parallel_distance(i,bags):
 def parallel_distance2(i,bags,grupo, tipos):
 
     indx_bag1 = bags['inst'][i]
+  #  print(indx_bag1)
     X_bag, y_bag = monta_arquivo(indx_bag1)
     cpx=(Cpx.complexity_data3(X_bag, y_bag,grupo,tipos))
     #exit(0)
@@ -234,23 +239,18 @@ def mutacao(ind):
 
     return ind,
 
-def fitness_f1_n2(ind1):
-    global classes
-
-    for i in range(len(bags['nome'])):
-        if (bags['nome'][i] == str(ind1[0])):
-            indx_bag1 = bags['inst'][i]
-
-    X_data, y_data = monta_arquivo(indx_bag1)
-
-    dfx = pd.DataFrame(X_data, copy=False)
-    dfy = robjects.IntVector(y_data)
-    F1 = ecol.overlapping(dfx, dfy, measures='F1')
-    N2 = ecol.neighborhood(dfx, dfy, measures='N2')
-    T1 = ecol.dimensionality(dfx, dfy, measures='T2')
-
-    return F1[0], N2[0], T1[0],
-
+def fitness_andre(ind1):
+    global dist, min_score
+    for i in range(len(dist['nome'])):
+        #
+        # (i)
+        if (dist['nome'][i][0] == ind1[0]):
+            dst = dist['dist'][i]
+            ###########################
+            score = dist["score"][i]
+            break
+    out=dst+score
+    return out,
 def fitness_dispercao(ind1):
     global dist, min_score
     for i in range(len(dist['nome'])):
@@ -336,19 +336,19 @@ def populacao(populacao_total):
 off = []
 numero_individuo = 100
 contador_cruzamento = 1
-nome_base = "CTG"
+nome_base = 'Vehicle'
+#nome_base=sys.argv[1]
 jobs=-2
 nr_generation = 20
 proba_crossover = 0.99
 proba_mutation = 0.01
 
-arquivo_de_saida="sgc"
+arquivo_de_saida="andre"
 
 fit_value1 = 1.0
 fit_value2 = 1.0
-local_dataset = "/media/marcos/Data/Tese/Bases2/Dataset/"
+local_dataset = "/media/marcos/Data/Tese/Bases3/Dataset/"
 local = "/media/marcos/Data/Tese/Bases3"
-caminho_base = "/media/marcos/Data/Tese/Bases2/"
 cpx_caminho="/media/marcos/Data/Tese/Bases3/Bags/"
 min_score=0
 
@@ -399,10 +399,11 @@ for t in range(1, 21):
 
     bags = Cpx.open_bag(cpx_caminho + str(repeticao) + "/", nome_base)
 
-
-    creator.create("FitnessMult", base.Fitness, weights=(fit_value1,fit_value2))
-    creator.create("Individual", list, fitness=creator.FitnessMult)
-
+    #########
+    creator.create("FitnessMax", base.Fitness, weights=(fit_value1,))
+    ########
+    creator.create("Individual", list, fitness=creator.FitnessMax)
+    #######
     toolbox = base.Toolbox()
     toolbox.register("attr_item", sequencia)
     toolbox.register("individual", tools.initRepeat, creator.Individual,
@@ -412,11 +413,14 @@ for t in range(1, 21):
 
     if dispersao == True:
         distancia(primeira=True)
-
-    toolbox.register("evaluate", fitness_dispercao)
+    ##############33
+    toolbox.register("evaluate", fitness_andre)
+    #################
     toolbox.register("mate", cruza)
     toolbox.register("mutate", mutacao)
-    toolbox.register("select", tools.selNSGA2)
+    #############
+    toolbox.register("select", tools.selRoulette)
+    ##########
     stats = tools.Statistics(key=lambda ind: ind.fitness.values)
     stats.register("avg", np.mean, axis=0)
     stats.register("std", np.std, axis=0)

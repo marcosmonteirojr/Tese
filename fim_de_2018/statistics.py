@@ -1,15 +1,18 @@
-import  Cpx, Marff, os, numpy as np
+import  Cpx, Marff, os, sys, numpy as np
 from sklearn.externals.joblib import Parallel, delayed
-local_dataset = "/media/marcos/Data/Tese/Bases2/Dataset/"
-local = "/media/marcos/Data/Tese/Bases3/"
-caminho_base = "/media/marcos/Data/Tese/Bases2/"
-cpx_caminho="/media/marcos/Data/Tese/Bases3/Bags/"
+#local_dataset = "/media/marcos/Data/Tese/Bases2/Dataset/"
+#local = "/media/marcos/Data/Tese/Bases3/"
+#caminho_base = "/media/marcos/Data/Tese/Bases2/"
+#cpx_caminho="/media/marcos/Data/Tese/Bases3/Bags/"
 #min_score=0
-nome_base='Wine'
-#local_dataset = "/home/projeto/Marcos/Bases2/Dataset/"
-#local = "/home/projeto/Marcos/Bases3"
-#caminho_base = "/home/projeto/Marcos/Bases2/"
-#cpx_caminho="home/projeto/Marcos/Bases3/Bags/"
+nome_base=sys.argv[1]
+x=sys.argv[2]
+print(x)
+exit(0)
+local_dataset = "/home/projeto/Marcos/Bases2/Dataset/"
+local = "/home/projeto/Marcos/Bases3"
+caminho_base = "/home/projeto/Marcos/Bases2/"
+cpx_caminho="/home/projeto/Marcos/Bases3/Bags/"
 for repeticao in range(1,21):
     if os.path.isfile(local + "/Bags/" + str(repeticao) + "/" + nome_base + ".csv") == False:
         print(repeticao)
@@ -106,10 +109,23 @@ def vote_complexity(X_data,y_data):
     return voto, text, max, stad
 
 voto,text, max, std=vote_complexity(X,y)
-for i in max:
-    print(header[i])
+
+arq = open('Voto.txt', 'a')
+arq2 = open('Std.txt', 'a')
 print(std)
-#print(voto)
+arq.write(nome_base+" ")
+for i in voto:
+
+    arq.write(str(i)+" ")
+
+arq.write("\n")
+arq2.write("std ")
+for i in std:
+    arq2.write(str(i) + " ")
+arq2.write("\n")
+arq.close()
+arq2.close()
+print(voto)
 # print(comp[0][0])a
 # print((comp[0][1]))
 # s=np.squeeze(comp)
