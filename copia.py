@@ -13,35 +13,37 @@ x=open(caminho1+'teste.txt')
 #print(caminho1+" " + caminho2 + "/1/")
 
 for i in x:
+        print(c[:3])
+        exit(0)
         c=i.split("\n")[0]
         if c[-1]=="4":
-            os.system("mv " + caminho1 + c + caminho3 )
+            os.system("mv -n -u" + caminho1 + c + caminho3 )
         #exit(0)
         print(c[4:6])
         if c[4:6]=="01":
-            os.system("mv "+caminho1+c+caminho2+ "1/")
+            os.system("mv -n -u "+caminho1+c+caminho2+ "1/")
         if c[4:6] == "02":
-            os.system("mv " + caminho1 + c + caminho2 + "2/")
+            os.system("mv -n -u " + caminho1 + c + caminho2 + "2/")
         if c[4:6]=="03":
-            os.system("mv "+caminho1+c+caminho2+ "3/")
+            os.system("mv -n -u "+caminho1+c+caminho2+ "3/")
         if c[4:6]=="04":
-            os.system("mv "+caminho1+c+caminho2+ "4/")
+            os.system("mv -n -u "+caminho1+c+caminho2+ "4/")
         if c[4:6]=="05":
-            os.system("mv "+caminho1+c+caminho2+ "5/")
+            os.system("mv -n -u "+caminho1+c+caminho2+ "5/")
         if c[4:6]=="06":
-            os.system("mv "+caminho1+c+caminho2+ "6/")
+            os.system("mv -n -u "+caminho1+c+caminho2+ "6/")
         if c[4:6]=="07":
-            os.system("mv "+caminho1+c+caminho2+ "7/")
+            os.system("mv -n -u "+caminho1+c+caminho2+ "7/")
         if c[4:6]=="08":
-            os.system("mv "+caminho1+c+caminho2+ "8/")
+            os.system("mv -n -u "+caminho1+c+caminho2+ "8/")
         if c[4:6]=="09":
-            os.system("mv "+caminho1+c+caminho2+ "9/")
+            os.system("mv -n -u "+caminho1+c+caminho2+ "9/")
         if c[4:6]=="10":
-            os.system("mv "+caminho1+c+caminho2+ "10/")
+            os.system("mv -n -u "+caminho1+c+caminho2+ "10/")
         if c[4:6]=="11":
-            os.system("mv "+caminho1+c+caminho2+ "11/")
+            os.system("mv -n -u "+caminho1+c+caminho2+ "11/")
         if c[4:6]=="12":
-            os.system("mv "+caminho1+c+caminho2+ "12/")
+            os.system("mv -n -u "+caminho1+c+caminho2+ "12/")
 #print(c[0])
 #c=x.split("\n")
 

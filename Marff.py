@@ -9,7 +9,7 @@ def abre_arff(caminho):
     :return: base
     """
     base=arff.load(open(caminho),encode_nominal=True)
-    #print(base)
+
     return base
 
 def retorna_classes_existentes(dataset):
@@ -20,18 +20,16 @@ def retorna_classes_existentes(dataset):
     :@return: n_classes, classes, elementos_p_classes, total_elementos
     '''
 
-    classes=[]#vetor com as classes
-
-    num_class=0
+    #classes=[]#vetor com as classes
 
 
-    for i in dataset['data']:
-        tmp=i[-1]
-        if(tmp not in classes):
-           classes.append(tmp)
-           num_class+=1
+   # print(dataset['attributes'][-1][1])
+    classes = numpy.arange(len(dataset['attributes'][-1][1]), dtype=int)
+        #classes.append(int(i)-1)
 
-    classes.sort()
+   # print(classes)
+   # exit(0)
+    num_class=len(classes)
 
 
     return num_class, classes
@@ -43,6 +41,7 @@ def retorna_instacias(dataset,np_array=False):
     :return: X e y
     """
     y=[]
+    classes=[]
     X=[]
     for i in dataset['data']:
         y.append(i[-1])
@@ -50,6 +49,8 @@ def retorna_instacias(dataset,np_array=False):
     if(np_array==True):
         X=numpy.array(X)
         y=numpy.array(y)
+    #print(dataset['attributes'][-1][1])
+
     return X,y,dataset['data']
 
 def cria_arff(info, data, classes,pasta, nome):
@@ -76,6 +77,8 @@ def cria_arff(info, data, classes,pasta, nome):
         arq = open(pasta+nome+'.arff','w')
         arq.write(arq1)
         arq.close()
+
+
 def retorna_dic_data(dataset):
     #print(dataset)
     out=dict()

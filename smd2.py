@@ -606,15 +606,15 @@ def selecao(arquivo,newga=2):
     arq.close()
 #random.seed(64)
 repeticao=1
-nome_base='Lithuanian'
-caminho_data="/media/marcos/Data/Tese/GA3/"
-caminho_base="/media/marcos/Data/Tese/Bases2/"
-caminho_bags="/media/marcos/Data/Tese/GA3/"
+#nome_base='Lithuanian'
+#caminho_data="/media/marcos/Data/Tese/GA3/"
+#caminho_base="/media/marcos/Data/Tese/Bases2/"
+#caminho_bags="/media/marcos/Data/Tese/GA3/"
 #caminho_data = "/home/monteiro/Marcos/GA3/"
 #caminho_base = "/home/monteiro/Marcos/Bases2/"
 #caminho_bags = "/home/monteiro/Marcos/GA3/"
-classes=[]
+#classes=[]
 #selecao("6")
-roda(2)
+#roda(2)
 
 

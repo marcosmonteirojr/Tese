@@ -1,10 +1,2 @@
-Mammo
-Monk
-Phoneme
+Segmentation
 Sonar
-Faults
-Thyroid
-Vehicle
-Vertebral
-Haberman
-Glass

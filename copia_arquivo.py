@@ -21,7 +21,7 @@ def limpa_pasta():
     for l in range(1,21):
          #os.system ("cp -r /media/marcos/Data/Tese/AG/"+str(l)+"/"+str(l)+"-finais /media/marcos/Marcos/Tese/GA1Distancia" )
          #for i in range(1,30):
-             os.system ("rm -r /media/marcos/Data/Tese/Bases3/Bags/" + str(l)+"/Wine20sc.csv" )
+             os.system ("rm -r /media/marcos/Data/Tese/Bases3/Bags/" + str(l)+"/P2*" )
 
 #limpa_pasta()
 

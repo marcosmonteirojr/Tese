@@ -1,15 +1,17 @@
+
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import perceptron
-#from sklearn.ensemble import bagging
 from deslib.static.oracle import Oracle
+from deslib.util import diversity,datasets
+from sklearn.utils import check_random_state
+from sklearn.metrics import pairwise_distances
+
+from sklearn.preprocessing import MinMaxScaler
+
 import numpy as np
-from deslib.util import diversity
 import Marff, subprocess
 import csv, random, os
-from sklearn.utils import check_random_state
-from multiprocessing import Pool
-from sklearn.metrics import pairwise_distances
-from sklearn.metrics import pairwise
+
 os.environ['R_HOME'] = '/home/marcos/anaconda3/envs/tese2/lib/R'
 import pandas as pd
 from rpy2.robjects import pandas2ri
@@ -18,16 +20,45 @@ import rpy2.robjects.packages as rpackages
 ecol = rpackages.importr('ECoL')
 import rpy2.robjects as robjects
 
+#os.environ['R_HOME'] = '/home/marcos/anaconda3/envs/tese2/lib/R'
+
+
+
 
 #base_name="Haberman"
 #local_data="/media/marcos/Data/Tese/Bases2/Dataset/"
 
+def p2_problem():
+    p2=datasets.make_P2([5000,5000])
+    data=dict()
+    data['data']=list()
+    X=p2[0].tolist()
+    y=p2[1].tolist()
+
+    y=[int(i) for i in y]
+
+    #print(y)
+
+    for i in range(len(X)):
+        X[i].append(y[i])
+
+
+
+
+    data['data']=X
+
+    info=dict()
+    info['description']="v"
+    info['relation']='p2'
+    info['attributes']=[('A1', 'REAL'), ('A2', 'REAL'), ('Class', (['0.0', '1.0']))]
+    Marff.cria_arff(info,data,["0.0","1.0"],"/media/marcos/Data/Tese/Bases3/Dataset/","P2")
+    return data
 
 def open_data(base_name, local_data):
 
     dataset_file=Marff.abre_arff(local_data+base_name+".arff")
     X_data,y_data,dataset=Marff.retorna_instacias(dataset_file)
-
+    #print(dataset_file['description'])
     dic=Marff.retorna_dic_data(dataset_file)
     del dic['data']
     return X_data,y_data,dataset,dic
@@ -134,7 +165,7 @@ def complexity_data2(X_data,y_data):
     dfy = robjects.IntVector(y_data)
     complex = ecol.complexity(dfx, dfy, type="class")
 
-    #print(complex)
+    print(complex)
     #exit(0)
     complex = np.asarray(complex)
     #print(complex)
@@ -142,31 +173,29 @@ def complexity_data2(X_data,y_data):
     #exit(0)
     return complex
 
-def complexity_data3(X_data,y_data,grupo,tipo):
+def complexity_data3(X_data,y_data,grupo,tipo=None):
     #complex=[]
     dfx = pd.DataFrame(X_data, copy=False)
     dfy = robjects.IntVector(y_data)
-    #print(X_data)
-    over=nei=line=dim=bal=net=None
+   # print(grupo,tipo)
     complex = np.array([])
     if grupo[0]=='overlapping':
        # print('entrei')
         over=ecol.overlapping(dfx,dfy,measures=tipo[0])
-        over = np.asarray(over)
        # print(over)
-
+        over = np.asarray(over)
         complex = np.append(complex, over[0])
-        #print(complex)
-        #exit(0)
+        #print(over)
+       # print(over[0])
     if grupo[1]=="neighborhood":
         nei=ecol.neighborhood(dfx,dfy,measures=tipo[1])
         nei = np.asarray(nei)
-       # print('entre')
         complex = np.append(complex, nei[0])
     if grupo[2]=="linearity":
         line=ecol.linearity(dfx,dfy,measures=tipo[2])
         line = np.asarray(line)
         complex = np.append(complex, line[0])
+        print("lin")
     if grupo[3] == "dimensionality":
         #print('entrei')
         dim = ecol.dimensionality(dfx, dfy, measures=tipo[3])
@@ -204,9 +233,33 @@ def complexity_data3(X_data,y_data,grupo,tipo):
     #      net = np.asarray(net)
     #      complex = np.append(complex, net[0])
     complex=complex.tolist()
+   # print(complex)
+   # print (complex)
+   # exit(0)
+    return complex
 
-    #print (complex)
-    #exit(0)
+def complexity_data4(X_data,y_data,grupo):
+    """
+
+    :param X_data:
+    :param y_data:
+    :param grupo:
+    :return: retorna todas as complexidades dos grupos escolhidos
+
+    """
+    dfx = pd.DataFrame(X_data, copy=False)
+    dfy = robjects.IntVector(y_data)
+    complex = np.array([])
+    if grupo[0] == 'overlapping':
+        over = ecol.overlapping(dfx, dfy)
+        over = np.asarray(over)
+        complex = np.append(complex, over)
+    if grupo[1] == "neighborhood":
+        nei = ecol.neighborhood(dfx,dfy)
+        nei = np.asarray(nei)
+        complex = np.append(complex, nei)
+    del nei, over, dfx, dfy
+    complex = complex.tolist()
     return complex
 
 def paralell_process(process):
@@ -232,6 +285,14 @@ def biuld_dic(X,y, dic):
     return d
 
 def biuld_classifier(X_train, y_train, X_val, y_val):
+    '''
+    retorna um perceptron com sua acuracia e com a lista de predicao
+    :param X_train: X do treino
+    :param y_train: y do treino
+    :param X_val: X valida ou teste
+    :param y_val: y valida, ou teste
+    :return: classificador, accuracia, lista de predicao
+    '''
     #constroi os classificadores, e retorna classificador, score e predict
     perc = perceptron.Perceptron(n_jobs=7, max_iter=100, tol=10.0)
     perc.fit(X_train, y_train)
@@ -240,41 +301,161 @@ def biuld_classifier(X_train, y_train, X_val, y_val):
 
     return perc, score, predict
 
-def dispersion(complexity):
+def biuld_classifier_over(X, y, X_val, y_val,tam):
+    '''
+    retorna um perceptron com sua acuracia e com a lista de predicao
+    :param X_train: X do treino
+    :param y_train: y do treino
+    :param X_val: X valida ou teste
+    :param y_val: y valida, ou teste
+    :param tam: tamanho da divisâo do dataset de treino
+    :return: classificador*, accuracia*, lista de predicao*
 
+    a acuracia e o classificador sao referentes a parte do dataset de treino
+    '''
+    X_train=[]
+    y_train=[]
+
+   # print(np.around(len(y)*tam))
+    lista_aleatoria = random.sample(range(0, len(y)), int(np.around(len(y)*tam)))
+    for i in lista_aleatoria:
+        X_train.append(X[i])
+        y_train.append(y[i])
+    #constroi os classificadores, e retorna classificador, score e predict
+    perc = perceptron.Perceptron(n_jobs=7, max_iter=100, tol=10.0)
+    perc.fit(X_train, y_train)
+    score=perc.score(X_val,y_val)
+    predict=perc.predict(X_val)
+
+    #rms = sqrt(mean_squared_error(y_val, predict))
+    return perc, score, predict
+
+def min_max_norm(dataset):
+    """
+
+    :param dataset: dataset [samples,features]
+    :return: dataset normalizado por minmax
+    """
+    #if isinstance(dataset, list):
+
+    norm_list = list()
+    min_value = np.min(dataset)
+    max_value = np.max(dataset)
+    if min_value==max_value:
+       # print("entrei")
+        for i in dataset:
+            norm_list.append(0)
+        return norm_list
+
+    for value in range(len(dataset)):
+        tmp = (dataset[value] - min_value) / (max_value - min_value)
+        norm_list.append(tmp)
+
+
+    return norm_list
+
+def dispersion_norm(complexity):
+    """
+
+    :param complexity: listtas de complexidades
+    :return: distancia media par a par das complexidades, normalizadas
+    """
     result=[]
+    scaler = MinMaxScaler()
+    scaler.fit(complexity)
+    complexity=scaler.transform(complexity)
+    dista = pairwise_distances(complexity, n_jobs=6)
+    dista = dista.tolist()
+    for i in dista:
+        result.append(np.mean(i))
+    return result
 
-    #y = np.array(complexity)
+def dispersion(complexity):
+    """
 
-    dist = pairwise_distances(complexity, n_jobs=6)
-    #x=np.indices(dist.diagonal())
-
+    :param complexity: listtas de complexidades
+    :return: distancia media par a par das complexidades(biblioteca)
+    """
+    result=[]
+    #print(complexity)
     #exit(0)
-    dist = dist.tolist()
-    for i in dist:
+    dista = pairwise_distances(complexity, n_jobs=6)
+    dista = dista.tolist()
+   # print(dista)
+    for i in dista:
         result.append(np.mean(i))
     return result
 
 def dispersion2(complexity):
-   # print(complexity)
-    #retorna a dipersao de 1 valor (a-b) entrada ex: ([valor],[valor]....)
+    """
+    Atenção, foi refeita e não testada dia 3-10-2019
+
+    :param complexity: listas de complexidades
+    :return: media das distancias feitas de forma manual
+    """
     result=[]
-    s=[]
+
     complexity = list(complexity)
-
-    for i in range(len(complexity)):
-
-        t = []
-        for j in range(len(complexity)):
-            if i==j:
+    #print(complexity)
+    n=len(complexity)-1
+    for j in range(len(complexity)):
+        dista = 0
+        for l in range(len(complexity)):
+            if (j == l):
                 continue
             else:
-                t.append(abs(complexity[i][0] - complexity[j][0]))
-        s.append(t)
-    for i in s:
-        result.append(np.mean(i))
+                a = complexity[j]
+                b = complexity[l]
+                dista += np.sqrt(sum(((a - b)) ** 2 for a, b in zip(a, b)))
+            dista=dista/n
+        result.append((dista))
 
     return result
+
+def dispersion_linear(complexity):
+    #print(complexity)
+
+    """
+
+    :param complexity: listas de complexidades
+    :return: media das distancias feitas de forma manual a-b
+    """
+    result=[]
+    result1 = []
+
+
+    complexity = list(complexity)
+    complexity=np.array(complexity)
+    #print((complexity))
+    n=(len(complexity))-1
+    complexity=complexity.T
+
+
+   # exit(0)
+    for i in complexity:
+        dist = []
+        for j in range(len(i)):
+            dista = 0
+            for l in range(len(i)):
+                if (j == l):
+                    continue
+                else:
+                    dista+=abs(i[j]-i[l])
+            dist.append((dista)/n)
+        result.append(dist)
+    result=np.array(result)
+   # print(result)
+    for i in result:
+        r=min_max_norm(i)
+
+        result1.append(r)
+    result1=np.array(result1)
+    del result, r, dist,complexity
+    result1=result1.T
+    result1=result1.tolist()
+    #print(result1)
+
+    return result1
 
 def diversitys(y_test,predicts):
 
@@ -289,14 +470,17 @@ def diversitys(y_test,predicts):
             else:
                q.append(diversity.Q_statistic(y_test,predicts[i],predicts[j]))
                db.append(diversity.double_fault(y_test,predicts[i],predicts[j]))
-               print(q)
+               #
+               # print(q)
         q_test.append(np.mean(q))
         double_faults.append(np.mean(db))
 
     return q_test, double_faults
+
 def diversity2(y_test,predicts,function):
     div=diversity.compute_pairwise_diversity(y_test,predicts,function)
     return div
+
 def biuld_csv_result(complexity_result,score,Q_test, Df,disp):
     global base_name
     header=['overlapping.F1', 'overlapping.F1v', 'overlapping.F2', 'overlapping.F3', 'overlapping.F4', 'neighborhood.N1', 'neighborhood.N2', 'neighborhood.N3', 'neighborhood.N4', 'neighborhood.T1', 'neighborhood.LSCAvg', 'linearity.L1', 'linearity.L2', 'linearity.L3', '000000.T2', 'dimensionality.T3', 'dimensionality.T4', 'balance.C1', 'balance.C2', 'network.Density', 'network.ClsCoef', 'network.Hubs','Score', 'Q_test','DoubleFault','Disper']
@@ -391,7 +575,8 @@ def biuld_x_y(indx_bag,X,y):
     #global nome_base, classes, caminho_base
     X_data = []
     y_data = []
-   # print(indx_bag)
+    #print(len(X))
+
     for i in indx_bag:
         X_data.append(X[int(i)])
         y_data.append(y[int(i)])
@@ -413,107 +598,41 @@ def open_training(local,base_name,iteration):
         treino=list(reader)
     return treino[0]
 
-
 def main():
-    #import time
-    base_name='Wine'
-    repeticao="4/"
-    local_dataset = "/media/marcos/Data/Tese/Bases2/Dataset/"
-    local = "/media/marcos/Data/Tese/Bases3/"
-    caminho_base = "/media/marcos/Data/Tese/Bases2/"
-    cpx_caminho = "/media/marcos/Data/Tese/Bases3/Bags/"
+    comp=[]
+   # p2_problem()
+    import Marff as mf
+   # for i in range(10):
+    #    wine=mf.abre_arff("/home/marcos/Documentos/wine.arff")
+     #   X,y,_=mf.retorna_instacias(wine,True)
+      #  grupo = ["overlapping", 'neighborhood', '', '', '', '']
+       # comp.append(complex_data4(X,y,grupo))
+    # x=[[.0, .2, 1.],[.3,2,1],[.5,1,3],[1.,5,6]]
+    # x=np.array(x)
+    # x=x.T
+    # #x=x.tolist()
+    # print(x)
+    # y=min_max_norm(x)
+    # print(y)
+   # for i in x:
+       # print(min_max_norm(i))
 
-    X,y,_,_=open_data(base_name,local_dataset)
-    test,vali=open_test_vali(local,base_name,repeticao)
-    X_test,y_test=biuld_x_y(test,X,y)
-    X_vali,y_vali=biuld_x_y(vali,X,y)
-    df=[]
-    qt=[]
-    pred=[]
-    bags= open_bag(cpx_caminho+repeticao,base_name)
-    for i in bags['inst']:
+    # #import time
+    # base_name='Wine'
+    # x=[]
+    # repeticao="4/"
+    # local_dataset = "/media/marcos/Data/Tese/Bases2/Dataset/"
+    # #local = "/media/marcos/Data/Tese/Bases3/"
+    # #caminho_base = "/media/marcos/Data/Tese/Bases2/"
+    # #cpx_caminho = "/media/marcos/Data/Tese/Bases3/Bags/"
+    # X_data, y_data, dataset, dic =open_data(base_name,local_dataset)
+    # result=complexity_data3(X_data,y_data,["overlapping",'neighborhood','','','',''],["F4",'N1','','','',''])
+    #
+    # #print(result)
+    # x=[[1,2],[7,5],[3,5]]
+    # print(dispersion2(x),dispersion(x))
 
-        X_bag,y_bag=biuld_x_y(i,X,y)
-        _,_, pre= biuld_classifier(X_bag,y_bag,X_test,y_test)
-        pre=pre.tolist()
-        pred.append(pre)
-
-
-        #pre=pre.split(' ')
-        #y_test=np.array(y_test)
-        #print(pre)
-        #print(y_test)
-    pred = np.array(pred)
-   # print(len(pre))
-    #q,d=diversitys(y_test,pred)
-    #df.append(d)
-        #qt.append(q)
-    print(pred)
-    #pred=np.array(pred)
-    pred=(pred.T)
-    #print(pred)
-    a=diversity2(y_test,pred,diversity.Q_statistic)
-    print(a)
-    #print(df)
-
-
-    #for i in range(1,21):
-   #     X_train, y_train, X_test, y_test, X_vali, y_vali, dic = routine_save_bags(local_dataset, local, "Wine",
-    #                                                                              i)
-
-   # x=[]
-   # y=[1,2,3,4]
-   # x.append(y)
-   # x.append(y)
-   # k=dispersion2(x)
-   # print(k)
-    #inicio = time.time()
-    #X_data, y_data, dataset, dic = open_data(base_name, local_data)
-    #X_train, y_train, X_test, y_test, X_vali, y_vali, id_train, id_test, id_vali = split_data(X_data, y_data)
-    #complexity_result=[]
-    score=[]
-    predict=[]
-   # exit(0)
-
-   # print(X_test)
-
-   # for i in range(1,10):
-    #print(i)
-    #X_bag,y_bag=biuld_bags(y_train=y_train,X_train=X_train,types="sample")
-        #print((X_bag))
-        #exit(0)
-    #newdic=biuld_dic(X_bag,y_bag,dic)
-    #generate_csv(newdic)
-        #save_bag(id_train,'train',"/media/marcos/Data/Tese/Bases3/Treino",base_name)
-    #complexity_result.append(complexity_data())
-       # _,sc,pre=biuld_classifier(X_bag,y_bag,X_vali,y_vali)
-       # score.append(sc)
-       ##oracle(pre,y_vali)
-
-    #q,df=diversitys(y_test,predict)
-    #disp = dispersion(complexity_result)
-    #biuld_csv_result(complexity_result,score,q,df,disp)
-    complexity_result = []
-    score = []
-    predict = []
-    #fim = time.time()
-    #print((fim - inicio)/60)
-    #print(complexity_result)
-    #print((disp))
-    #print(len(q))
-    #inicio = time.time()
-    #process=("/home/marcos/Documentos/new_1.r","/home/marcos/Documentos/new_2.r","/home/marcos/Documentos/new_3.r","/home/marcos/Documentos/new_4.r","/home/marcos/Documentos/new_5.r","/home/marcos/Documentos/new_6.r")
-    #pool = Pool(processes=8)
-    #y=pool.map(paralell_process,process)
-    #print(y)
-    #fim = time.time()
-    #print((fim - inicio) / 60)
-    #inicio = time.time()
-    #complexity_data()
-    #complexity_data2()
-    #fim = time.time()
-    #print((fim - inicio) / 60)
-
+#    p2_problem()
 
 
 if __name__ == "__main__":

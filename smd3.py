@@ -1,6 +1,6 @@
 import Marff, Cpx, csv
 import numpy as np
-#import novo_perceptron as perc
+import novo_perceptron as Nperc
 from deslib.static.single_best import SingleBest
 from sklearn.preprocessing import StandardScaler
 from sklearn.calibration import CalibratedClassifierCV
@@ -13,20 +13,22 @@ from deslib.dcs.lca import LCA
 from deslib.dcs.rank import Rank
 from scipy.stats import wilcoxon
 from numpy import average,std, array, argsort
-import sys
+import sys, pds_dsoc2
 from mlxtend.classifier import EnsembleVoteClassifier
+import pds_pool4
+#from imblearn.metrics import geometric_mean_score
 
 #nome_base=sys.argv[1]
 #bags_ga=sys.argv[2]
 #print(bags_ga.split(','))
 #exit(0)
 
-nome_base='Wine'
-local_dataset = "/media/marcos/Data/Tese/Bases2/Dataset/"
+nome_base='Banana'
+local_dataset = "/media/marcos/Data/Tese/Bases3/Dataset/"
 local = "/media/marcos/Data/Tese/Bases3/"
-caminho_base = "/media/marcos/Data/Tese/Bases2/"
+caminho_base = "/media/marcos/Data/Tese/Bases3/"
 cpx_caminho="/media/marcos/Data/Tese/Bases3/Bags/"
-bags_ga="20andre"
+bags_ga="20linear"
 #min_score=0
 
 #local_dataset = "/home/projeto/Marcos/Bases2/Dataset/"
@@ -37,14 +39,16 @@ bags_ga="20andre"
 
 arq_dataset = caminho_base + "Dataset/" + nome_base + ".arff"
 arq_arff = Marff.abre_arff(arq_dataset)
-X, y, _ = Marff.retorna_instacias(arq_arff)
+#_,classes=Marff.retorna_classes_existentes(arq_arff)
+
+X, y, data = Marff.retorna_instacias(arq_arff)
 
 
 
-
-arq = open('SelecaoMedia_desvio_pgcs_gandre.csv', 'a')
-arq1 = open('SelecaoWilcoxon_pgcs_gandre.csv', 'a')
-arq2 = open('SelecaoTabela_pgcs_gandre.csv', 'a')
+arq = open('SelecaoMedia_desvio_pgcs_ga_linear.csv', 'a')
+arq1 = open('SelecaoWilcoxon_pgcs_ga_linear.csv', 'a')
+arq2 = open('SelecaoTabela_pgcs_ga_linear.csv', 'a')
+arq3 = open('SelecaoLatex_pgcs_ga_linear.txt', 'a')
 accKUB = []
 accKEB = []
 accOLAB = []
@@ -62,10 +66,13 @@ accRankP = []
 accMetaB = []
 accMetaP = []
 
+accDsocp=[]
+accDsocb=[]
+
 accVotingBag = []
 accVotingPgsc = []
 
-for j in range(1,21):
+for j in range(1,2):
 
     poolBag = []
     poolPgsc = []
@@ -84,23 +91,15 @@ for j in range(1,21):
     X_test=np.array(X_test)
     X_valida=np.array(X_valida)
 
-    y_test = np.array(y_test)
-    y_valida = np.array(y_valida)
-
-    scaler = StandardScaler()
-    sca=StandardScaler()
-    X_valida = scaler.fit_transform(X_valida)
-    X_test = sca.fit_transform(X_test)
-
     for i in range(100):
-       # print(i)
+
         X_bag,y_bag=Cpx.biuld_x_y(bags['inst'][i],X,y)
        # print(X_bag[1])
         X_bag2, y_bags2 = Cpx.biuld_x_y(bags2['inst'][i], X, y)
-        #print(X_bag2[1],"\n")
-        X_bag = scaler.transform(X_bag)
+        print(X_bag2[1],"\n")
+        #X_bag = scaler.transform(X_bag)
         #print(X_bag[0])
-        X_bag2 = scaler.transform(X_bag2)
+        #X_bag2 = scaler.transform(X_bag2)
         #
         percB = perc.Perceptron(n_jobs=4,max_iter=100,tol=10.0)
         percP = perc.Perceptron(n_jobs=4,max_iter=100,tol=10.0)
@@ -108,10 +107,7 @@ for j in range(1,21):
         poolBag.append(percB.fit(X_bag, y_bag))
         poolPgsc.append(percP.fit(X_bag2, y_bags2))
 
-    orc=Cpx.oracle(poolBag,X_valida,y_valida,X_test,y_test)
 
-    #print(orc)
-    #exit(0)
     for clf in poolBag:
         calibrated = CalibratedClassifierCV(base_estimator=clf, cv='prefit')
         calibrated.fit(X_valida, y_valida)
@@ -183,14 +179,7 @@ for j in range(1,21):
     accVotingBag.append(B)
     accVotingPgsc.append(P)
     print(j)
-#exit(0)
 
-    #     singleM = SingleBest(poolPgsc)
-    #     #
-
-    #     #
-
-    #     #
 kp,ke=wilcoxon(accKEB,accKEP)
 kp2,ku=wilcoxon(accKUB,accKUP)
 op,ol=wilcoxon(accOLAB,accOLAP)
@@ -199,9 +188,43 @@ lca,lc=wilcoxon(accLCAB,accLCAP)
 rk,rkb=wilcoxon(accRankB,accRankP)
 met,mt=wilcoxon(accMetaB,accMetaP)
 vot,votc=wilcoxon(accVotingBag,accVotingPgsc)
-    #
+dsc,dsoc=wilcoxon(accDsocb,accDsocp)
+wil=[ku,ke,ol,sb,lc,rkb,mt,vot]
+print(kp,ke)
 
-arq1.write('{};{};{};;{};{};;{};{};;{};{};;{};{};;{};{};;{};{};;{};{}\n'.format(nome_base,kp,ke,kp2,ku,op,ol,sp,sb, lca,lc, rk,rkb,met,mt,vot,votc))
+def monta_string():
+    resultados = [round(100 * average(accKUB), 1), round(100* std(accKUB),1), round(100 * average(accKUP), 1), round(100 * std(accKUP),1),
+    round(100 * average(accKEB), 1), round(100 * std(accKEB), 1), round(100 * average(accKEP), 1), round(100 * std(accKEP),1),
+    round(100 * average(accOLAB), 1), round(100 * std(accOLAB), 1), round(100 * average(accOLAP), 1), round(100 * std(accOLAP),1),
+    round(100 * average(accSBB), 1), round(100 * std(accSBB), 1), round(100 * average(accSBP), 1), round(100 * std(accSBP),1),
+    round(100 * average(accLCAB), 1), round(100 * std(accLCAB), 1), round(100 * average(accLCAP), 1), round(100 * std(accLCAP),1),
+    round(100 * average(accRankB), 1), round(100 * std(accRankB), 1), round(100 * average(accRankP), 1), round(100 * std(accRankP),1),
+    round(100 * average(accMetaB), 1), round(100 * std(accMetaB), 1), round(100 * average(accMetaP), 1), round(100*std(accMetaP),1),
+    round(100 * average(accVotingBag), 1), round(100 * std(accVotingBag), 1), round(100 * average(accVotingPgsc),1), round(100 * std(accVotingPgsc),1)]
+    x = "Data&Bagging&X&Bagging&X&Bagging&X&Bagging&X&Bagging&X&Bagging&X&Bagging&X&\\"
+    x = x + nome_base+"&"
+    #print(len(resultados))
+    cont=0
+    for i in range(0,len(resultados)-4, 4):
+        if wil[cont]<0.05:
+            print(i)
+
+            if resultados[i] > resultados[i + 2]:
+                x = x + "\\textbf{" + str(resultados[i]) + "}(" + str(resultados[i + 1]) + ")*&" + str(resultados[i + 2]) + "(" + str(resultados[i + 3]) + ")"
+            else:
+                x = x + str(resultados[i]) + "(" + str(resultados[i + 1]) + ")&" + "\\textbf{" + str(resultados[i + 2]) + "}(" + str(resultados[i + 3]) + ")*"
+        else:
+            if resultados[i] > resultados[i + 2]:
+                x = x + "\\textbf{" + str(resultados[i]) + "}(" + str(resultados[i + 1]) + ")&" + str(
+                    resultados[i + 2]) + "(" + str(resultados[i + 3]) + ")"
+            else:
+                x = x + str(resultados[i]) + "(" + str(resultados[i + 1]) + ")&" + "\\textbf{" + str(
+                    resultados[i + 2]) + "}(" + str(resultados[i + 3]) + ")"
+        if i == len(resultados)-4:
+            x=x+"\\"
+        cont=cont+1
+    return x
+arq1.write('{};{};{};;{};{};;{};{};;{};{};;{};{};;{};{};;{};{};;{};{};;{};{}\n'.format(nome_base,kp,ke,kp2,ku,op,ol,sp,sb, lca,lc, rk,rkb,met,mt,vot,votc,dsc,dsoc))
 arq.write('{};{};{};{};{};;{};{};{};{};;{};{};{};{};;{};{};{};{};;{};{};{};{};;{};{};{};{};;{};{};{};{};;{};{};{};{}\n'
 .format(nome_base,100*average(accKUB),100*std(accKUB),100*average(accKUP),100*std(accKUP),
 100*average(accKEB),100*std(accKEB),100*average(accKEP),100*std(accKEP),
@@ -211,8 +234,9 @@ arq.write('{};{};{};{};{};;{};{};{};{};;{};{};{};{};;{};{};{};{};;{};{};{};{};;{
 100*average(accRankB), 100*std(accRankB),100*average(accRankP),100*std(accRankP),
 100*average(accMetaB),100*std(accMetaB),100*average(accMetaP),100*std(accMetaP),
 100*average(accVotingBag),100*std(accVotingBag),100*average(accVotingPgsc),100*std(accVotingPgsc)))
+#100*average(accDsocb),100*std(accDsocb),100*average(accDsocp),100*std(accDsocp)))
 
-arq2.write('{};{} ({});{} ({});;{} ({});{} ({});;{} ({});{} ({});;{} ({});{} ({});;{} ({});{} ({});;{} ({});{} ({});;{} ({});{} ({});;{} ({});{} ({})\n'.format(nome_base,
+arq2.write('{};{} ({});{} ({});;{} ({});{} ({});;{} ({});{} ({});;{} ({});{} ({});;{} ({});{} ({});;{} ({});{} ({});;{} ({});{} ({});;{} ({});{} ({}))\n'.format(nome_base,
 round(100*average(accKUB),1),round(100*std(accKUB),1),round(100*average(accKUP),1), round(100*std(accKUP),1),
 round(100*average(accKEB),1),round(100*std(accKEB),1),round(100*average(accKEP),1),round(100*std(accKEP),1),
 round(100*average(accOLAB),1),round(100*std(accOLAB),1),round(100*average(accOLAP),1),round(100*std(accOLAP),1),
@@ -221,8 +245,10 @@ round(100*average(accLCAB),1),round(100*std(accLCAB),1), round(100*average(accLC
 round(100*average(accRankB),1),round(100*std(accRankB),1),round(100*average(accRankP),1),round(100*std(accRankP),1),
 round(100*average(accMetaB),1),round(100*std(accMetaB),1),round(100*average(accMetaP),1),round(100*std(accMetaP),1),
 round(100*average(accVotingBag),1),round(100*std(accVotingBag),1),round(100*average(accVotingPgsc),1),round(100*std(accVotingPgsc),1)))
+x=monta_string()
+arq3.write(x)
 arq1.close()
 arq2.close()
+arq3.close()
 arq.close()
-
 

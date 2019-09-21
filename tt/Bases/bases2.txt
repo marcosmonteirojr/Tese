@@ -1,3 +1,15 @@
+Faults
 German
 Haberman
-sonar
+Heart
+ILPD
+Laryngeal1
+Laryngeal3
+Lithuanian
+Liver
+Mammo
+Monk
+Phoneme
+Segmentation
+Sonar
+Wine
