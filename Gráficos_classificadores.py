@@ -42,9 +42,9 @@ def plot_dataset(X, y, ax=None, title=None, **params):
     if ax is None:
         ax = plt.gca()
     ax.scatter(X[:, 0], X[:, 1], marker='o', c=y, s=25,
-               edgecolor='k', **params)
-    ax.set_xlabel('Feature 1')
-    ax.set_ylabel('Feature 2')
+               edgecolor='k',**params)
+    ax.set_xlabel('Atributo 1')
+    ax.set_ylabel('Atributo 2')
     if title is not None:
         ax.set_title(title)
     return ax
@@ -57,33 +57,59 @@ base_name="Banana"
 X,y,_,_=Cpx.open_data(base_name,local_dataset)
 
 Treino=Cpx.open_training(local,base_name,1)
-#X_t,y_t=Cpx.biuld_x_y(Treino,X,y)
-bags=Cpx.open_bag(cpx_caminho+"1/",base_name+"")
-val,test=Cpx.open_test_vali(local,base_name,"1")
 
-Xval,y_val=Cpx.biuld_x_y(test,X,y)
+
+
+bags_ga="testegif"
+
+#bags=Cpx.open_bag(cpx_caminho+"1/",base_name+"")
+#bags2 = Cpx.open_bag(cpx_caminho+str(1)+"/", base_name + bags_ga)
+val,test=Cpx.open_test_vali(local,base_name,"1")
+X_t,y_t=Cpx.biuld_x_y(Treino,X,y)
+Xval,y_val=Cpx.biuld_x_y(val,X,y)
+Xtest,y_test=Cpx.biuld_x_y(test,X,y)
+
+
+X_t=Cpx.min_max_norm(X_t)
+Xval=Cpx.min_max_norm(Xval)
+Xtest=Cpx.min_max_norm(Xtest)
+
 Xval=np.array(Xval)
 y_val=np.array(y_val)
 
+Xtest=np.array(Xtest)
+y_test=np.array(y_test)
 
 
+X=np.array(X)
+y=np.array(y)
+
+X_t=np.array(X_t)
+y_t=np.array(y_t)
 
 classifier=[]
-print(len(bags['inst']))
-for i in range(10):
-    print(i)
-    X_t, y_t = Cpx.biuld_x_y(bags['inst'][i], X, y)
-    X_t=np.array(X_t)
-    y_t=np.array(y_t)
-    ax = plot_dataset(Xval, y_val, title='Banana')
-    ca,sc,_=Cpx.biuld_classifier(X_t,y_t,Xval,y_val)
+#print(len(bags['inst']))
+#for i in range(10):
+#print(i)
+for i in range(1,99):
+    bags2 = Cpx.open_bag(cpx_caminho + str(1) + "/", base_name )
+    X_b, y_b = Cpx.biuld_x_y(bags2['inst'][i], X, y)
+    X_b=Cpx.min_max_norm(X_b)
+    X_b=np.array(X_b)
+    y_b=np.array(y_b)
+
+    ax = plot_dataset(X_b, y_b, title='Subproblema ' +str(i) )
+    #ax2=plot_dataset(Xval,y_val)
+    #ax3=plot_dataset(Xtest,y_test)
+    #ca,sc,_=Cpx.biuld_classifier(X_t,y_t,Xval,y_val)
     #    classifier.append(ca)
 
     #for clf in classifier:
-    print(sc)
-    plot_classifier_decision(ax, ca, Xval)
+    #print(sc)
+    #plot_classifier_decision(ax, ca, Xval)
     #ax.set_xlim((0, 1))
-   # ax.set_ylim((0, 1))
-
-    plt.show()
-    plt.tight_layout()
+    # ax.set_ylim((0, 1))
+    plt.savefig('Bag'+str(i)+'+.png', dpi=300)
+    ax.clear()
+    #plt.show()
+    #plt.tight_layout()

@@ -8,4 +8,4 @@
 while read i;
 do
 	~/anaconda3/envs/tese2/bin/python ./graficos_moga.py $i
-done < ./bases.tx
+done < ./bases2

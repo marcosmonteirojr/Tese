@@ -10,9 +10,9 @@ import numpy as np
 #exit(0)
 
 nome_base='Banana'
-local_dataset = "/media/marcos/Data/Tese/Bases2/Dataset/"
+#local_dataset = "/media/marcos/Data/Tese/Bases2/Dataset/"
 local = "/media/marcos/Data/Tese/Bases3/"
-caminho_base = "/media/marcos/Data/Tese/Bases2/"
+caminho_base = "/media/marcos/Data/Tese/Bases3/"
 cpx_caminho="/media/marcos/Data/Tese/Bases3/Bags/"
 bags_ga="20over2"
 arq_dataset = caminho_base + "Dataset/" + nome_base + ".arff"

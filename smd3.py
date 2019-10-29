@@ -1,4 +1,4 @@
-import Marff, Cpx, csv
+import Marff, Cpx, csv, os
 import numpy as np
 import novo_perceptron as Nperc
 from deslib.static.single_best import SingleBest
@@ -22,33 +22,27 @@ import pds_pool4
 #bags_ga=sys.argv[2]
 #print(bags_ga.split(','))
 #exit(0)
+#local_dataset = "/home/projeto/Marcos/Bases2/Dataset/"
+#local = "/home/projeto/Marcos/Bases3/"
+#caminho_base = "/home/projeto/Marcos/Bases2/"
+#cpx_caminho="/home/projeto/Marcos/Bases3/Bags/"
 
 nome_base='Banana'
 local_dataset = "/media/marcos/Data/Tese/Bases3/Dataset/"
 local = "/media/marcos/Data/Tese/Bases3/"
 caminho_base = "/media/marcos/Data/Tese/Bases3/"
 cpx_caminho="/media/marcos/Data/Tese/Bases3/Bags/"
-bags_ga="20linear"
-#min_score=0
+bags_ga="20ep"
 
-#local_dataset = "/home/projeto/Marcos/Bases2/Dataset/"
-#local = "/home/projeto/Marcos/Bases3/"
-#caminho_base = "/home/projeto/Marcos/Bases2/"
-#cpx_caminho="/home/projeto/Marcos/Bases3/Bags/"
+nome_arq="teste"
 
 
 arq_dataset = caminho_base + "Dataset/" + nome_base + ".arff"
 arq_arff = Marff.abre_arff(arq_dataset)
-#_,classes=Marff.retorna_classes_existentes(arq_arff)
-
 X, y, data = Marff.retorna_instacias(arq_arff)
 
 
 
-arq = open('SelecaoMedia_desvio_pgcs_ga_linear.csv', 'a')
-arq1 = open('SelecaoWilcoxon_pgcs_ga_linear.csv', 'a')
-arq2 = open('SelecaoTabela_pgcs_ga_linear.csv', 'a')
-arq3 = open('SelecaoLatex_pgcs_ga_linear.txt', 'a')
 accKUB = []
 accKEB = []
 accOLAB = []
@@ -72,7 +66,7 @@ accDsocb=[]
 accVotingBag = []
 accVotingPgsc = []
 
-for j in range(1,2):
+for j in range(1,3):
 
     poolBag = []
     poolPgsc = []
@@ -80,10 +74,7 @@ for j in range(1,2):
     calibrated_poolP = []
 
     bags = Cpx.open_bag(cpx_caminho+str(j)+"/", nome_base)
-    #print(cpx_caminho+str(j)+"/", nome_base + "20sc")
     bags2 = Cpx.open_bag(cpx_caminho+str(j)+"/", nome_base + bags_ga)
-    #print(bags)
-    #exit(0)
     teste, validacao=Cpx.open_test_vali(local,nome_base,j)
 
     X_test,y_test=Cpx.biuld_x_y(teste,X,y)
@@ -94,9 +85,9 @@ for j in range(1,2):
     for i in range(100):
 
         X_bag,y_bag=Cpx.biuld_x_y(bags['inst'][i],X,y)
-       # print(X_bag[1])
         X_bag2, y_bags2 = Cpx.biuld_x_y(bags2['inst'][i], X, y)
-        print(X_bag2[1],"\n")
+
+       # print(X_bag2[1],"\n")
         #X_bag = scaler.transform(X_bag)
         #print(X_bag[0])
         #X_bag2 = scaler.transform(X_bag2)
@@ -190,63 +181,112 @@ met,mt=wilcoxon(accMetaB,accMetaP)
 vot,votc=wilcoxon(accVotingBag,accVotingPgsc)
 dsc,dsoc=wilcoxon(accDsocb,accDsocp)
 wil=[ku,ke,ol,sb,lc,rkb,mt,vot]
-print(kp,ke)
+
+
+
+if os.path.isfile('SelecaoMedia_desvio' + nome_arq + ".csv") == False or os.path.isfile('SelecaoLatex' + nome_arq + '.txt') == False:
+    print("kjksjdf")
+    arq = open('SelecaoMedia_desvio' + nome_arq + ".csv", 'a')
+    arq1 = open('SelecaoWilcoxon' + nome_arq + ".csv", 'a')
+    arq2 = open('SelecaoTabela' + nome_arq + ".csv", 'a')
+    arq3 = open('SelecaoLatex' + nome_arq + '.txt', 'a')
+    arq.write(';ALL;;LCA;;OLA;;Rank;;Knora-E;;Knora-U;;Meta;;SB\n')
+    arq.write(';Bag;X;Bag;X;Bag;X;Bag;X;Bag;X;Bag;X;Bag;X;Bag;X\n')
+    arq1.write(';ALL;;LCA;;OLA;;Rank;;Knora-E;;Knora-U;;Meta;;SB\n')
+    arq1.write(';Bag;X;Bag;X;Bag;X;Bag;X;Bag;X;Bag;X;Bag;X;Bag;X\n')
+    arq2.write(';ALL;;LCA;;OLA;;Rank;;Knora-E;;Knora-U;;Meta;;SB\n')
+    arq2.write(';Bag;X;Bag;X;Bag;X;Bag;X;Bag;X;Bag;X;Bag;X;Bag;X\n')
+
+    x = "\\begin{table}[]\n"
+    x = x + "\\begin{tabular}{ccccccccccccccc}\n\hline\n"
+    x = x + "\\textbf{} & \multicolumn{ 2}{c}{\\textbf{Voto majoritário}} & \multicolumn{ 2}{c}{\\textbf{LCA}} & \multicolumn{ 2}{c}" \
+            "{\\textbf{OLA}} & \multicolumn{ 2}{c}{\\textbf{Rank}} & \multicolumn{ 2}{c}" \
+            "{\\textbf{Knora-E}} & \multicolumn{ 2}{c}{\\textbf{Knora-U}} & \multicolumn{ 2}{c}{\\textbf{Meta-Des}} \\" + "\\ \n \hline\n"
+    x = x+ "\\textbf{Problemas} & \\textbf{Bagging} & \\textbf{Método} & \\textbf{Bagging} & \\textbf{Método} & \\textbf{Bagging} & \\textbf{Método} & " \
+        "\\textbf{Bagging} & \\textbf{Método} & \\textbf{Bagging} & \\textbf{Método} & \\textbf{Bagging} & " \
+        "\\textbf{Método} & \\textbf{Bagging} & \\textbf{Método} \\" + "\\ \n" + "\hline\n"
+    arq3.write(x)
+
+else:
+    arq = open('SelecaoMedia_desvio' + nome_arq + ".csv", 'a')
+    arq1 = open('SelecaoWilcoxon' + nome_arq + ".csv", 'a')
+    arq2 = open('SelecaoTabela' + nome_arq + ".csv", 'a')
+    arq3 = open('SelecaoLatex' + nome_arq + '.txt', 'a')
 
 def monta_string():
-    resultados = [round(100 * average(accKUB), 1), round(100* std(accKUB),1), round(100 * average(accKUP), 1), round(100 * std(accKUP),1),
-    round(100 * average(accKEB), 1), round(100 * std(accKEB), 1), round(100 * average(accKEP), 1), round(100 * std(accKEP),1),
-    round(100 * average(accOLAB), 1), round(100 * std(accOLAB), 1), round(100 * average(accOLAP), 1), round(100 * std(accOLAP),1),
-    round(100 * average(accSBB), 1), round(100 * std(accSBB), 1), round(100 * average(accSBP), 1), round(100 * std(accSBP),1),
-    round(100 * average(accLCAB), 1), round(100 * std(accLCAB), 1), round(100 * average(accLCAP), 1), round(100 * std(accLCAP),1),
-    round(100 * average(accRankB), 1), round(100 * std(accRankB), 1), round(100 * average(accRankP), 1), round(100 * std(accRankP),1),
-    round(100 * average(accMetaB), 1), round(100 * std(accMetaB), 1), round(100 * average(accMetaP), 1), round(100*std(accMetaP),1),
-    round(100 * average(accVotingBag), 1), round(100 * std(accVotingBag), 1), round(100 * average(accVotingPgsc),1), round(100 * std(accVotingPgsc),1)]
-    x = "Data&Bagging&X&Bagging&X&Bagging&X&Bagging&X&Bagging&X&Bagging&X&Bagging&X&\\"
-    x = x + nome_base+"&"
-    #print(len(resultados))
+    resultados = [
+        round(100 * average(accVotingBag), 1), round(100 * std(accVotingBag), 1),round(100 * average(accVotingPgsc), 1), round(100 * std(accVotingPgsc), 1),
+        round(100 * average(accLCAB), 1), round(100 * std(accLCAB), 1), round(100 * average(accLCAP), 1),round(100 * std(accLCAP), 1),
+        round(100 * average(accOLAB), 1), round(100 * std(accOLAB), 1), round(100 * average(accOLAP), 1),round(100 * std(accOLAP), 1),
+        round(100 * average(accRankB), 1), round(100 * std(accRankB), 1), round(100 * average(accRankP), 1),round(100 * std(accRankP), 1),
+
+        round(100 * average(accKEB), 1), round(100 * std(accKEB), 1), round(100 * average(accKEP), 1), round(100 * std(accKEP),1),
+        round(100 * average(accKUB), 1), round(100 * std(accKUB), 1), round(100 * average(accKUP), 1),round(100 * std(accKUP), 1),
+        round(100 * average(accMetaB), 1), round(100 * std(accMetaB), 1), round(100 * average(accMetaP), 1),round(100 * std(accMetaP), 1)]
+
+        #round(100 * average(accSBB), 1), round(100 * std(accSBB), 1), round(100 * average(accSBP), 1), round(100 * std(accSBP),1)]
+
+
+
+
+    x =  nome_base+"&"
     cont=0
-    for i in range(0,len(resultados)-4, 4):
+
+    for i in range(0,len(resultados), 4):
+        print(i)
         if wil[cont]<0.05:
             print(i)
 
             if resultados[i] > resultados[i + 2]:
-                x = x + "\\textbf{" + str(resultados[i]) + "}(" + str(resultados[i + 1]) + ")*&" + str(resultados[i + 2]) + "(" + str(resultados[i + 3]) + ")"
+                x = x + '\\'+"\\"+"textbf{" + str(resultados[i]) + "}(" + str(resultados[i + 1]) + ")*&" + str(resultados[i + 2]) + "(" + str(resultados[i + 3]) + ")"
             else:
-                x = x + str(resultados[i]) + "(" + str(resultados[i + 1]) + ")&" + "\\textbf{" + str(resultados[i + 2]) + "}(" + str(resultados[i + 3]) + ")*"
+                x = x + str(resultados[i]) + "(" + str(resultados[i + 1]) + ")" + "&\\"+"textbf{" + str(resultados[i + 2]) + "}(" + str(resultados[i + 3]) + ")*"
         else:
             if resultados[i] > resultados[i + 2]:
-                x = x + "\\textbf{" + str(resultados[i]) + "}(" + str(resultados[i + 1]) + ")&" + str(
-                    resultados[i + 2]) + "(" + str(resultados[i + 3]) + ")"
+                x = x + "&\\"+"textbf{" + str(resultados[i]) + "}(" + str(resultados[i + 1]) + ")&" + str(
+                    resultados[i + 2]) + "(" + str(resultados[i + 3]) + ")\\"+"\\"
             else:
-                x = x + str(resultados[i]) + "(" + str(resultados[i + 1]) + ")&" + "\\textbf{" + str(
-                    resultados[i + 2]) + "}(" + str(resultados[i + 3]) + ")"
-        if i == len(resultados)-4:
-            x=x+"\\"
+                x = x + "&"+str(resultados[i]) + "(" + str(resultados[i + 1]) + ")" + "&\\"+"textbf{" + str(
+                    resultados[i + 2]) + "}(" + str(resultados[i + 3]) + ")\\"+"\\"
+        if i == len(resultados):
+            x=x+'\\'+"\\"
         cont=cont+1
-    return x
-arq1.write('{};{};{};;{};{};;{};{};;{};{};;{};{};;{};{};;{};{};;{};{};;{};{}\n'.format(nome_base,kp,ke,kp2,ku,op,ol,sp,sb, lca,lc, rk,rkb,met,mt,vot,votc,dsc,dsoc))
-arq.write('{};{};{};{};{};;{};{};{};{};;{};{};{};{};;{};{};{};{};;{};{};{};{};;{};{};{};{};;{};{};{};{};;{};{};{};{}\n'
-.format(nome_base,100*average(accKUB),100*std(accKUB),100*average(accKUP),100*std(accKUP),
-100*average(accKEB),100*std(accKEB),100*average(accKEP),100*std(accKEP),
-100*average(accOLAB),100*std(accOLAB),100*average(accOLAP),100*std(accOLAP),
-100*average(accSBB),100*std(accSBB),100*average(accSBP),100*std(accSBP),
-100*average(accLCAB),100*std(accLCAB),100*average(accLCAP), 100*std(accLCAP),
-100*average(accRankB), 100*std(accRankB),100*average(accRankP),100*std(accRankP),
-100*average(accMetaB),100*std(accMetaB),100*average(accMetaP),100*std(accMetaP),
-100*average(accVotingBag),100*std(accVotingBag),100*average(accVotingPgsc),100*std(accVotingPgsc)))
-#100*average(accDsocb),100*std(accDsocb),100*average(accDsocp),100*std(accDsocp)))
+    x=x+ "\n"
 
-arq2.write('{};{} ({});{} ({});;{} ({});{} ({});;{} ({});{} ({});;{} ({});{} ({});;{} ({});{} ({});;{} ({});{} ({});;{} ({});{} ({});;{} ({});{} ({}))\n'.format(nome_base,
-round(100*average(accKUB),1),round(100*std(accKUB),1),round(100*average(accKUP),1), round(100*std(accKUP),1),
-round(100*average(accKEB),1),round(100*std(accKEB),1),round(100*average(accKEP),1),round(100*std(accKEP),1),
-round(100*average(accOLAB),1),round(100*std(accOLAB),1),round(100*average(accOLAP),1),round(100*std(accOLAP),1),
-round(100*average(accSBB),1),round(100*std(accSBB),1),round(100*average(accSBP),1),round(100*std(accSBP),1),
-round(100*average(accLCAB),1),round(100*std(accLCAB),1), round(100*average(accLCAP),1),round(100*std(accLCAP),1),
-round(100*average(accRankB),1),round(100*std(accRankB),1),round(100*average(accRankP),1),round(100*std(accRankP),1),
-round(100*average(accMetaB),1),round(100*std(accMetaB),1),round(100*average(accMetaP),1),round(100*std(accMetaP),1),
-round(100*average(accVotingBag),1),round(100*std(accVotingBag),1),round(100*average(accVotingPgsc),1),round(100*std(accVotingPgsc),1)))
+    return x
 x=monta_string()
 arq3.write(x)
+exit(0)
+arq1.write('{};{};{};{};{};;{};{};{};{};{};{};{};{};{};{};{};{}\n'.format(nome_base,vot,votc,lca,lc,op,ol,rk,rkb,kp,ke,kp2,ku,met,mt,sp,sb))
+arq.write('{};{};{};{};{};;{};{};{};{};{};{};{};{};{};{};{};{};{};{};{};{};{};{};{};{};{};{};{};{};{};{};{};{}\n'
+.format(nome_base,
+
+100*average(accVotingBag),100*std(accVotingBag),100*average(accVotingPgsc),100*std(accVotingPgsc),
+100*average(accLCAB),100*std(accLCAB),100*average(accLCAP), 100*std(accLCAP),
+100*average(accOLAB),100*std(accOLAB),100*average(accOLAP),100*std(accOLAP),
+100*average(accRankB), 100*std(accRankB),100*average(accRankP),100*std(accRankP),
+
+100*average(accKEB),100*std(accKEB),100*average(accKEP),100*std(accKEP),
+100*average(accKUB),100*std(accKUB),100*average(accKUP),100*std(accKUP),
+100*average(accMetaB),100*std(accMetaB),100*average(accMetaP),100*std(accMetaP),
+
+100*average(accSBB),100*std(accSBB),100*average(accSBP),100*std(accSBP)))
+
+arq2.write('{};{} ({});{} ({});{} ({});{} ({});{} ({});{} ({});{} ({});{} ({});{} ({});{} ({});{} ({});{} ({});{} ({});{} ({});{} ({});{} ({}))\n'.format(nome_base,
+
+round(100*average(accVotingBag),1),round(100*std(accVotingBag),1),round(100*average(accVotingPgsc),1),round(100*std(accVotingPgsc),1),
+round(100*average(accLCAB),1),round(100*std(accLCAB),1), round(100*average(accLCAP),1),round(100*std(accLCAP),1),
+round(100*average(accOLAB),1),round(100*std(accOLAB),1),round(100*average(accOLAP),1),round(100*std(accOLAP),1),
+round(100*average(accRankB),1),round(100*std(accRankB),1),round(100*average(accRankP),1),round(100*std(accRankP),1),
+
+
+round(100*average(accKEB),1),round(100*std(accKEB),1),round(100*average(accKEP),1),round(100*std(accKEP),1),
+round(100*average(accKUB),1),round(100*std(accKUB),1),round(100*average(accKUP),1), round(100*std(accKUP),1),
+round(100*average(accMetaB),1),round(100*std(accMetaB),1),round(100*average(accMetaP),1),round(100*std(accMetaP),1),
+
+round(100*average(accSBB),1),round(100*std(accSBB),1),round(100*average(accSBP),1),round(100*std(accSBP),1)))
+
+
 arq1.close()
 arq2.close()
 arq3.close()

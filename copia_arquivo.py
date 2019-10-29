@@ -23,7 +23,7 @@ def limpa_pasta():
          #for i in range(1,30):
              os.system ("rm -r /media/marcos/Data/Tese/Bases3/Bags/" + str(l)+"/P2*" )
 
-#limpa_pasta()
+limpa_pasta()
 
 
 import os, sys, Marff, random

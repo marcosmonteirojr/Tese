@@ -24,7 +24,7 @@ header=['overlapping.F1', 'overlapping.F1v', 'overlapping.F2', 'overlapping.F3',
 
 
 def complexidades(y_train,X_train,grupos):
-    print("sss")
+    #print("sss")
     X_bag, y_bag = Cpx.biuld_bags(y_train, X_train, types="sample")
     cpx=Cpx.complexity_data4(X_bag,y_bag,grupos)
     del X_bag,y_bag
@@ -49,7 +49,7 @@ def parallel_distance(i,bags,X,y,X_vali,y_vali):
 
 def vote_complexity(X_data,y_data,grupos):
     voto = [0] * 11
-    for i in range(1,11):
+    for i in range(1,2):
         print(i)
         if os.path.isfile(local + "/Bags/" + str(i) + "/" + nome_base + ".csv") == False:
             print("Não exite Bags/treino/validation/teste")
@@ -64,17 +64,17 @@ def vote_complexity(X_data,y_data,grupos):
         cpx=np.squeeze(comp)
         cpx=cpx.T
         np.set_printoptions(threshold=np.nan)
-        print(cpx)
+        print(cpx[0])
+        #exit(0)
 
-       # exit(0)
-        for k in cpx:
-            norm=Cpx.min_max_norm(k)
-            #print(norm)
-            stad.append(np.std(norm))
+       # for k in cpx:
+        norm=Cpx.min_max_norm(cpx[0])
+        print(norm)
+        stad.append(np.std(norm))
         max=np.argsort(stad)
-        #print(stad)
+        print(stad)
         stad=np.array(stad)
-       # exit(0)
+        exit(0)
         max=max[::-1]
         # with open("/media/marcos/Data/Tese/Resultados_Complexit" + nome_base + ".csv", 'a') as f:
         #
@@ -87,7 +87,7 @@ def vote_complexity(X_data,y_data,grupos):
 
         del cpx
         overlapping=stad[0:5]
-        #print(len(stad))
+      #  print(overlapping)
         neighborhood=stad[5:11]
         # linearity=stad[11:14]
         # dimensionality=stad[14:17]
