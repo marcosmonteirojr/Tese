@@ -30,30 +30,6 @@ import rpy2.robjects as robjects
 # base_name="Haberman"
 # local_data="/media/marcos/Data/Tese/Bases2/Dataset/"
 
-def p2_problem():
-    p2 = datasets.make_P2([1000, 1000])
-    data = dict()
-    data['data'] = list()
-    X = p2[0].tolist()
-    y = p2[1].tolist()
-
-    y = [int(i) for i in y]
-
-    # print(y)
-
-    for i in range(len(X)):
-        X[i].append(y[i])
-
-    data['data'] = X
-
-    info = dict()
-    info['description'] = "v"
-    info['relation'] = 'p2'
-    info['attributes'] = [('A1', 'REAL'), ('A2', 'REAL'), ('Class', (['0.0', '1.0']))]
-    Marff.cria_arff(info, data, ["0.0", "1.0"], "/media/marcos/Data/Tese/Bases3/Dataset/", "P2")
-    return data
-
-
 def open_data(base_name, local_data):
     dataset_file = Marff.abre_arff(local_data + base_name + ".arff")
     X_data, y_data, dataset = Marff.retorna_instacias(dataset_file)
@@ -248,12 +224,10 @@ def complexity_data3(X_data, y_data, grupo, tipo=None):
 
 def complexity_data4(X_data, y_data, grupo):
     """
-
     :param X_data:
     :param y_data:
     :param grupo:
     :return: retorna todas as complexidades dos grupos escolhidos
-
     """
     dfx = pd.DataFrame(X_data, copy=False)
     dfy = robjects.IntVector(y_data)
@@ -295,22 +269,50 @@ def biuld_dic(X, y, dic):
     return d
 
 
-def biuld_classifier(X_train, y_train, X_val, y_val):
+def p2_problem():
+    p2 = datasets.make_P2([500, 500])
+    data = dict()
+    data['data'] = list()
+    X = p2[0].tolist()
+    y = p2[1].tolist()
+
+    y = [int(i) for i in y]
+
+    # print(y)
+
+    for i in range(len(X)):
+        X[i].append(y[i])
+
+    data['data'] = X
+
+    info = dict()
+    info['description'] = "v"
+    info['relation'] = 'p2'
+    info['attributes'] = [('A1', 'REAL'), ('A2', 'REAL'), ('Class', (['0.0', '1.0']))]
+    Marff.cria_arff(info, data, ["0.0", "1.0"], "/media/marcos/Data/Tese/Bases4/Dataset/", "P2")
+    return data
+
+
+def biuld_classifier(X_train, y_train, X_val, y_val, X_test=None, y_test=None):
     '''
     retorna um perceptron com sua acuracia e com a lista de predicao
     :param X_train: X do treino
     :param y_train: y do treino
     :param X_val: X valida ou teste
     :param y_val: y valida, ou teste
+    :param X_test: retorna o predict e o segundo score
     :return: classificador, accuracia, lista de predicao
     '''
     # constroi os classificadores, e retorna classificador, score e predict
     perc = perceptron.Perceptron(n_jobs=7, max_iter=100, tol=10.0)
     perc.fit(X_train, y_train)
     score = perc.score(X_val, y_val)
-    predict = perc.predict(X_val)
-
-    return perc, score, predict
+    if X_test!=None and y_test!=None:
+        score2 = perc.score(X_test, y_test)
+        predict = perc.predict(X_test)
+        return perc, score,score2, predict
+    else:
+        return perc, score
 
 
 def biuld_classifier_over(X, y, X_val, y_val, tam):
@@ -322,7 +324,6 @@ def biuld_classifier_over(X, y, X_val, y_val, tam):
     :param y_val: y valida, ou teste
     :param tam: tamanho da divisâo do dataset de treino
     :return: classificador*, accuracia*, lista de predicao*
-
     a acuracia e o classificador sao referentes a parte do dataset de treino
     '''
     X_train = []
@@ -345,7 +346,6 @@ def biuld_classifier_over(X, y, X_val, y_val, tam):
 
 def min_max_norm(dataset):
     """
-
     :param dataset: dataset [samples,features]
     :return: dataset normalizado por minmax
     """
@@ -369,7 +369,6 @@ def min_max_norm(dataset):
 
 def dispersion_norm(complexity):
     """
-
     :param complexity: listtas de complexidades
     :return: distancia media par a par das complexidades, normalizadas
     """
@@ -386,7 +385,6 @@ def dispersion_norm(complexity):
 
 def dispersion(complexity):
     """
-
     :param complexity: listtas de complexidades
     :return: distancia media par a par das complexidades(biblioteca)
     """
@@ -404,7 +402,6 @@ def dispersion(complexity):
 def dispersion2(complexity):
     """
     Atenção, foi refeita e não testada dia 3-10-2019
-
     :param complexity: listas de complexidades
     :return: media das distancias feitas de forma manual
     """
@@ -432,9 +429,8 @@ def dispersion_linear(complexity):
     # print(complexity)
 
     """
-
     :param complexity: listas de complexidades
-    :return: media das distancias feitas de forma manual a-b
+    :return: media das distancias feitas de forma manual a-b normalizadas
     """
     result = []
     result1 = []
@@ -467,7 +463,7 @@ def dispersion_linear(complexity):
     del result, r, dist, complexity
     result1 = result1.T
     result1 = result1.tolist()
-    # print(result1)
+    #print(result1)
 
     return result1
 
@@ -496,6 +492,7 @@ def diversity2(y_test, predicts):
     div = diversity.compute_pairwise_diversity(y_test, predicts, diversity.double_fault)
     return div
 
+
 def biuld_csv_result(complexity_result, score, Q_test, Df, disp):
     global base_name
     header = ['overlapping.F1', 'overlapping.F1v', 'overlapping.F2', 'overlapping.F3', 'overlapping.F4',
@@ -518,7 +515,7 @@ def biuld_csv_result(complexity_result, score, Q_test, Df, disp):
 def save_bag(inds, types, local, base_name, iteration):
     if types == 'validation':
         # print('entreivali')
-        if (os.path.exists(local + "/Validacao/" + str(iteration)) == False):
+        if (os.path.exists(local + "Validacao/" + str(iteration)) == False):
             os.system("mkdir -p " + local + "/" + str(iteration))
         with open(local + "/" + str(iteration) + "/" + base_name + ".csv", 'w') as f:
             # print('entreivali')
@@ -526,21 +523,21 @@ def save_bag(inds, types, local, base_name, iteration):
             w.writerow(inds)
 
     if types == "test":
-        if (os.path.exists(local + "/Teste/" + str(iteration)) == False):
+        if (os.path.exists(local + "Teste/" + str(iteration)) == False):
             os.system("mkdir -p " + local + "/" + str(iteration))
         with open(local + "/" + str(iteration) + "/" + base_name + ".csv", 'w') as f:
             w = csv.writer(f)
             w.writerow(inds)
 
     if types == "train":
-        if (os.path.exists(local + "/Treino/" + str(iteration)) == False):
+        if (os.path.exists(local + "Treino/" + str(iteration)) == False):
             os.system("mkdir -p " + local + "/" + str(iteration))
         with open(local + "/" + str(iteration) + "/" + base_name + ".csv", 'w') as f:
             w = csv.writer(f)
             w.writerow(inds)
 
     if types == "bags":
-        if (os.path.exists(local + "/Bags/" + str(iteration)) == False):
+        if (os.path.exists(local + "Bags/" + str(iteration)) == False):
             os.system("mkdir -p " + local + "/" + str(iteration))
         with open(local + "/" + str(iteration) + "/" + base_name + ".csv", 'a') as f:
             w = csv.writer(f)
@@ -559,9 +556,9 @@ def routine_save_bags(local_dataset, local, base_name, iteration):
     X_data, y_data, dataset, dic = open_data(base_name, local_dataset)
     X_train, y_train, X_test, y_test, X_vali, y_vali, id_train, id_test, id_vali = split_data(X_data, y_data)
     # print('mudar as saidas')
-    save_bag(id_train, 'train', local + "/Treino/", base_name, (iteration))
-    save_bag(id_vali, 'validation', local + "/Validacao/", base_name, str(iteration))
-    save_bag(id_test, 'test', local + "/Teste/", base_name, str(iteration))
+    save_bag(id_train, 'train', local + "Treino/", base_name, (iteration))
+    save_bag(id_vali, 'validation', local + "Validacao/", base_name, str(iteration))
+    save_bag(id_test, 'test', local + "Teste/", base_name, str(iteration))
     for i in range(0, 100):
         #       X_bag, y_bag, id = biuld_bags_stratify(y_train,X_train=X_train, X_data=X_data, y_data=y_data, ind=id_train, types="ind")
         X_bag, y_bag, id = biuld_bags(y_train, X_data=X_data, y_data=y_data, ind=id_train, types="ind")
@@ -658,7 +655,7 @@ def main():
     # print(dispersion2(x),dispersion(x))
 
 
-#    p2_problem()
+  #  p2_problem()
 
 
 if __name__ == "__main__":

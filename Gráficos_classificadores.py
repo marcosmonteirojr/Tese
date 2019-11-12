@@ -31,7 +31,7 @@ def plot_classifier_decision(ax, clf, X, mode='line', **params):
     Z = clf.predict(np.c_[xx.ravel(), yy.ravel()])
     Z = Z.reshape(xx.shape)
     if mode == 'line':
-        ax.contour(xx, yy, Z,linewidths=0.7,colors="red")
+        ax.contour(xx, yy, Z,linewidths=0.3,colors="red")
     else:
         ax.contourf(xx, yy, Z, **params)
     ax.set_xlim((np.min(X[:, 0]), np.max(X[:, 0])))
@@ -52,7 +52,7 @@ def plot_dataset(X, y, ax=None, title=None, **params):
 local_dataset = "/media/marcos/Data/Tese/Bases3/Dataset/"
 local = "/media/marcos/Data/Tese/Bases3/"
 cpx_caminho="/media/marcos/Data/Tese/Bases3/Bags/"
-base_name="Banana"
+base_name="P2"
 
 X,y,_,_=Cpx.open_data(base_name,local_dataset)
 
@@ -60,19 +60,19 @@ Treino=Cpx.open_training(local,base_name,1)
 
 
 
-bags_ga="testegif"
+bags_ga="distdiverlinear"
 
-#bags=Cpx.open_bag(cpx_caminho+"1/",base_name+"")
-#bags2 = Cpx.open_bag(cpx_caminho+str(1)+"/", base_name + bags_ga)
+bags=Cpx.open_bag(cpx_caminho+"1/",base_name+"")
+bags2 = Cpx.open_bag(cpx_caminho+str(1)+"/", base_name + bags_ga)
 val,test=Cpx.open_test_vali(local,base_name,"1")
 X_t,y_t=Cpx.biuld_x_y(Treino,X,y)
 Xval,y_val=Cpx.biuld_x_y(val,X,y)
 Xtest,y_test=Cpx.biuld_x_y(test,X,y)
 
 
-X_t=Cpx.min_max_norm(X_t)
-Xval=Cpx.min_max_norm(Xval)
-Xtest=Cpx.min_max_norm(Xtest)
+#X_t=Cpx.min_max_norm(X_t)
+#Xval=Cpx.min_max_norm(Xval)
+#Xtest=Cpx.min_max_norm(Xtest)
 
 Xval=np.array(Xval)
 y_val=np.array(y_val)
@@ -88,28 +88,47 @@ X_t=np.array(X_t)
 y_t=np.array(y_t)
 
 classifier=[]
+classifier2=[]
 #print(len(bags['inst']))
 #for i in range(10):
 #print(i)
 for i in range(1,99):
-    bags2 = Cpx.open_bag(cpx_caminho + str(1) + "/", base_name )
-    X_b, y_b = Cpx.biuld_x_y(bags2['inst'][i], X, y)
-    X_b=Cpx.min_max_norm(X_b)
+    #bags2 = Cpx.open_bag(cpx_caminho + str(1) + "/", base_name )
+    X_b, y_b = Cpx.biuld_x_y(bags['inst'][i], X, y)
+   # X_b=Cpx.min_max_norm(X_b)
     X_b=np.array(X_b)
     y_b=np.array(y_b)
+    ca, sc, _ = Cpx.biuld_classifier(X_b, y_b, Xval, y_val)
+    classifier.append(ca)
 
-    ax = plot_dataset(X_b, y_b, title='Subproblema ' +str(i) )
-    #ax2=plot_dataset(Xval,y_val)
-    #ax3=plot_dataset(Xtest,y_test)
-    #ca,sc,_=Cpx.biuld_classifier(X_t,y_t,Xval,y_val)
-    #    classifier.append(ca)
+for i in range(1,99):
+    #bags2 = Cpx.open_bag(cpx_caminho + str(1) + "/", base_name )
+    X_b2, y_b2 = Cpx.biuld_x_y(bags2['inst'][i], X, y)
+   # X_b=Cpx.min_max_norm(X_b)
+    X_b2=np.array(X_b2)
+    y_b2=np.array(y_b2)
+    ca2, sc2, _ = Cpx.biuld_classifier(X_b2, y_b2, Xval, y_val)
+    classifier2.append(ca2)
 
-    #for clf in classifier:
+
+
+for clf in classifier:
     #print(sc)
-    #plot_classifier_decision(ax, ca, Xval)
-    #ax.set_xlim((0, 1))
-    # ax.set_ylim((0, 1))
-    plt.savefig('Bag'+str(i)+'+.png', dpi=300)
-    ax.clear()
-    #plt.show()
+    ax = plot_dataset(Xval, y_val)
+
+    plot_classifier_decision(ax, clf, Xval)
+
+    ax.set_xlim((0, 1))
+    ax.set_ylim((0, 1))
+
+    #plt.savefig('Bag'+str(i)+'+.png', dpi=300)
+    #ax.clear()
+plt.show()
+for clf in classifier2:
+    ax2 = plot_dataset(Xval, y_val)
+    plot_classifier_decision(ax2, clf, Xval)
+    ax2.set_xlim((0, 1))
+    ax2.set_ylim((0, 1))
+
+plt.show()
     #plt.tight_layout()

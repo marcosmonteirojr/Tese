@@ -9,12 +9,12 @@ import numpy as np
 #print(bags_ga.split(','))
 #exit(0)
 
-nome_base='Banana'
+nome_base='P2'
 #local_dataset = "/media/marcos/Data/Tese/Bases2/Dataset/"
 local = "/media/marcos/Data/Tese/Bases3/"
 caminho_base = "/media/marcos/Data/Tese/Bases3/"
 cpx_caminho="/media/marcos/Data/Tese/Bases3/Bags/"
-bags_ga="20over2"
+bags_ga="20distdiver"
 arq_dataset = caminho_base + "Dataset/" + nome_base + ".arff"
 arq_arff = Marff.abre_arff(arq_dataset)
 #_,classes=Marff.retorna_classes_existentes(arq_arff)
@@ -72,8 +72,8 @@ olab.fit(X_valida, y_valida)
 dist,f=olab._get_region_competence(X_test)
 est=olab.estimate_competence(X_test,f,dist)
 listtt=list(est)
-print(listtt)
-exit(0)
+#print(listtt)
+#exit(0)
 selected=olab.select(est)
 
 olap=OLA(poolPgsc)
@@ -86,9 +86,9 @@ bag =list(selected)
 pgsc = list(selected2)
 classifiers=selecionados(bag,100)
 classifiers2=selecionados(pgsc,100)
-print(selected)
-print(classifiers)
-print(classifiers2)
+#print(selected)
+#print(classifiers)
+#print(classifiers2)
 
 
 
