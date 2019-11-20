@@ -37,5 +37,5 @@ def grafico_disper(nome_base, l, valor1, valor2, i ,gr, pasta, valor3=None,  leg
     if (os.path.exists(pasta+"/"+str(i)) == False):
          os.system("mkdir -p "+pasta+"/"+str(i))
     fig.savefig(pasta+"/"+str(i)+"/" + nome_base +str(gr)+ ".png")
-
+    del fig
     return

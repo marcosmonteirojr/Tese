@@ -30,9 +30,9 @@ import pds_pool4
 nome_base='P2'
 local = "/media/marcos/Data/Tese/Bases4/"
 cpx_caminho="/media/marcos/Data/Tese/Bases4/Bags/"
-bags_ga="20distdiverlinearnsga34"
 
-nome_arq="20distdivercruza3nsga34"
+bags_ga="2020distdiverlinear20"
+nome_arq="distidiverliner10"
 
 def selecao(nome_base,local, cpx_caminho,bags_ga,nome_arq,repeticao):
     arq_dataset = local + "Dataset/" + nome_base + ".arff"
@@ -85,9 +85,9 @@ def selecao(nome_base,local, cpx_caminho,bags_ga,nome_arq,repeticao):
             X_bag,y_bag=Cpx.biuld_x_y(bags['inst'][i],X,y)
             X_bag2, y_bags2 = Cpx.biuld_x_y(bags2['inst'][i], X, y)
 
-            print(X_bag2[1],"\n")
+          #  print(X_bag2[1],"\n")
             #X_bag = scaler.transform(X_bag)
-            print(X_bag[1])
+           # print(X_bag[1])
             #X_bag2 = scaler.transform(X_bag2)
             #
             percB = perc.Perceptron(n_jobs=4,max_iter=10,tol=1.0)
@@ -177,7 +177,7 @@ def selecao(nome_base,local, cpx_caminho,bags_ga,nome_arq,repeticao):
     rk,rkb=wilcoxon(accRankB,accRankP)
     met,mt=wilcoxon(accMetaB,accMetaP)
     vot,votc=wilcoxon(accVotingBag,accVotingPgsc)
-    dsc,dsoc=wilcoxon(accDsocb,accDsocp)
+    #dsc,dsoc=wilcoxon(accDsocb,accDsocp)
     wil=[ku,ke,ol,sb,lc,rkb,mt,vot]
 
 
@@ -284,10 +284,10 @@ def selecao(nome_base,local, cpx_caminho,bags_ga,nome_arq,repeticao):
 
     round(100*average(accSBB),1),round(100*std(accSBB),1),round(100*average(accSBP),1),round(100*std(accSBP),1)))
 
-    print( round(100 * average(accVotingBag), 1), round(100 * std(accVotingBag), 1),round(100 * average(accVotingPgsc), 1), round(100 * std(accVotingPgsc), 1))
+   # print( round(100 * average(accVotingBag), 1), round(100 * std(accVotingBag), 1),round(100 * average(accVotingPgsc), 1), round(100 * std(accVotingPgsc), 1))
     arq1.close()
     arq2.close()
     arq3.close()
     arq.close()
 
-selecao(nome_base,local, cpx_caminho,bags_ga,nome_arq,repeticao=2)
+selecao(nome_base,local, cpx_caminho,bags_ga,nome_arq,repeticao=21)

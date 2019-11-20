@@ -219,6 +219,7 @@ def complexity_data3(X_data, y_data, grupo, tipo=None):
     # print(complex)
     # print (complex)
     # exit(0)
+    del dfx, dfy
     return complex
 
 
@@ -293,7 +294,7 @@ def p2_problem():
     return data
 
 
-def biuld_classifier(X_train, y_train, X_val, y_val, X_test=None, y_test=None):
+def biuld_classifier(X_train, y_train, X_val, y_val, X_test=None, y_test=None, score_train=False):
     '''
     retorna um perceptron com sua acuracia e com a lista de predicao
     :param X_train: X do treino
@@ -304,14 +305,21 @@ def biuld_classifier(X_train, y_train, X_val, y_val, X_test=None, y_test=None):
     :return: classificador, accuracia, lista de predicao
     '''
     # constroi os classificadores, e retorna classificador, score e predict
-    perc = perceptron.Perceptron(n_jobs=7, max_iter=100, tol=10.0)
+    perc = perceptron.Perceptron(n_jobs=4, max_iter=100, tol=10.0)
     perc.fit(X_train, y_train)
     score = perc.score(X_val, y_val)
-    if X_test!=None and y_test!=None:
+    if X_test!=None and y_test!=None and score_train==False:
+
+        predict = perc.predict(X_test)
+        return perc, score, predict
+
+    elif (score_train):
         score2 = perc.score(X_test, y_test)
         predict = perc.predict(X_test)
-        return perc, score,score2, predict
+        return perc, score, score2, predict
+
     else:
+
         return perc, score
 
 

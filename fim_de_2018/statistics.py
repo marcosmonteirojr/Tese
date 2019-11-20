@@ -1,11 +1,11 @@
 import  Cpx, Marff, os, sys, csv, numpy as np
 from sklearn.externals.joblib import Parallel, delayed
-local_dataset = "/media/marcos/Data/Tese/Bases3/Dataset/"
-local = "/media/marcos/Data/Tese/Bases3/"
-caminho_base = "/media/marcos/Data/Tese/Bases3/"
-cpx_caminho="/media/marcos/Data/Tese/Bases3/Bags/"
+local_dataset = "/media/marcos/Data/Tese/Bases4/Dataset/"
+local = "/media/marcos/Data/Tese/Bases4/"
+caminho_base = "/media/marcos/Data/Tese/Bases4/"
+cpx_caminho="/media/marcos/Data/Tese/Bases4/Bags/"
 #min_score=0
-nome_base='Faults'
+nome_base='P2'
 #nome_base=sys.argv[1]
 
 #local_dataset = "/home/marcosmonteiro/Marcos/Bases3/Dataset/"
@@ -55,7 +55,7 @@ def parallel_distance(i,bags,X,y,X_vali,y_vali):
 
 def vote_complexity(X_data,y_data,grupos):
     voto = [0] * 11
-    for i in range(1,1112):
+    for i in range(1,11):
         print(i)
         if os.path.isfile(local + "/Bags/" + str(i) + "/" + nome_base + ".csv") == False:
             print("Não exite Bags/treino/validation/teste")
@@ -64,7 +64,7 @@ def vote_complexity(X_data,y_data,grupos):
         comp=[]
         ind=Cpx.open_training(local,nome_base,i)
         X_train, y_train =Cpx.biuld_x_y(ind,X_data,y_data)
-        cp=Parallel(n_jobs=8)(delayed(complexidades)(y_train,X_train,grupos) for j in range(100))
+        cp=Parallel(n_jobs=4)(delayed(complexidades)(y_train,X_train,grupos) for j in range(100))
         del X_train , y_train
         np.set_printoptions(threshold=np.nan)
         comp.append(cp)
