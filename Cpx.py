@@ -4,7 +4,8 @@ from deslib.static.oracle import Oracle
 from deslib.util import diversity, datasets
 from sklearn.utils import check_random_state
 from sklearn.metrics import pairwise_distances
-
+from sklearn.naive_bayes import GaussianNB
+from mlxtend.classifier import EnsembleVoteClassifier
 from sklearn.preprocessing import MinMaxScaler
 
 import numpy as np
@@ -322,6 +323,32 @@ def biuld_classifier(X_train, y_train, X_val, y_val, X_test=None, y_test=None, s
 
         return perc, score
 
+def biuld_classifier_naive(X_train, y_train, X_val, y_val, X_test=None, y_test=None, score_train=False):
+    '''
+        retorna um perceptron com sua acuracia e com a lista de predicao
+        :param X_train: X do treino
+        :param y_train: y do treino
+        :param X_val: X valida ou teste
+        :param y_val: y valida, ou teste
+        :param X_test: retorna o predict e o segundo score
+        :return: classificador, accuracia, lista de predicao
+    '''
+    nb = GaussianNB()
+    nb.fit(X_train, y_train)
+    score = nb.score(X_val, y_val)
+    if X_test != None and y_test != None and score_train == False:
+
+        predict = nb.predict(X_test)
+        return nb, score, predict
+
+    elif (score_train):
+        score2 = nb.score(X_test, y_test)
+        predict = nb.predict(X_test)
+        return nb, score, score2, predict
+
+    else:
+
+        return nb, score
 
 def biuld_classifier_over(X, y, X_val, y_val, tam):
     '''
@@ -351,6 +378,12 @@ def biuld_classifier_over(X, y, X_val, y_val, tam):
     # rms = sqrt(mean_squared_error(y_val, predict))
     return perc, score, predict
 
+def voting_classifier(pool, X_val, y_val):
+    Pgsc_voting = EnsembleVoteClassifier(clfs=pool, voting='hard', refit=False)
+    Pgsc_voting = Pgsc_voting.fit(X_val, y_val)
+    result = Pgsc_voting.score(X_val, y_val)
+    print(result)
+    #exit(0)
 
 def min_max_norm(dataset):
     """
