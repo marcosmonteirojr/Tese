@@ -20,17 +20,16 @@ def distancia(primeira=False, population=None):
         dist['dist'] = list()
         dist['score'] = list()
         dist['pred'] = list()
-        dist['perc'] = list()
+        dist['score_g'] = list()
 
         r = Parallel(n_jobs=jobs)(delayed(parallel_distance2)(i, bags, grupo, tipos) for i in range(len(dist['nome'])))
-        c, score,  pred, perc = zip(*r)
+        c, score,  pred, pool = zip(*r)
         dist['score'] = score
-
         #dist['dist'] = Cpx.dispersion_norm(c)
         dist['dist'] = Cpx.dispersion_linear(c)
         d = diversidade(pred, y_vali)
         dist['pred']=Cpx.min_max_norm(d)
-        dist['perc']=Cpx.voting_classifier(perc,X_vali,y_vali)
+        dist['score_g']=Cpx.voting_classifier(pool,X_vali,y_vali)
         return
 
     if (primeira == False and population == None):
@@ -41,7 +40,7 @@ def distancia(primeira=False, population=None):
         dist['dist'] = list()
         dist['pred'] = list()
         dist['score'] = list()
-        dist['perc'] = list()
+        dist['score_g'] = list()
 
         inicio = nome_individuo - nr_individuos
 
@@ -51,13 +50,13 @@ def distancia(primeira=False, population=None):
             dist['nome'].append(x)
         r = Parallel(n_jobs=jobs)(
             delayed(parallel_distance2)(j, bags, grupo, tipos) for j in range(100, nr_individuos + 100))
-        c, score, pred, perc = zip(*r)
+        c, score, pred, pool = zip(*r)
         #dist['dist'] = Cpx.dispersion_norm(c)
         dist['dist'] = Cpx.dispersion_linear(c)
         dist['score'] = score
         d = diversidade(pred, y_vali)
         dist['pred'] = Cpx.min_max_norm(d)
-        dist['perc']=Cpx.voting_classifier(perc,X_vali,y_vali)
+        dist['score_g']=Cpx.voting_classifier(pool,X_vali,y_vali)
         return
 
     if (population != None):
@@ -68,23 +67,22 @@ def distancia(primeira=False, population=None):
         dist['dist'] = list()
         dist['pred'] = list()
         dist['score'] = list()
-        dist['perc']=list()
+        dist['score_g']=list()
 
         indices = []
         for i in population:
             indices.append(bags['nome'].index(str(i[0])))
         r = Parallel(n_jobs=jobs)(delayed(parallel_distance2)(i, bags, grupo, tipos) for i in indices)
-        c, score, pred, perc = zip(*r)
+        c, score, pred, pool = zip(*r)
 
        # dist['dist'] = Cpx.dispersion_norm(c)
+
         dist['dist'] = Cpx.dispersion_linear(c)
         dist['score'] = score
         d = diversidade(pred, y_vali)
         dist['pred'] = Cpx.min_max_norm(d)
-        dist['perc']=Cpx.voting_classifier(perc,X_vali,y_vali)
-       # print(len(score_val))
-       # print(len(score))
-       # exit(0)
+        dist['score_g']=Cpx.voting_classifier(pool,X_vali,y_vali)
+
         return
 
 def diversidade(pred, y):
@@ -388,7 +386,8 @@ def the_function(population, gen, fitness):
     :return:
     '''
 
-    global geracao, off, dispersao, nr_generation, bags, local, arquivo_de_saida, accuracia_ant, s, c, dist_temp, gen_temp, pop_temp, bags_temp
+    global geracao, off, dispersao, nr_generation, bags, local, arquivo_de_saida, accuracia_ant, \
+        s, c, dist_temp, gen_temp, pop_temp, bags_temp
 
     geracao = gen
     ###############################################333
@@ -414,11 +413,15 @@ def the_function(population, gen, fitness):
     for i in range(len(population)):
         off.append(population[i][0])
 
-    max_distancia(fitness, geracao=geracao, population=off, bags=bags)
+    #max_distancia(fitness, geracao=geracao, population=off, bags=bags)
+    max_acc(dist['score_g'], geracao=geracao, population=off, bags=bags)
 
     if geracao == nr_generation:
-        salva_bags(pop_temp,bags_temp,gen_temp,base_name,tipo=1)
+        print(geracao)
+
         #salva_bags(off,bags,base_name=base_name,tipo=0)
+        #salva_bags(pop_temp,bags_temp,gen_temp,base_name,tipo=1)
+        salva_bags(pop_temp, bags_temp, gen_temp, base_name=base_name, tipo=2)
 
     if (dispersao == True and geracao != nr_generation):
         distancia(population=population)
@@ -500,17 +503,29 @@ def salva_bags(pop_temp, bags_temp, gen_temp=None, base_name=None, tipo=0):
             Cpx.save_bag(name, 'bags', local + "/Bags", base_name + arquivo_de_saida, repeticao)
 
     elif(tipo==1):
-
+        x = open("geração_dist.csv", "a")
+        x.write(nome_base + ";" + str(gen_temp) + "\n")
+        x.close()
         for j in pop_temp:
             name = []
             indx = bags_temp['nome'].index(str(j))
             nm = bags_temp['inst'][indx]
             name.append(bags_temp['nome'][indx])
             name.extend(nm)
-            Cpx.save_bag(name, 'bags', local + "/Bags", base_name + arquivo_de_saida + str(gen_temp), repeticao)
+
+            Cpx.save_bag(name, 'bags', local + "/Bags", base_name + arquivo_de_saida, repeticao)
 
     elif tipo==2:
-        addd=1
+        x = open("geração_acc.csv", "a")
+        x.write(nome_base + ";" + str(gen_temp) + "\n")
+        x.close()
+        for j in pop_temp:
+            name = []
+            indx = bags_temp['nome'].index(str(j))
+            nm = bags_temp['inst'][indx]
+            name.append(bags_temp['nome'][indx])
+            name.extend(nm)
+            Cpx.save_bag(name, 'bags', local + "/Bags", base_name + arquivo_de_saida, repeticao)
 
 def max_distancia(fitness, geracao=None, population=None, bags=None):
     '''
@@ -536,7 +551,32 @@ def max_distancia(fitness, geracao=None, population=None, bags=None):
         gen_temp = geracao
         bags_temp = bags
 
+def max_acc(acc,geracao=None, population=None, bags=None):
+    '''
+
+    :param fit1: fittnes 1
+    :param fit2:
+    :param fit3:
+    :param geracao: geração atual
+    :param population: popoluação atual geralmente o off
+    :param bags: bags atuais
+    :return:
+    salva em varial global a melhor populaçao de acordo com a disperção para 3 objetivos
+    ideal para distancia linear
+    '''
+    global pop_temp, gen_temp, bags_temp, acc_temp
+
+    if acc > acc_temp:
+        acc_temp = acc
+        pop_temp = population
+        gen_temp = geracao
+        bags_temp = bags
+
+
+
+
 tem2=[]
+acc_temp=0
 nome_base = 'P2'
 
 local_dataset = "/media/marcos/Data/Tese/Bases4/Dataset/"
@@ -567,7 +607,7 @@ fit_value1 = 1.0
 fit_value2 = 1.0
 fit_value3 = -1.0
 jobs = 6
-nr_generation = 20
+nr_generation = 2
 proba_crossover = 0.99
 proba_mutation = 0.01
 nr_individuos = 100
@@ -577,7 +617,7 @@ contador_cruzamento = 1
 iteracoes=2
 dist_temp=0
 
-arquivo_de_saida = "distdiverlinear_teste_parada_dist"
+arquivo_de_saida = "distdiverlinear_teste_parada_acc"
 # print("jobs = ", jobs, "\n", "nGr = ", nr_generation, "\n", "n_iterações = ", iteracoes, "\n", "nome_arquivo_saida = ",arquivo_de_saida)
 # confirma=input("confirme os valores")
 # print(confirma)

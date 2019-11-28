@@ -31,8 +31,8 @@ nome_base='P2'
 local = "/media/marcos/Data/Tese/Bases4/"
 cpx_caminho="/media/marcos/Data/Tese/Bases4/Bags/"
 
-bags_ga="2020distdiverlinear20"
-nome_arq="distidiverliner10"
+bags_ga="20distdiverlinear_teste_parada_acc10"
+nome_arq="P220distdiverlinear_teste_parada_dist17"
 
 def selecao(nome_base,local, cpx_caminho,bags_ga,nome_arq,repeticao):
     arq_dataset = local + "Dataset/" + nome_base + ".arff"
@@ -169,16 +169,16 @@ def selecao(nome_base,local, cpx_caminho,bags_ga,nome_arq,repeticao):
         accVotingPgsc.append(P)
         print(j)
 
-    kp,ke=wilcoxon(accKEB,accKEP)
-    kp2,ku=wilcoxon(accKUB,accKUP)
-    op,ol=wilcoxon(accOLAB,accOLAP)
-    sp,sb=wilcoxon(accSBB,accSBP)
-    lca,lc=wilcoxon(accLCAB,accLCAP)
-    rk,rkb=wilcoxon(accRankB,accRankP)
-    met,mt=wilcoxon(accMetaB,accMetaP)
-    vot,votc=wilcoxon(accVotingBag,accVotingPgsc)
-    #dsc,dsoc=wilcoxon(accDsocb,accDsocp)
-    wil=[ku,ke,ol,sb,lc,rkb,mt,vot]
+    # kp,ke=wilcoxon(accKEB,accKEP)
+    # kp2,ku=wilcoxon(accKUB,accKUP)
+    # op,ol=wilcoxon(accOLAB,accOLAP)
+    # sp,sb=wilcoxon(accSBB,accSBP)
+    # lca,lc=wilcoxon(accLCAB,accLCAP)
+    # rk,rkb=wilcoxon(accRankB,accRankP)
+    # met,mt=wilcoxon(accMetaB,accMetaP)
+    # vot,votc=wilcoxon(accVotingBag,accVotingPgsc)
+    # #dsc,dsoc=wilcoxon(accDsocb,accDsocp)
+    # wil=[ku,ke,ol,sb,lc,rkb,mt,vot]
 
 
 
@@ -252,10 +252,10 @@ def selecao(nome_base,local, cpx_caminho,bags_ga,nome_arq,repeticao):
         x=x+ "\n"
 
         return x
-    x=monta_string()
-    arq3.write(x)
+    #x=monta_string()
+    #arq3.write(x)
 
-    arq1.write('{};{};{};{};{};;{};{};{};{};{};{};{};{};{};{};{};{}\n'.format(nome_base,vot,votc,lca,lc,op,ol,rk,rkb,kp,ke,kp2,ku,met,mt,sp,sb))
+    #arq1.write('{};{};{};{};{};;{};{};{};{};{};{};{};{};{};{};{};{}\n'.format(nome_base,vot,votc,lca,lc,op,ol,rk,rkb,kp,ke,kp2,ku,met,mt,sp,sb))
     arq.write('{};{};{};{};{};;{};{};{};{};{};{};{};{};{};{};{};{};{};{};{};{};{};{};{};{};{};{};{};{};{};{};{};{}\n'
     .format(nome_base,
 
@@ -290,4 +290,4 @@ def selecao(nome_base,local, cpx_caminho,bags_ga,nome_arq,repeticao):
     arq3.close()
     arq.close()
 
-selecao(nome_base,local, cpx_caminho,bags_ga,nome_arq,repeticao=21)
+selecao(nome_base,local, cpx_caminho,bags_ga,nome_arq,repeticao=2)

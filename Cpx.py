@@ -7,7 +7,7 @@ from sklearn.metrics import pairwise_distances
 from sklearn.naive_bayes import GaussianNB
 from mlxtend.classifier import EnsembleVoteClassifier
 from sklearn.preprocessing import MinMaxScaler
-
+from sklearn.ensemble import VotingClassifier
 import numpy as np
 import Marff, subprocess
 import csv, random, os
@@ -39,7 +39,6 @@ def open_data(base_name, local_data):
     del dic['data']
     return X_data, y_data, dataset, dic
 
-
 def split_data(X_data, y_data):
     #
     indices = np.arange(len(X_data))
@@ -50,7 +49,6 @@ def split_data(X_data, y_data):
     del X_data, y_data, X_temp, y_temp, id_temp
 
     return X_train, y_train, X_test, y_test, X_vali, y_vali, id_train, id_test, id_vali
-
 
 def biuld_bags_stratify(y_train, X_train=None, X_data=None, y_data=None, ind=None, types="ind"):
     print('atencao pq nao e a funcao de bag oficial')
@@ -81,7 +79,6 @@ def biuld_bags_stratify(y_train, X_train=None, X_data=None, y_data=None, ind=Non
         # exit(0)
         return X, y, idx
 
-
 def biuld_bags(y_train, X_train=None, X_data=None, y_data=None, ind=None, types="ind"):
     # constroi os bags de forma randomica, duas formas por indices do treino, ou por instancias
     X = []
@@ -108,14 +105,12 @@ def biuld_bags(y_train, X_train=None, X_data=None, y_data=None, ind=None, types=
 
         return X, y, idx
 
-
 def generate_csv(dic):
     # grava um arquivo csv com o nome dos atributos na primeira linha, e das instancias, arquivo para script do R
     with open("/media/marcos/Data/Tese/teste.csv", 'w') as f:
         w = csv.writer(f)
         w.writerow(dic['class'])
         w.writerows(dic['data'])
-
 
 def complexity_data():
     proc = subprocess.Popen(['Rscript /home/marcos/Documentos/new_8.r'],
@@ -141,7 +136,6 @@ def complexity_data():
     # exit(0)
     return complex
 
-
 def complexity_data2(X_data, y_data):
     # comp = []
     dfx = pd.DataFrame(X_data, copy=False)
@@ -155,7 +149,6 @@ def complexity_data2(X_data, y_data):
     # complex=complex.tolist()
     # exit(0)
     return complex
-
 
 def complexity_data3(X_data, y_data, grupo, tipo=None):
     # complex=[]
@@ -223,7 +216,6 @@ def complexity_data3(X_data, y_data, grupo, tipo=None):
     del dfx, dfy
     return complex
 
-
 def complexity_data4(X_data, y_data, grupo):
     """
     :param X_data:
@@ -246,7 +238,6 @@ def complexity_data4(X_data, y_data, grupo):
     complex = complex.tolist()
     return complex
 
-
 def paralell_process(process):
     y = []
     x = os.popen('Rscript {}'.format(process)).read()
@@ -255,7 +246,6 @@ def paralell_process(process):
     y.append(x)
 
     return y
-
 
 def biuld_dic(X, y, dic):
     # constroi o dicionario para o construir o csv do R (instancias e classes)
@@ -269,7 +259,6 @@ def biuld_dic(X, y, dic):
     d['data'] = d['data'].tolist()
 
     return d
-
 
 def p2_problem():
     p2 = datasets.make_P2([500, 500])
@@ -294,9 +283,10 @@ def p2_problem():
     Marff.cria_arff(info, data, ["0.0", "1.0"], "/media/marcos/Data/Tese/Bases4/Dataset/", "P2")
     return data
 
-
 def biuld_classifier(X_train, y_train, X_val, y_val, X_test=None, y_test=None, score_train=False):
     '''
+    se score_train false, retorna o score sobre o próprio treino, e a predição sobre a validação, caso contrário,
+    retorna duas acurácias, treino e validação mais a predição sobre a validação
     retorna um perceptron com sua acuracia e com a lista de predicao
     :param X_train: X do treino
     :param y_train: y do treino
@@ -306,12 +296,13 @@ def biuld_classifier(X_train, y_train, X_val, y_val, X_test=None, y_test=None, s
     :return: classificador, accuracia, lista de predicao
     '''
     # constroi os classificadores, e retorna classificador, score e predict
-    perc = perceptron.Perceptron(n_jobs=4, max_iter=100, tol=10.0)
+    perc = perceptron.Perceptron(n_jobs=4, max_iter=100, tol=1.0)
     perc.fit(X_train, y_train)
     score = perc.score(X_val, y_val)
     if X_test!=None and y_test!=None and score_train==False:
 
         predict = perc.predict(X_test)
+
         return perc, score, predict
 
     elif (score_train):
@@ -379,10 +370,10 @@ def biuld_classifier_over(X, y, X_val, y_val, tam):
     return perc, score, predict
 
 def voting_classifier(pool, X_val, y_val):
-    Pgsc_voting = EnsembleVoteClassifier(clfs=pool, voting='hard', refit=False)
-    Pgsc_voting = Pgsc_voting.fit(X_val, y_val)
-    result = Pgsc_voting.score(X_val, y_val)
-    print(result)
+    voting = EnsembleVoteClassifier(clfs=pool, voting='hard', refit=False)
+    voting.fit(X_val, y_val)
+    result = voting.score(X_val, y_val)
+    return result
     #exit(0)
 
 def min_max_norm(dataset):
@@ -407,7 +398,6 @@ def min_max_norm(dataset):
 
     return norm_list
 
-
 def dispersion_norm(complexity):
     """
     :param complexity: listtas de complexidades
@@ -423,7 +413,6 @@ def dispersion_norm(complexity):
         result.append(np.mean(i))
     return result
 
-
 def dispersion(complexity):
     """
     :param complexity: listtas de complexidades
@@ -438,7 +427,6 @@ def dispersion(complexity):
     for i in dista:
         result.append(np.mean(i))
     return result
-
 
 def dispersion2(complexity):
     """
@@ -464,7 +452,6 @@ def dispersion2(complexity):
         result.append((dista))
 
     return result
-
 
 def dispersion_linear(complexity):
     # print(complexity)
@@ -508,7 +495,6 @@ def dispersion_linear(complexity):
 
     return result1
 
-
 def diversitys(y_test, predicts):
     q_test = []
     double_faults = []
@@ -528,11 +514,9 @@ def diversitys(y_test, predicts):
 
     return double_faults
 
-
 def diversity2(y_test, predicts):
     div = diversity.compute_pairwise_diversity(y_test, predicts, diversity.double_fault)
     return div
-
 
 def biuld_csv_result(complexity_result, score, Q_test, Df, disp):
     global base_name
@@ -551,7 +535,6 @@ def biuld_csv_result(complexity_result, score, Q_test, Df, disp):
         w = csv.writer(f)
         w.writerow(header)
         w.writerows(complexity_result)
-
 
 def save_bag(inds, types, local, base_name, iteration):
     if types == 'validation':
@@ -584,13 +567,11 @@ def save_bag(inds, types, local, base_name, iteration):
             w = csv.writer(f)
             w.writerow(inds)
 
-
 def oracle(poll, X, y, X_test, y_test):
     orc = Oracle(poll)
     orc.fit(X, y)
     # orc.predict(X_test,y_test)
     return orc.score(X_test, y_test)
-
 
 def routine_save_bags(local_dataset, local, base_name, iteration):
     # rotina para criar treino teste e validaçao alem dos 100 bags, local e onde esta o dataset orig
@@ -608,7 +589,6 @@ def routine_save_bags(local_dataset, local, base_name, iteration):
         save_bag(id, 'bags', local + "/Bags/", base_name, str(iteration))
     return X_train, y_train, X_test, y_test, X_vali, y_vali, dic
 
-
 def open_bag(local_bag, base_name):
     bags = dict()
     bags['nome'] = list()
@@ -622,7 +602,6 @@ def open_bag(local_bag, base_name):
         bags['inst'].append(i[1:])
 
     return bags
-
 
 def biuld_x_y(indx_bag, X, y):
     '''
@@ -641,7 +620,6 @@ def biuld_x_y(indx_bag, X, y):
         y_data.append(y[int(i)])
     return X_data, y_data
 
-
 def open_test_vali(local, base_name, iteration):
     # print("open bag/teste_vali mudar as saidas")
     with open(local + "Teste/" + str(iteration) + "/" + base_name + '.csv', 'r') as f:
@@ -652,13 +630,11 @@ def open_test_vali(local, base_name, iteration):
         vali = list(reader)
     return teste[0], vali[0]
 
-
 def open_training(local, base_name, iteration):
     with open(local + "Treino/" + str(iteration) + "/" + base_name + '.csv', 'r') as f:
         reader = csv.reader(f)
         treino = list(reader)
     return treino[0]
-
 
 def main():
     #p2_problem()
