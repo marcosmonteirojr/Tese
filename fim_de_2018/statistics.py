@@ -1,17 +1,17 @@
 import  Cpx, Marff, os, sys, csv, numpy as np
 from sklearn.externals.joblib import Parallel, delayed
-local_dataset = "/media/marcos/Data/Tese/Bases4/Dataset/"
-local = "/media/marcos/Data/Tese/Bases4/"
-caminho_base = "/media/marcos/Data/Tese/Bases4/"
-cpx_caminho="/media/marcos/Data/Tese/Bases4/Bags/"
+#local_dataset = "/media/marcos/Data/Tese/Bases4/Dataset/"
+#local = "/media/marcos/Data/Tese/Bases4/"
+#caminho_base = "/media/marcos/Data/Tese/Bases4/"
+#cpx_caminho="/media/marcos/Data/Tese/Bases4/Bags/"
 #min_score=0
-nome_base='P2'
-#nome_base=sys.argv[1]
+#nome_base='P2'
+nome_base=sys.argv[1]
 
-#local_dataset = "/home/marcosmonteiro/Marcos/Bases3/Dataset/"
-#local = "/home/marcosmonteiro/Marcos/Bases3"
-#caminho_base = "/home/marcosmonteiro/Marcos/Bases3/"
-#cpx_caminho="/home/marcosmonteiro/Marcos/Bases3/Bags/"
+local_dataset = "/home/marcosmonteiro/Marcos/Bases3/Dataset/"
+local = "/home/marcosmonteiro/Marcos/Bases3/"
+caminho_base = "/home/marcosmonteiro/Marcos/Bases3/"
+cpx_caminho="/home/marcosmonteiro/Marcos/Bases3/Bags/"
 #########################################################################
 
 

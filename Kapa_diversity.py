@@ -28,12 +28,12 @@ import pds_pool4
 #caminho_base = "/home/projeto/Marcos/Bases2/"
 #cpx_caminho="/home/projeto/Marcos/Bases3/Bags/"
 
-nome_base='P2'
-local = "/media/marcos/Data/Tese/Bases4/"
-cpx_caminho="/media/marcos/Data/Tese/Bases4/Bags/"
+nome_base='Wine'
+local = "/media/marcos/Data/Tese/Bases3/"
+cpx_caminho="/media/marcos/Data/Tese/Bases3/Bags/"
 
-bags_ga="19distdiverlinear_teste_parada_acc"
-nome_arq="distdiverlinear_teste_parada_acc_scaler"
+bags_ga="20distdiverlinear_teste_parada_dist"
+nome_arq="kappa"
 
 print(nome_base)
 
@@ -171,33 +171,13 @@ def selecao(nome_base,local, cpx_caminho,bags_ga,nome_arq,repeticao):
     arq_arff = Marff.abre_arff(arq_dataset)
     X, y,_= Marff.retorna_instacias(arq_arff)
 
-    accKUB = []
-    accKEB = []
-    accOLAB = []
-    accSBB = []
-
-    accKUP = []
-    accKEP = []
-    accOLAP = []
-    accSBP = []
-
-    accLCAB = []
-    accLCAP = []
-    accRankB = []
-    accRankP = []
-    accMetaB = []
-    accMetaP = []
-
-    accVotingBag = []
-    accVotingPgsc = []
 
     for j in range(1,repeticao):
         print(j)
         poolBag = []
         poolPgsc = []
-        calibrated_poolBag = []
-        calibrated_poolP = []
-
+        predictB = []
+        predictP= []
         bags = Cpx.open_bag(cpx_caminho+str(j)+"/", nome_base)
         bags2 = Cpx.open_bag(cpx_caminho+str(j)+"/", nome_base + bags_ga)
         teste, validacao=Cpx.open_test_vali(local,nome_base,j)
@@ -225,115 +205,30 @@ def selecao(nome_base,local, cpx_caminho,bags_ga,nome_arq,repeticao):
             poolBag.append(percB.fit(X_bag, y_bag))
             poolPgsc.append(percP.fit(X_bag2, y_bags2))
 
-        for clf in poolBag:
-            calibrated = CalibratedClassifierCV(base_estimator=clf, cv='prefit')
-            calibrated.fit(X_valida, y_valida)
-            calibrated_poolBag.append(calibrated)
-
-        for clf in poolPgsc:
-            calibrated = CalibratedClassifierCV(base_estimator=clf, cv='prefit')
-            calibrated.fit(X_valida, y_valida)
-            calibrated_poolP.append(calibrated)
 
 
-        bagging_voting = EnsembleVoteClassifier(clfs=poolBag, voting='hard', refit=False)
-        bagging_vot = bagging_voting.fit(X_valida, y_valida)
-        B =  bagging_vot.score(X_test, y_test)
-
-        Pgsc_voting = EnsembleVoteClassifier(clfs=poolPgsc, voting='hard', refit=False)
-        Pgsc_voting = Pgsc_voting.fit(X_valida, y_valida)
-        P =  Pgsc_voting.score(X_test, y_test)
-
-        metdb = METADES(calibrated_poolBag)
-        metdp=METADES(calibrated_poolP)
-        #exit(0)
-        lcab=LCA(poolBag)
-        lcap=LCA(poolPgsc)
-        rankb=Rank(poolBag)
-        rankp=Rank(poolPgsc)
-        knorauB = KNORAU(poolBag)
-        knorauP = KNORAU(poolPgsc)
-        kneB = KNORAE(poolBag)
-        kneP = KNORAE(poolPgsc)
-        olaB = OLA(poolBag)
-        olaP = OLA(poolPgsc)
-        singleP = SingleBest(poolPgsc)
-        singleB = SingleBest(poolBag)
-
-        metdb.fit(X_valida, y_valida)
-        metdp.fit(X_valida, y_valida)
-        lcab.fit(X_valida, y_valida)
-        lcap.fit(X_valida, y_valida)
-        rankb.fit(X_valida, y_valida)
-        rankp.fit(X_valida, y_valida)
-
-        knorauB.fit(X_valida, y_valida)
-        knorauP.fit(X_valida, y_valida)
-        kneB.fit(X_valida, y_valida)
-        kneP.fit(X_valida, y_valida)
-        olaB.fit(X_valida, y_valida)
-        olaP.fit(X_valida, y_valida)
-
-        singleP.fit(X_valida, y_valida)
-        singleB.fit(X_valida, y_valida)
-
-        accMetaB.append(metdb.score(X_test,y_test))
-        accMetaP.append(metdp.score(X_test,y_test))
-        accLCAB.append(lcab.score(X_test,y_test))
-        accLCAP.append(lcap.score(X_test,y_test))
-        accRankB.append(rankb.score(X_test,y_test))
-        accRankP.append(rankp.score(X_test,y_test))
-        accKUB.append(knorauB.score(X_test,y_test))
-        accKUP.append(knorauP.score(X_test, y_test))
-        accKEB.append(kneB.score(X_test,y_test))
-        accKEP.append(kneP.score(X_test, y_test))
-        accOLAB.append(olaB.score(X_test,y_test))
-        accOLAP.append(olaP.score(X_test, y_test))
-        accSBP.append(singleP.score(X_test, y_test))
-        accSBB.append(singleB.score(X_test, y_test))
-
-        accVotingBag.append(B)
-        accVotingPgsc.append(P)
-       # print(j)
-
-
-   # exit(0)
-    lista_final_met = list(set(accMetaP) - set(accMetaB))
-    lista_final_vot = list(set(accVotingPgsc) - set(accVotingBag))
-    kp,ke=wilcoxon(accKEB,accKEP)
-    kp2,ku=wilcoxon(accKUB,accKUP)
-    op,ol=wilcoxon(accOLAB,accOLAP)
-    sp,sb=wilcoxon(accSBB,accSBP)
-    lca,lc=wilcoxon(accLCAB,accLCAP)
-    rk,rkb=wilcoxon(accRankB,accRankP)
-    if lista_final_met !=[]:
-        met,mt=wilcoxon(accMetaB,accMetaP)
-    else:
-        mt=met=1000
-    if lista_final_vot !=[]:
-        vot,votc=wilcoxon(accVotingBag,accVotingPgsc)
-    else:
-        vot=votc=1000
-    wil=[ku,ke,ol,sb,lc,rkb,mt,votc]
-    arq, arq1, arq2, arq3=cria_arquivos(nome_arq)
-
-    arq1.write('{};{};{};{};{};{};{};{};{};{};{};{};{};{};{};{};{}\n'.format(nome_base, vot, votc, lca, lc, op, ol, rk, rkb,
-                                                                      kp, ke, kp2, ku, met, mt, sp, sb))
-    arq1.close()
-
-    string=monta_latex(wil, accVotingBag, accVotingPgsc, accLCAB, accLCAP, accOLAB, accOLAP, accRankB, accRankP, accKEB, accKEP,
-               accKUB, accKUP, accMetaB, accMetaP, accSBB, accSBP)
-    arq3.write(string)
-    arq3.close()
-
-    monta_resultados(arq, arq2, accVotingBag, accVotingPgsc, accLCAB, accLCAP, accOLAB, accOLAP, accRankB, accRankP,
-                     accKEB, accKEP, accKUB, accKUP, accMetaB, accMetaP, accSBB, accSBP)
-    arq2.close()
-    arq.close()
+        for i in poolBag:
+            predictB.append(i.predict(X_valida))
+        for i in poolPgsc:
+            predictP.append(i.predict(X_valida))
+        kappaB, kappa_stdB,kappa_allB=(Cpx.diversity_kapa(y_valida,predictB))
+        kappaP,kappa_stdP,kappa_allP=(Cpx.diversity_kapa(y_valida, predictP))
+        save_kappa(nome_base,str(j), "parada_dist_kappa" ,kappa_allB, kappaB,kappa_stdB)
+        print(kappa_allB)
+        print(len(kappa_allB))
+        exit(0)
 
 import warnings
 
 #warnings.filterwarnings("ignore", category=Warning)
+def save_kappa(nome_base, iteracao, nome_arq, kappa_all, kappa_mean, kappa_std ):
+    with open(nome_base +"_"+iteracao+"_"+ nome_arq+'.csv', 'a', newline='') as csvfile:
+          spamwriter = csv.writer(csvfile, delimiter=';')
+          for i in range(len(kappa_all)):
+                kappa_all[i].append(kappa_mean[i])
+                kappa_all[i].append(kappa_std[i])
+                spamwriter.writerow(kappa_all[i])
+
 
 selecao(nome_base,local, cpx_caminho,bags_ga,nome_arq,repeticao=21)
 

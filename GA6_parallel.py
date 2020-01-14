@@ -11,39 +11,23 @@ import Cpx, sys, csv
 
 def distancia(primeira=False, population=None):
     global pop, nome_individuo, dist, bags, min_score, grupo, tipos, c
-
+    dist = dict()
+    dist['nome'] = list()
+    dist['dist'] = list()
+    dist['pred'] = list()
+    dist['score'] = list()
+    dist['score_g'] = list()
     if (primeira == True and geracao == 0):
-
-        print('primeira')
-        dist = dict()
         dist['nome'] = pop
-        dist['dist'] = list()
-        dist['score'] = list()
-        dist['pred'] = list()
-        dist['score_g'] = list()
-
+        print('primeira')
         r = Parallel(n_jobs=jobs)(delayed(parallel_distance2)(i, bags, grupo, tipos) for i in range(len(dist['nome'])))
         c, score,  pred, pool = zip(*r)
-        dist['score'] = score
-        #dist['dist'] = Cpx.dispersion_norm(c)
-        dist['dist'] = Cpx.dispersion_linear(c)
-        d = diversidade(pred, y_vali)
-        dist['pred']=Cpx.min_max_norm(d)
-        dist['score_g']=Cpx.voting_classifier(pool,X_vali,y_vali)
-        return
 
-    if (primeira == False and population == None):
+
+    elif (primeira == False and population == None):
 
         print("diferente")
-        dist = dict()
-        dist['nome'] = list()
-        dist['dist'] = list()
-        dist['pred'] = list()
-        dist['score'] = list()
-        dist['score_g'] = list()
-
         inicio = nome_individuo - nr_individuos
-
         for i in range(inicio, nome_individuo):
             x = []
             x.append(i)
@@ -51,39 +35,28 @@ def distancia(primeira=False, population=None):
         r = Parallel(n_jobs=jobs)(
             delayed(parallel_distance2)(j, bags, grupo, tipos) for j in range(100, nr_individuos + 100))
         c, score, pred, pool = zip(*r)
-        #dist['dist'] = Cpx.dispersion_norm(c)
-        dist['dist'] = Cpx.dispersion_linear(c)
-        dist['score'] = score
-        d = diversidade(pred, y_vali)
-        dist['pred'] = Cpx.min_max_norm(d)
-        dist['score_g']=Cpx.voting_classifier(pool,X_vali,y_vali)
-        return
 
-    if (population != None):
+    elif (population != None):
 
         print("populacao the function")
-        dist = dict()
-        dist['nome'] = population
-        dist['dist'] = list()
-        dist['pred'] = list()
-        dist['score'] = list()
-        dist['score_g']=list()
 
+        dist['nome'] = population
         indices = []
         for i in population:
             indices.append(bags['nome'].index(str(i[0])))
         r = Parallel(n_jobs=jobs)(delayed(parallel_distance2)(i, bags, grupo, tipos) for i in indices)
         c, score, pred, pool = zip(*r)
 
-       # dist['dist'] = Cpx.dispersion_norm(c)
+    #dist['dist'] = Cpx.dispersion_norm(c)
 
-        dist['dist'] = Cpx.dispersion_linear(c)
-        dist['score'] = score
-        d = diversidade(pred, y_vali)
-        dist['pred'] = Cpx.min_max_norm(d)
-        dist['score_g']=Cpx.voting_classifier(pool,X_vali,y_vali)
 
-        return
+    dist['dist'] = Cpx.dispersion_linear(c)
+    dist['score'] = score
+    d = diversidade(pred, y_vali)
+    dist['pred'] = Cpx.min_max_norm(d)
+    dist['score_g']=Cpx.voting_classifier(pool,X_vali,y_vali)
+
+    return
 
 def diversidade(pred, y):
 
@@ -392,7 +365,7 @@ def the_function(population, gen, fitness):
     geracao = gen
     ###############################################333
     #if repeticao == 1:
-    #    salva_informacoes_geracoes(geracao,fitness,c)
+     #   salva_informacoes_geracoes(geracao,fitness,c)
     ###################################################3
     print("the_fuction")
 
@@ -589,7 +562,7 @@ cpx_caminho = "/media/marcos/Data/Tese/Bases4/Bags/"
 #tipos=tipos.split(",")
 
 #local_dataset = "/home/marcosmonteiro/Marcos/Bases3/Dataset/"
-#local = "/home/marcosmonteiro/Marcos/Bases3"
+#local = "/home/marcosmonteiro/Marcos/Bases3/"
 #caminho_base = "/home/marcosmonteiro/Marcos/Bases3/"
 #cpx_caminho="/home/marcosmonteiro/Marcos/Bases3/Bags/"
 
@@ -607,19 +580,19 @@ fit_value1 = 1.0
 fit_value2 = 1.0
 fit_value3 = -1.0
 jobs = 6
-nr_generation = 2
+nr_generation = 19
 proba_crossover = 0.99
 proba_mutation = 0.01
 nr_individuos = 100
 p=100
 nr_filhos=100
 contador_cruzamento = 1
-iteracoes=2
+iteracoes=21
 dist_temp=0
 
 arquivo_de_saida = "distdiverlinear_teste_parada_acc"
 # print("jobs = ", jobs, "\n", "nGr = ", nr_generation, "\n", "n_iterações = ", iteracoes, "\n", "nome_arquivo_saida = ",arquivo_de_saida)
-# confirma=input("confirme os valores")
+# confirma=input("confirme os vaores")
 # print(confirma)
 # if int(confirma)!=1:
 #         exit(0)
@@ -671,7 +644,8 @@ for t in range(1, iteracoes):
 
     pop = algorithms.eaMuPlusLambda(pop, toolbox, nr_filhos, nr_individuos, proba_crossover, proba_mutation,
                                          nr_generation,
-                                         generation_function=the_function)
+                                            generation_function=the_function)
+    #os.system("rm - r /tmp/Rtmp*")
 
    # if geracao>nr_generation or geracao==nr_generation:
        # smd3.selecao(nome_base,local,cpx_caminho,arquivo_de_saida,arquivo_de_saida, repeticao)

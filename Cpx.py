@@ -4,6 +4,7 @@ from deslib.static.oracle import Oracle
 from deslib.util import diversity, datasets
 from sklearn.utils import check_random_state
 from sklearn.metrics import pairwise_distances
+from sklearn.metrics import cohen_kappa_score
 from sklearn.naive_bayes import GaussianNB
 from mlxtend.classifier import EnsembleVoteClassifier
 from sklearn.preprocessing import MinMaxScaler
@@ -499,7 +500,6 @@ def diversitys(y_test, predicts):
     q_test = []
     double_faults = []
     for i in range(len(predicts)):
-        q = []
         db = []
         for j in range(len(predicts)):
             if i == j:
@@ -507,16 +507,36 @@ def diversitys(y_test, predicts):
             else:
                 #  q.append(diversity.Q_statistic(y_test,predicts[i],predicts[j]))
                 db.append(diversity.double_fault(y_test, predicts[i], predicts[j]))
-                #
-                # print(db)
-                # q_test.append(np.mean(q))
+                #coloquei um paramentro novo na função de retorno _process_predictions
         double_faults.append(np.mean(db))
 
     return double_faults
 
-def diversity2(y_test, predicts):
-    div = diversity.compute_pairwise_diversity(y_test, predicts, diversity.double_fault)
-    return div
+def diversity_kapa(y_test, predicts):
+    size=len(y_test)
+    kappa_mean=[]
+    kappa_std=[]
+    kappa_all=[]
+    for i in range(len(predicts)):
+        k=[]
+        for j in range(len(predicts)):
+            if i == j:
+                continue
+            else:
+                a, b, c, d = diversity._process_predictions(y_test,predicts[i],predicts[j],True)
+                if (a==size):
+                    k_p=1
+                else:
+                    m=a+b+c+d
+                    q1=np.around((a+d)/m,2)
+                    q2=np.around((((a+b)*(a+c))+((c+d)*(b+d)))/(m*m),2)
+                    k_p=np.around((q1-q2)/(1-q2),2)
+                k.append(k_p)
+        kappa_all.append(k)
+        kappa_mean.append(np.mean(k))
+        kappa_std.append(np.std(k))
+
+    return kappa_mean, kappa_std, kappa_all
 
 def biuld_csv_result(complexity_result, score, Q_test, Df, disp):
     global base_name

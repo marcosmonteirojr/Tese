@@ -7,5 +7,6 @@
 
 while read i;
 do
-	~/anaconda3/envs/tese2/bin/python ./graficos_moga.py $i
-done < ./bases2
+	~/anaconda3/envs/tese3/bin/python ./smd3.py $i
+
+done < ./bases27
