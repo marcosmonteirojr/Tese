@@ -23,12 +23,12 @@ import pds_pool4
 #bags_ga=sys.argv[2]
 #print(bags_ga.split(','))
 #exit(0)
-#local_dataset = "/home/projeto/Marcos/Bases2/Dataset/"
+local_dataset = "/media/marcos/Data/Tese/Bases4/Dataset/"
 #local = "/home/projeto/Marcos/Bases3/"
 #caminho_base = "/home/projeto/Marcos/Bases2/"
 #cpx_caminho="/home/projeto/Marcos/Bases3/Bags/"
 
-nome_base='P2'
+nome_base='ds'
 local = "/media/marcos/Data/Tese/Bases4/"
 cpx_caminho="/media/marcos/Data/Tese/Bases4/Bags/"
 
@@ -167,9 +167,9 @@ def monta_resultados(arq, arq2, accVotingBag, accVotingPgsc, accLCAB, accLCAP, a
 
 
 def selecao(nome_base,local, cpx_caminho,bags_ga,nome_arq,repeticao):
-    arq_dataset = local + "Dataset/" + nome_base + ".arff"
-    arq_arff = Marff.abre_arff(arq_dataset)
-    X, y,_= Marff.retorna_instacias(arq_arff)
+   # arq_dataset = local + "Dataset/" + nome_base + ".arff"
+   # arq_arff = Marff.abre_arff(arq_dataset)
+    X, y= Cpx.open_data_jonathan("/media/marcos/Data/Tese/Bases4/Dataset/",nome_base)
 
     accKUB = []
     accKEB = []
@@ -335,5 +335,5 @@ import warnings
 
 #warnings.filterwarnings("ignore", category=Warning)
 
-selecao(nome_base,local, cpx_caminho,bags_ga,nome_arq,repeticao=21)
+selecao(nome_base,local_dataset, cpx_caminho,bags_ga,nome_arq,repeticao=2)
 

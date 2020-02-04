@@ -18,7 +18,7 @@ from mlxtend.classifier import EnsembleVoteClassifier
 import pds_pool4
 #from imblearn.metrics import geometric_mean_score
 
-#nome_base=sys.argv[1]
+nome_base=sys.argv[1]
 #print(nome_base)
 #bags_ga=sys.argv[2]
 #print(bags_ga.split(','))
@@ -27,8 +27,7 @@ import pds_pool4
 #local = "/home/projeto/Marcos/Bases3/"
 #caminho_base = "/home/projeto/Marcos/Bases2/"
 #cpx_caminho="/home/projeto/Marcos/Bases3/Bags/"
-
-nome_base='Wine'
+#nome_base='Wine'
 local = "/media/marcos/Data/Tese/Bases3/"
 cpx_caminho="/media/marcos/Data/Tese/Bases3/Bags/"
 
@@ -209,20 +208,22 @@ def selecao(nome_base,local, cpx_caminho,bags_ga,nome_arq,repeticao):
 
         for i in poolBag:
             predictB.append(i.predict(X_valida))
+        print(predictB)
+        exit(0)
+
         for i in poolPgsc:
             predictP.append(i.predict(X_valida))
         kappaB, kappa_stdB,kappa_allB=(Cpx.diversity_kapa(y_valida,predictB))
         kappaP,kappa_stdP,kappa_allP=(Cpx.diversity_kapa(y_valida, predictP))
-        save_kappa(nome_base,str(j), "parada_dist_kappa" ,kappa_allB, kappaB,kappa_stdB)
-        print(kappa_allB)
-        print(len(kappa_allB))
-        exit(0)
+        save_kappa(nome_base,str(j), "parada_dist_kappa_bag" ,kappa_allB, kappaB,kappa_stdB)
+        save_kappa(nome_base, str(j), "parada_dist_kappa_metodo", kappa_allB, kappaB, kappa_stdB)
+
 
 import warnings
 
 #warnings.filterwarnings("ignore", category=Warning)
 def save_kappa(nome_base, iteracao, nome_arq, kappa_all, kappa_mean, kappa_std ):
-    with open(nome_base +"_"+iteracao+"_"+ nome_arq+'.csv', 'a', newline='') as csvfile:
+    with open(nome_base +"_"+ nome_arq+'.csv', 'a', newline='') as csvfile:
           spamwriter = csv.writer(csvfile, delimiter=';')
           for i in range(len(kappa_all)):
                 kappa_all[i].append(kappa_mean[i])

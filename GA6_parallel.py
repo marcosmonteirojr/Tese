@@ -385,9 +385,11 @@ def the_function(population, gen, fitness):
 
     for i in range(len(population)):
         off.append(population[i][0])
-
-    #max_distancia(fitness, geracao=geracao, population=off, bags=bags)
-    max_acc(dist['score_g'], geracao=geracao, population=off, bags=bags)
+    print(fitness[0])
+    print(fitness[1])
+    exit(0)
+    max_distancia(fitness, geracao=geracao, population=off, bags=bags)
+    #max_acc(dist['score_g'], geracao=geracao, population=off, bags=bags)
 
     if geracao == nr_generation:
         print(geracao)
@@ -516,6 +518,7 @@ def max_distancia(fitness, geracao=None, population=None, bags=None):
     global dist_temp, pop_temp, gen_temp, bags_temp
     if fitness[2]:
         dist_dist_media = np.mean(Cpx.dispersion(np.column_stack([fitness[0], fitness[1], fitness[2]])))
+        print(Cpx.dispersion2(np.column_stack([fitness[0], fitness[1], fitness[2]])))
     else:
         dist_dist_media = np.mean(Cpx.dispersion(np.column_stack([fitness[0], fitness[1]])))
     if dist_dist_media > dist_temp:
@@ -550,11 +553,11 @@ def max_acc(acc,geracao=None, population=None, bags=None):
 
 tem2=[]
 acc_temp=0
-nome_base = 'P2'
+nome_base = 'Wine'
 
-local_dataset = "/media/marcos/Data/Tese/Bases4/Dataset/"
-local = "/media/marcos/Data/Tese/Bases4/"
-cpx_caminho = "/media/marcos/Data/Tese/Bases4/Bags/"
+local_dataset = "/media/marcos/Data/Tese/Bases3/Dataset/"
+local = "/media/marcos/Data/Tese/Bases3/"
+cpx_caminho = "/media/marcos/Data/Tese/Bases3/Bags/"
 #min_score = 0
 
 #nome_base=sys.argv[1]
@@ -574,12 +577,12 @@ cpx_caminho = "/media/marcos/Data/Tese/Bases4/Bags/"
 ########
 
 grupo = ["overlapping", 'neighborhood', '', '', '', '']
-tipos = ["F1v", 'N3', '', '', '', '']
+tipos = ["F1", 'N1', '', '', '', '']
 dispersao = True
 fit_value1 = 1.0
 fit_value2 = 1.0
 fit_value3 = -1.0
-jobs = 6
+jobs = 2
 nr_generation = 19
 proba_crossover = 0.99
 proba_mutation = 0.01
@@ -587,10 +590,10 @@ nr_individuos = 100
 p=100
 nr_filhos=100
 contador_cruzamento = 1
-iteracoes=21
+iteracoes=6
 dist_temp=0
 
-arquivo_de_saida = "distdiverlinear_teste_parada_acc"
+arquivo_de_saida = "apagar"
 # print("jobs = ", jobs, "\n", "nGr = ", nr_generation, "\n", "n_iterações = ", iteracoes, "\n", "nome_arquivo_saida = ",arquivo_de_saida)
 # confirma=input("confirme os vaores")
 # print(confirma)
@@ -613,39 +616,43 @@ for t in range(1, iteracoes):
     arq_arff = Marff.abre_arff(arq_dataset)
     X, y, _ = Marff.retorna_instacias(arq_arff)
     _, classes = Marff.retorna_classes_existentes(arq_arff)
-
+    #print(classes)
+    #exit(0)
+    #X,y=Cpx.open_data_jonathan(local_dataset,nome_base)
+    #classes=[0,1]
     if os.path.isfile(local + "Bags/" + str(repeticao) + "/" + nome_base + ".csv") == False:
         print("entrei")
-        X_train, y_train, X_test, y_test, X_vali, y_vali, dic = Cpx.routine_save_bags(local_dataset, local, nome_base,
+        X_train, y_train, X_test, y_test, X_vali, y_vali = Cpx.routine_save_bags(local_dataset, local, nome_base,
                                                                                       repeticao)
+    #exit(0)
     else:
         _, validation = Cpx.open_test_vali(local , nome_base, repeticao)
         X_vali, y_vali = Cpx.biuld_x_y(validation, X, y)
-    bags = Cpx.open_bag(cpx_caminho + str(repeticao) + "/", nome_base)
-    ######
-   # ref_points = tools.uniform_reference_points(nobj=2, p=100)
+        bags = Cpx.open_bag(cpx_caminho + str(repeticao) + "/", nome_base)
+   #  ######
+   # # ref_points = tools.uniform_reference_points(nobj=2, p=100)
     creator.create("FitnessMult", base.Fitness, weights=(fit_value1, fit_value2, fit_value3))
     creator.create("Individual", list, fitness=creator.FitnessMult)
     toolbox = base.Toolbox()
     toolbox.register("attr_item", sequencia)
     toolbox.register("individual", tools.initRepeat, creator.Individual,
-                     toolbox.attr_item, 1)
+                      toolbox.attr_item, 1)
     population = toolbox.register("population", tools.initRepeat, list, toolbox.individual)
     pop = toolbox.population(n=p)
-
+   #
     if dispersao == True:
-        distancia(primeira=True)
-
+         distancia(primeira=True)
+   #
     toolbox.register("evaluate", fitness_dispercao_linear)
     toolbox.register("mate", cruza)
     toolbox.register("mutate", mutacao)
     toolbox.register("select", tools.selNSGA2)
-    # stats = tools.Statistics(key=lambda ind: ind.fitness.values)
-
+     # stats = tools.Statistics(key=lambda ind: ind.fitness.values)
+   #
     pop = algorithms.eaMuPlusLambda(pop, toolbox, nr_filhos, nr_individuos, proba_crossover, proba_mutation,
-                                         nr_generation,
-                                            generation_function=the_function)
-    #os.system("rm - r /tmp/Rtmp*")
-
-   # if geracao>nr_generation or geracao==nr_generation:
-       # smd3.selecao(nome_base,local,cpx_caminho,arquivo_de_saida,arquivo_de_saida, repeticao)
+                                          nr_generation,
+                                             generation_function=the_function)
+   #  #os.system("rm - r /tmp/Rtmp*")
+   #
+   # # if geracao>nr_generation or geracao==nr_generation:
+   #     # smd3.selecao(nome_base,local,cpx_caminho,arquivo_de_saida,arquivo_de_saida, repeticao)

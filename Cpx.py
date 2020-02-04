@@ -14,6 +14,8 @@ import Marff, subprocess
 import csv, random, os
 
 os.environ['R_HOME'] = '/home/marcos/anaconda3/envs/tese2/lib/R'
+#os.environ['R_HOME'] = '/home/projeto/anaconda3/envs/Tese/lib/R'
+
 import pandas as pd
 from rpy2.robjects import pandas2ri
 
@@ -420,11 +422,9 @@ def dispersion(complexity):
     :return: distancia media par a par das complexidades(biblioteca)
     """
     result = []
-    # print(complexity)
-    # exit(0)
     dista = pairwise_distances(complexity, n_jobs=6)
     dista = dista.tolist()
-    # print(dista)
+
     for i in dista:
         result.append(np.mean(i))
     return result
@@ -595,7 +595,8 @@ def oracle(poll, X, y, X_test, y_test):
 
 def routine_save_bags(local_dataset, local, base_name, iteration):
     # rotina para criar treino teste e validaçao alem dos 100 bags, local e onde esta o dataset orig
-    X_data, y_data, dataset, dic = open_data(base_name, local_dataset)
+    X_data,y_data=open_data_jonathan(local_dataset,base_name)
+    #X_data, y_data, dataset, dic = open_data(base_name, local_dataset)
     X_train, y_train, X_test, y_test, X_vali, y_vali, id_train, id_test, id_vali = split_data(X_data, y_data)
     # print('mudar as saidas')
     save_bag(id_train, 'train', local + "Treino/", base_name, (iteration))
@@ -607,7 +608,7 @@ def routine_save_bags(local_dataset, local, base_name, iteration):
         # print(len(id))
         id.insert(0, i)
         save_bag(id, 'bags', local + "/Bags/", base_name, str(iteration))
-    return X_train, y_train, X_test, y_test, X_vali, y_vali, dic
+    return X_train, y_train, X_test, y_test, X_vali, y_vali
 
 def open_bag(local_bag, base_name):
     bags = dict()
@@ -655,6 +656,24 @@ def open_training(local, base_name, iteration):
         reader = csv.reader(f)
         treino = list(reader)
     return treino[0]
+
+def open_data_jonathan(local,name):
+
+    base = open(local+name+".arff", "r")
+    #print(base.readline())
+    sample = []
+    y = []
+    for i in base:
+        x = i.split(";")
+        y.append(x[0])
+        x = x[1:-1]
+        x = [float(elem) for elem in x]
+        sample.append(x)
+    y = [int(elem) for elem in y]
+    X = np.array(sample)
+    y = np.array(y)
+    return X,y
+
 
 def main():
     #p2_problem()

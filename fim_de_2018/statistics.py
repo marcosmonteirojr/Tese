@@ -1,25 +1,32 @@
 import  Cpx, Marff, os, sys, csv, numpy as np
-from sklearn.externals.joblib import Parallel, delayed
-#local_dataset = "/media/marcos/Data/Tese/Bases4/Dataset/"
-#local = "/media/marcos/Data/Tese/Bases4/"
-#caminho_base = "/media/marcos/Data/Tese/Bases4/"
-#cpx_caminho="/media/marcos/Data/Tese/Bases4/Bags/"
+from joblib import  Parallel, delayed
+local_dataset = "/media/marcos/Data/Tese/Bases4/Dataset/"
+local = "/media/marcos/Data/Tese/Bases4/"
+caminho_base = "/media/marcos/Data/Tese/Bases4/"
+cpx_caminho="/media/marcos/Data/Tese/Bases4/Bags/"
 #min_score=0
-#nome_base='P2'
-nome_base=sys.argv[1]
+##############33jonathan########################
+nome_base='ds'
+#noe_base_test='features_dsfold1-40-test'
+#local="/media/marcos/Data/Tese/Bases4/Dataset/features_tcnn_breakhis"
+X,y=Cpx.open_data_jonathan(local_dataset,nome_base)
+####################################################
+#nome_base=sys.argv[1]
 
-local_dataset = "/home/marcosmonteiro/Marcos/Bases3/Dataset/"
-local = "/home/marcosmonteiro/Marcos/Bases3/"
-caminho_base = "/home/marcosmonteiro/Marcos/Bases3/"
-cpx_caminho="/home/marcosmonteiro/Marcos/Bases3/Bags/"
+#local_dataset = "/home/marcosmonteiro/Marcos/Bases3/Dataset/"
+#local = "/home/marcosmonteiro/Marcos/Bases3/"
+#caminho_base = "/home/marcosmonteiro/Marcos/Bases3/"
+#cpx_caminho="/home/marcosmonteiro/Marcos/Bases3/Bags/"
 #########################################################################
 
 
-arq_dataset = local + "Dataset/" + nome_base + ".arff"
-arq_arff = Marff.abre_arff(arq_dataset)
-X, y, _ = Marff.retorna_instacias(arq_arff)
+#arq_dataset = local + "Dataset/" + nome_base + ".arff"
+#arq_arff = Marff.abre_arff(arq_dataset)
+#X, y, _ = Marff.retorna_instacias(arq_arff)
 _,val=Cpx.open_test_vali(local,nome_base,1)
 X_val, y_val= Cpx.biuld_x_y(val,X,y)
+
+###########################################################################
 header=['overlapping.F1', 'overlapping.F1v', 'overlapping.F2', 'overlapping.F3', 'overlapping.F4', 'neighborhood.N1', 'neighborhood.N2', 'neighborhood.N3', 'neighborhood.N4', 'neighborhood.T1', 'neighborhood.LSCAvg', 'linearity.L1', 'linearity.L2', 'linearity.L3', '000000.T2', 'dimensionality.T3', 'dimensionality.T4', 'balance.C1', 'balance.C2', 'network.Density', 'network.ClsCoef', 'network.Hubs']
 header1=[['overlapping.F1', 'diver'], ['overlapping.F1v', 'diver'], ['overlapping.F2', 'diver'], ['overlapping.F3', 'diver'], ['overlapping.F4', 'diver'], ['neighborhood.N1', 'diver'], ['neighborhood.N2', 'diver'], ['neighborhood.N3', 'diver'], ['neighborhood.N4', 'diver'], ['neighborhood.T1', 'diver'], ['neighborhood.LSCAvg', 'diver']]
 
@@ -66,7 +73,7 @@ def vote_complexity(X_data,y_data,grupos):
         X_train, y_train =Cpx.biuld_x_y(ind,X_data,y_data)
         cp=Parallel(n_jobs=4)(delayed(complexidades)(y_train,X_train,grupos) for j in range(100))
         del X_train , y_train
-        np.set_printoptions(threshold=np.nan)
+       # np.set_printoptions(threshold=np.nan)
         comp.append(cp)
         cpx=np.squeeze(comp)
         cpx=cpx.T
@@ -104,7 +111,6 @@ def vote_complexity(X_data,y_data,grupos):
         #exit(0)
     return voto, text, max, stad
 
-
 def salvar_complexidades(X_data,y_data,grupos):
     ind = Cpx.open_training(local, nome_base, 1)
     X_train, y_train = Cpx.biuld_x_y(ind, X_data, y_data)
@@ -123,6 +129,56 @@ def salvar_complexidades(X_data,y_data,grupos):
         spamwriter.writerow(diver)
 
     return c, score, diver
+
+def vote_jonathan(local,grupos,kkk=False):
+    voto = [0] * 11
+
+    for i in range(1,2):
+        print(i)
+        if kkk:
+            return 0
+        stad = []
+        comp = []
+        nome_base = 'features_dsfold'+str(i)+'-40-test.txt'
+        X_train, y_train = Cpx.open_data_jonathan(local, nome_base)
+        X_train=np.array(X_train)
+        y_train=np.array(y_train)
+        cp = Parallel(n_jobs=4)(delayed(complexidades)(y_train, X_train, grupos) for j in range(100))
+        del X_train, y_train
+        np.set_printoptions(threshold=np.nan)
+        comp.append(cp)
+
+        cpx = np.squeeze(comp)
+        cpx = cpx.T
+        for k in cpx:
+            norm = Cpx.min_max_norm(k)
+            # print(k)
+            std = np.std(norm)
+            # print(std)
+            std = std.tolist()
+            print(std)
+            stad.append(std)
+            # exit(0)
+
+        max = np.argsort(stad)
+        stad = np.array(stad)
+        max = max[::-1]
+        del cpx
+        overlapping = stad[0:5]
+        neighborhood = stad[5:11]
+
+        o = np.argmax(overlapping)
+        nei = np.argmax(neighborhood)
+
+        voto[o] = voto[o] + 1
+        voto[nei + 5] = voto[nei + 5] + 1
+
+        text = ''
+        for carro, cor in zip(header, voto):
+            text += '{} {}, '.format(carro, cor)
+        # print(text)
+        print("\n", voto)
+    return voto, text, max, stad
 ####################
 grupos=["overlapping", 'neighborhood', '', '', '', '']
 
@@ -130,18 +186,16 @@ grupos=["overlapping", 'neighborhood', '', '', '', '']
 import time
 ini=time.time()
 voto,text, max, std=vote_complexity(X,y,grupos)
+#voto,texti, max, std=vote_jonathan(local,grupos)
 fim=time.time()
 print(fim-ini)
-#
-#
+exit(0)
 arq = open('Voto.txt', 'a')
 arq2 = open('Std.txt', 'a')
-#
-arq.write(nome_base+" ")
+
+arq.write(+" ")
 for i in voto:
-# #
       arq.write(str(i)+" ")
-# #
 arq.write("\n")
 arq2.write("std ")
 for i in std:
