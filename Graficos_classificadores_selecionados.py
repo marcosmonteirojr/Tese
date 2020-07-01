@@ -9,7 +9,7 @@ import numpy as np
 #print(bags_ga.split(','))
 #exit(0)
 
-nome_base='P2'
+nome_base='Adult'
 #local_dataset = "/media/marcos/Data/Tese/Bases2/Dataset/"
 local = "/media/marcos/Data/Tese/Bases3/"
 caminho_base = "/media/marcos/Data/Tese/Bases3/"

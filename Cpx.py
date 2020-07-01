@@ -145,7 +145,7 @@ def complexity_data2(X_data, y_data):
     dfy = robjects.IntVector(y_data)
     complex = ecol.complexity(dfx, dfy, type="class")
 
-    print(complex)
+    #print(complex)
     # exit(0)
     complex = np.asarray(complex)
     # print(complex)
@@ -160,13 +160,9 @@ def complexity_data3(X_data, y_data, grupo, tipo=None):
     # print(grupo,tipo)
     complex = np.array([])
     if grupo[0] == 'overlapping':
-        # print('entrei')
         over = ecol.overlapping(dfx, dfy, measures=tipo[0])
-        # print(over)
         over = np.asarray(over)
         complex = np.append(complex, over[0])
-        # print(over)
-        # print(over[0])
     if grupo[1] == "neighborhood":
         nei = ecol.neighborhood(dfx, dfy, measures=tipo[1])
         nei = np.asarray(nei)
@@ -175,7 +171,6 @@ def complexity_data3(X_data, y_data, grupo, tipo=None):
         line = ecol.linearity(dfx, dfy, measures=tipo[2])
         line = np.asarray(line)
         complex = np.append(complex, line[0])
-        print("lin")
     if grupo[3] == "dimensionality":
         # print('entrei')
         dim = ecol.dimensionality(dfx, dfy, measures=tipo[3])
@@ -635,8 +630,9 @@ def biuld_x_y(indx_bag, X, y):
     X_data = []
     y_data = []
     # print(len(X))
-
+    #print(len(X))
     for i in indx_bag:
+       # print(i)
         X_data.append(X[int(i)])
         y_data.append(y[int(i)])
     return X_data, y_data

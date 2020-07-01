@@ -1,6 +1,6 @@
 import Marff, Cpx, csv, os
 import numpy as np
-import novo_perceptron as Nperc
+import novo_perceptron
 from deslib.static.single_best import SingleBest
 from sklearn.preprocessing import StandardScaler
 from sklearn.calibration import CalibratedClassifierCV
@@ -14,28 +14,29 @@ from deslib.dcs.rank import Rank
 from scipy.stats import wilcoxon
 from numpy import average,std, array, argsort
 import sys, pds_dsoc2
+from sklearn.ensemble import AdaBoostClassifier, BaggingClassifier
 from mlxtend.classifier import EnsembleVoteClassifier
+from sklearn.ensemble import RandomForestClassifier
 import pds_pool4
 #from imblearn.metrics import geometric_mean_score
-
+nome_base="P2"
 #nome_base=sys.argv[1]
 #print(nome_base)
 #bags_ga=sys.argv[2]
 #print(bags_ga.split(','))
 #exit(0)
-local_dataset = "/media/marcos/Data/Tese/Bases4/Dataset/"
-#local = "/home/projeto/Marcos/Bases3/"
-#caminho_base = "/home/projeto/Marcos/Bases2/"
-#cpx_caminho="/home/projeto/Marcos/Bases3/Bags/"
+#local_dataset =# "/home/marcosmonteiro/Marcos/Bases3/Dataset/"
+local = "/media/marcos/Data/Tese/Bases3/"
+#caminho_base = "/home/marcosmonteiro/Marcos/Bases32/"
+#cpx_caminho="/home/marcosmonteiro/Marcos/Bases3/Bags/"
+#nome_base="P2"
+#local = "/media/marcos/Data/Tese/Bases3/"
+cpx_caminho="/media/marcos/Data/Tese/Bases3-old/Bags/"
 
-nome_base='ds'
-local = "/media/marcos/Data/Tese/Bases4/"
-cpx_caminho="/media/marcos/Data/Tese/Bases4/Bags/"
+bags_ga="_distdiverlinear_teste_parada_dist"
+nome_arq="rf_parada_dist_scaller"
 
-bags_ga="19distdiverlinear_teste_parada_acc"
-nome_arq="distdiverlinear_teste_parada_acc_scaler"
 
-print(nome_base)
 
 def cria_arquivos(nome_arq):
     if os.path.isfile('Selecao' + nome_arq + ".csv") == False or os.path.isfile('Latex' + nome_arq + '.txt') == False:
@@ -167,9 +168,10 @@ def monta_resultados(arq, arq2, accVotingBag, accVotingPgsc, accLCAB, accLCAP, a
 
 
 def selecao(nome_base,local, cpx_caminho,bags_ga,nome_arq,repeticao):
-   # arq_dataset = local + "Dataset/" + nome_base + ".arff"
-   # arq_arff = Marff.abre_arff(arq_dataset)
-    X, y= Cpx.open_data_jonathan("/media/marcos/Data/Tese/Bases4/Dataset/",nome_base)
+    arq_dataset = local + "Dataset/" + nome_base + ".arff"
+    arq_arff = Marff.abre_arff(arq_dataset)
+    X, y,_= Marff.retorna_instacias(arq_arff)
+
 
     accKUB = []
     accKEB = []
@@ -192,6 +194,7 @@ def selecao(nome_base,local, cpx_caminho,bags_ga,nome_arq,repeticao):
     accVotingPgsc = []
 
     for j in range(1,repeticao):
+        print(nome_base)
         print(j)
         poolBag = []
         poolPgsc = []
@@ -203,6 +206,7 @@ def selecao(nome_base,local, cpx_caminho,bags_ga,nome_arq,repeticao):
         teste, validacao=Cpx.open_test_vali(local,nome_base,j)
 
         X_test,y_test=Cpx.biuld_x_y(teste,X,y)
+
         X_valida,y_valida=Cpx.biuld_x_y(validacao,X,y)
         X_test=np.array(X_test)
         X_valida=np.array(X_valida)
@@ -276,7 +280,8 @@ def selecao(nome_base,local, cpx_caminho,bags_ga,nome_arq,repeticao):
 
         singleP.fit(X_valida, y_valida)
         singleB.fit(X_valida, y_valida)
-
+        print(lcap.score(X_test,y_test))
+        #exit(0)
         accMetaB.append(metdb.score(X_test,y_test))
         accMetaP.append(metdp.score(X_test,y_test))
         accLCAB.append(lcab.score(X_test,y_test))
@@ -331,9 +336,507 @@ def selecao(nome_base,local, cpx_caminho,bags_ga,nome_arq,repeticao):
     arq2.close()
     arq.close()
 
-import warnings
+def selecao_ada(nome_base,local, cpx_caminho,bags_ga,nome_arq,repeticao):
+    arq_dataset = local + "Dataset/" + nome_base + ".arff"
+    arq_arff = Marff.abre_arff(arq_dataset)
+    X, y,_= Marff.retorna_instacias(arq_arff)
 
-#warnings.filterwarnings("ignore", category=Warning)
+    accKUB = []
+    accKEB = []
+    accOLAB = []
+    accSBB = []
 
-selecao(nome_base,local_dataset, cpx_caminho,bags_ga,nome_arq,repeticao=2)
+    accKUP = []
+    accKEP = []
+    accOLAP = []
+    accSBP = []
+
+    accLCAB = []
+    accLCAP = []
+    accRankB = []
+    accRankP = []
+    accMetaB = []
+    accMetaP = []
+
+    accVotingBag = []
+    accVotingPgsc = []
+
+    for j in range(1, repeticao):
+        print(j)
+
+        poolPgsc = []
+        calibrated_poolBag = []
+        calibrated_poolP = []
+
+        bags2 = Cpx.open_bag(cpx_caminho + str(j) + "/", nome_base + bags_ga)
+        teste, validacao = Cpx.open_test_vali(local, nome_base, j)
+        train = Cpx.open_training(local,nome_base,str(j))
+
+        X_train, y_train = Cpx.biuld_x_y(train,X,y)
+        X_test, y_test = Cpx.biuld_x_y(teste, X, y)
+        X_valida, y_valida = Cpx.biuld_x_y(validacao, X, y)
+
+        X_train = np.array(X_train)
+        X_test = np.array(X_test)
+        X_valida = np.array(X_valida)
+
+        scaler = StandardScaler()
+        X_valida = scaler.fit_transform(X_valida)
+        X_test = scaler.transform(X_test)
+        X_train = scaler.transform(X_train)
+
+        ada=AdaBoostClassifier(novo_perceptron.PPerceptron(n_jobs=4, tol=1.0), n_estimators=100, algorithm='SAMME.R')
+        ada.fit(X_train,y_train)
+        poolBag=ada.estimators_
+       # print(len(poolBag))
+        #exit(0)
+        for i in range(100):
+
+            X_bag2, y_bags2 = Cpx.biuld_x_y(bags2['inst'][i], X, y)
+            X_bag2 = scaler.transform(X_bag2)
+            percP = novo_perceptron.PPerceptron(n_jobs=4, tol=1.0)
+            poolPgsc.append(percP.fit(X_bag2, y_bags2))
+        for clf in poolBag:
+            calibrated = CalibratedClassifierCV(base_estimator=clf, cv='prefit')
+            calibrated.fit(X_valida, y_valida)
+            calibrated_poolBag.append(calibrated)
+
+        for clf in poolPgsc:
+            calibrated = CalibratedClassifierCV(base_estimator=clf, cv='prefit')
+            calibrated.fit(X_valida, y_valida)
+            calibrated_poolP.append(calibrated)
+
+        Pgsc_voting = EnsembleVoteClassifier(clfs=poolPgsc, voting='hard', refit=False)
+        Pgsc_voting = Pgsc_voting.fit(X_valida, y_valida)
+        P = Pgsc_voting.score(X_test, y_test)
+
+        B=ada.score(X_test,y_test)
+
+        metdb = METADES(calibrated_poolBag)
+        metdp = METADES(calibrated_poolP)
+
+
+        lcab = LCA(poolBag)
+        lcap = LCA(poolPgsc)
+        rankb = Rank(poolBag)
+        rankp = Rank(poolPgsc)
+        knorauB = KNORAU(poolBag)
+        knorauP = KNORAU(poolPgsc)
+        kneB = KNORAE(poolBag)
+        kneP = KNORAE(poolPgsc)
+        olaB = OLA(poolBag)
+        olaP = OLA(poolPgsc)
+        singleP = SingleBest(poolPgsc)
+        singleB = SingleBest(poolBag)
+
+        metdb.fit(X_valida, y_valida)
+        metdp.fit(X_valida, y_valida)
+        lcab.fit(X_valida, y_valida)
+        lcap.fit(X_valida, y_valida)
+        rankb.fit(X_valida, y_valida)
+        rankp.fit(X_valida, y_valida)
+
+        knorauB.fit(X_valida, y_valida)
+        knorauP.fit(X_valida, y_valida)
+        kneB.fit(X_valida, y_valida)
+        kneP.fit(X_valida, y_valida)
+        olaB.fit(X_valida, y_valida)
+        olaP.fit(X_valida, y_valida)
+
+        singleP.fit(X_valida, y_valida)
+        singleB.fit(X_valida, y_valida)
+        #print(lcap.score(X_test, y_test))
+        # exit(0)
+        accMetaB.append(metdb.score(X_test, y_test))
+        accMetaP.append(metdp.score(X_test, y_test))
+        accLCAB.append(lcab.score(X_test, y_test))
+        accLCAP.append(lcap.score(X_test, y_test))
+        accRankB.append(rankb.score(X_test, y_test))
+        accRankP.append(rankp.score(X_test, y_test))
+        accKUB.append(knorauB.score(X_test, y_test))
+        accKUP.append(knorauP.score(X_test, y_test))
+        accKEB.append(kneB.score(X_test, y_test))
+        accKEP.append(kneP.score(X_test, y_test))
+        accOLAB.append(olaB.score(X_test, y_test))
+        accOLAP.append(olaP.score(X_test, y_test))
+        accSBP.append(singleP.score(X_test, y_test))
+        accSBB.append(singleB.score(X_test, y_test))
+
+        accVotingBag.append(B)
+        accVotingPgsc.append(P)
+
+    lista_final_met = list(set(accMetaP) - set(accMetaB))
+    lista_final_vot = list(set(accVotingPgsc) - set(accVotingBag))
+    kp, ke = wilcoxon(accKEB, accKEP)
+    kp2, ku = wilcoxon(accKUB, accKUP)
+    op, ol = wilcoxon(accOLAB, accOLAP)
+    sp, sb = wilcoxon(accSBB, accSBP)
+    lca, lc = wilcoxon(accLCAB, accLCAP)
+    rk, rkb = wilcoxon(accRankB, accRankP)
+    if lista_final_met != []:
+        met, mt = wilcoxon(accMetaB, accMetaP)
+    else:
+        mt = met = 1000
+    if lista_final_vot != []:
+        vot, votc = wilcoxon(accVotingBag, accVotingPgsc)
+    else:
+        vot = votc = 1000
+    wil = [ku, ke, ol, sb, lc, rkb, mt, votc]
+    arq, arq1, arq2, arq3 = cria_arquivos(nome_arq)
+
+    arq1.write(
+        '{};{};{};{};{};{};{};{};{};{};{};{};{};{};{};{};{}\n'.format(nome_base, vot, votc, lca, lc, op, ol, rk, rkb,
+                                                                      kp, ke, kp2, ku, met, mt, sp, sb))
+    arq1.close()
+
+    string = monta_latex(wil, accVotingBag, accVotingPgsc, accLCAB, accLCAP, accOLAB, accOLAP, accRankB, accRankP,
+                         accKEB, accKEP,
+                         accKUB, accKUP, accMetaB, accMetaP, accSBB, accSBP)
+    arq3.write(string)
+    arq3.close()
+
+    monta_resultados(arq, arq2, accVotingBag, accVotingPgsc, accLCAB, accLCAP, accOLAB, accOLAP, accRankB, accRankP,
+                     accKEB, accKEP, accKUB, accKUP, accMetaB, accMetaP, accSBB, accSBP)
+    arq2.close()
+    arq.close()
+
+def selecao_sub(nome_base,local, cpx_caminho,bags_ga,nome_arq,repeticao):
+    arq_dataset = local + "Dataset/" + nome_base + ".arff"
+    arq_arff = Marff.abre_arff(arq_dataset)
+    X, y,_= Marff.retorna_instacias(arq_arff)
+    print(X)
+    X=np.array(X)
+
+    accKUB = []
+    accKEB = []
+    accOLAB = []
+    accSBB = []
+
+    accKUP = []
+    accKEP = []
+    accOLAP = []
+    accSBP = []
+
+    accLCAB = []
+    accLCAP = []
+    accRankB = []
+    accRankP = []
+    accMetaB = []
+    accMetaP = []
+
+    accVotingBag = []
+    accVotingPgsc = []
+
+    for j in range(1, repeticao):
+        print(j)
+
+        poolPgsc = []
+        calibrated_poolBag = []
+        calibrated_poolP = []
+
+        bags2 = Cpx.open_bag(cpx_caminho + str(j) + "/", nome_base + bags_ga)
+        teste, validacao = Cpx.open_test_vali(local, nome_base, j)
+        train = Cpx.open_training(local,nome_base,str(j))
+
+        X_train, y_train = Cpx.biuld_x_y(train,X,y)
+        X_test, y_test = Cpx.biuld_x_y(teste, X, y)
+        X_valida, y_valida = Cpx.biuld_x_y(validacao, X, y)
+
+        X_train = np.array(X_train)
+        X_test = np.array(X_test)
+        X_valida = np.array(X_valida)
+
+        scaler = StandardScaler()
+        X_valida = scaler.fit_transform(X_valida)
+        X_test = scaler.transform(X_test)
+        X_train = scaler.transform(X_train)
+        ada=  BaggingClassifier(novo_perceptron.PPerceptron(n_jobs=4, tol=1.0), n_estimators=100,max_samples=1.0, max_features=0.5)
+
+
+        ada.fit(X_train,y_train)
+        print(ada.estimators_features_[0])
+        features=np.array(ada.estimators_features_[0])
+        print(X[:,features[0]])
+       # exit(0)
+
+        poolBag=ada.estimators_
+       # print(len(poolBag))
+
+        for i in range(100):
+
+             X_bag2, y_bags2 = Cpx.biuld_x_y(bags2['inst'][i], X, y)
+             X_bag2 = scaler.transform(X_bag2)
+             percP = novo_perceptron.PPerceptron(n_jobs=4, tol=1.0)
+             poolPgsc.append(percP.fit(X_bag2, y_bags2))
+        for clf in range (len(poolBag)):
+             calibrated = CalibratedClassifierCV(base_estimator=poolBag[clf], cv='prefit')
+             calibrated.fit(X_valida[:,features[clf]], y_valida)
+             calibrated_poolBag.append(calibrated)
+        #
+        for clf in poolPgsc:
+             calibrated = CalibratedClassifierCV(base_estimator=clf, cv='prefit')
+             calibrated.fit(X_valida, y_valida)
+             calibrated_poolP.append(calibrated)
+
+        Pgsc_voting = EnsembleVoteClassifier(clfs=poolPgsc, voting='hard', refit=False)
+        Pgsc_voting = Pgsc_voting.fit(X_valida, y_valida)
+        P = Pgsc_voting.score(X_test, y_test)
+
+        B=ada.score(X_test,y_test)
+
+        metdb = METADES(poolBag)
+        #metdp = METADES(poolPgsc)
+
+
+        lcab = LCA(poolBag)
+        lcap = LCA(poolPgsc)
+        rankb = Rank(poolBag)
+        rankp = Rank(poolPgsc)
+        knorauB = KNORAU(poolBag)
+        knorauP = KNORAU(poolPgsc)
+        kneB = KNORAE(poolBag)
+        kneP = KNORAE(poolPgsc)
+        olaB = OLA(poolBag)
+        olaP = OLA(poolPgsc)
+        singleP = SingleBest(poolPgsc)
+        singleB = SingleBest(poolBag)
+        exit((0))
+       # metdb.fit(X_valida, y_valida)
+        #metdp.fit(X_valida, y_valida)
+        lcab.fit(X_valida, y_valida)
+        lcap.fit(X_valida, y_valida)
+        rankb.fit(X_valida, y_valida)
+        rankp.fit(X_valida, y_valida)
+
+        knorauB.fit(X_valida, y_valida)
+        knorauP.fit(X_valida, y_valida)
+        kneB.fit(X_valida, y_valida)
+        kneP.fit(X_valida, y_valida)
+        olaB.fit(X_valida, y_valida)
+        olaP.fit(X_valida, y_valida)
+
+        singleP.fit(X_valida, y_valida)
+        singleB.fit(X_valida, y_valida)
+        #print(lcap.score(X_test, y_test))
+        exit(0)
+      #  accMetaB.append(metdb.score(X_test, y_test))
+      #  accMetaP.append(metdp.score(X_test, y_test))
+        accLCAB.append(lcab.score(X_test, y_test))
+        accLCAP.append(lcap.score(X_test, y_test))
+        accRankB.append(rankb.score(X_test, y_test))
+        accRankP.append(rankp.score(X_test, y_test))
+        accKUB.append(knorauB.score(X_test, y_test))
+        accKUP.append(knorauP.score(X_test, y_test))
+        accKEB.append(kneB.score(X_test, y_test))
+        accKEP.append(kneP.score(X_test, y_test))
+        accOLAB.append(olaB.score(X_test, y_test))
+        accOLAP.append(olaP.score(X_test, y_test))
+        accSBP.append(singleP.score(X_test, y_test))
+        accSBB.append(singleB.score(X_test, y_test))
+
+        accVotingBag.append(B)
+        accVotingPgsc.append(P)
+
+    lista_final_met = list(set(accMetaP) - set(accMetaB))
+    lista_final_vot = list(set(accVotingPgsc) - set(accVotingBag))
+    kp, ke = wilcoxon(accKEB, accKEP)
+    kp2, ku = wilcoxon(accKUB, accKUP)
+    op, ol = wilcoxon(accOLAB, accOLAP)
+    sp, sb = wilcoxon(accSBB, accSBP)
+    lca, lc = wilcoxon(accLCAB, accLCAP)
+    rk, rkb = wilcoxon(accRankB, accRankP)
+    if lista_final_met != []:
+        met, mt = wilcoxon(accMetaB, accMetaP)
+    else:
+        mt = met = 1000
+    if lista_final_vot != []:
+        vot, votc = wilcoxon(accVotingBag, accVotingPgsc)
+    else:
+        vot = votc = 1000
+    wil = [ku, ke, ol, sb, lc, rkb, mt, votc]
+    arq, arq1, arq2, arq3 = cria_arquivos(nome_arq)
+
+    arq1.write(
+        '{};{};{};{};{};{};{};{};{};{};{};{};{};{};{};{};{}\n'.format(nome_base, vot, votc, lca, lc, op, ol, rk, rkb,
+                                                                      kp, ke, kp2, ku, met, mt, sp, sb))
+    arq1.close()
+
+    string = monta_latex(wil, accVotingBag, accVotingPgsc, accLCAB, accLCAP, accOLAB, accOLAP, accRankB, accRankP,
+                         accKEB, accKEP,
+                         accKUB, accKUP, accMetaB, accMetaP, accSBB, accSBP)
+    arq3.write(string)
+    arq3.close()
+
+    monta_resultados(arq, arq2, accVotingBag, accVotingPgsc, accLCAB, accLCAP, accOLAB, accOLAP, accRankB, accRankP,
+                     accKEB, accKEP, accKUB, accKUP, accMetaB, accMetaP, accSBB, accSBP)
+    arq2.close()
+    arq.close()
+
+def selecao_RF(nome_base,local, cpx_caminho,bags_ga,nome_arq,repeticao):
+    arq_dataset = local + "Dataset/" + nome_base + ".arff"
+    arq_arff = Marff.abre_arff(arq_dataset)
+    X, y,_= Marff.retorna_instacias(arq_arff)
+
+    accKUB = []
+    accKEB = []
+    accOLAB = []
+    accSBB = []
+
+    accKUP = []
+    accKEP = []
+    accOLAP = []
+    accSBP = []
+
+    accLCAB = []
+    accLCAP = []
+    accRankB = []
+    accRankP = []
+    accMetaB = []
+    accMetaP = []
+
+    accVotingBag = []
+    accVotingPgsc = []
+
+    for j in range(1, repeticao):
+        print(j)
+
+        poolPgsc = []
+        calibrated_poolBag = []
+        calibrated_poolP = []
+
+        bags2 = Cpx.open_bag(cpx_caminho + str(j) + "/", nome_base + bags_ga)
+        teste, validacao = Cpx.open_test_vali(local, nome_base, j)
+        train = Cpx.open_training(local,nome_base,str(j))
+
+        X_train, y_train = Cpx.biuld_x_y(train,X,y)
+        X_test, y_test = Cpx.biuld_x_y(teste, X, y)
+        X_valida, y_valida = Cpx.biuld_x_y(validacao, X, y)
+
+        X_train = np.array(X_train)
+        X_test = np.array(X_test)
+        X_valida = np.array(X_valida)
+
+        scaler = StandardScaler()
+        X_valida = scaler.fit_transform(X_valida)
+        X_test = scaler.transform(X_test)
+        X_train = scaler.transform(X_train)
+
+        rf= RandomForestClassifier(n_estimators=100,n_jobs=4,random_state=0)
+        rf.fit(X_train,y_train)
+        poolrf=rf.estimators_
+       # print(len(poolBag))
+        #exit(0)
+        for i in range(100):
+
+            X_bag2, y_bags2 = Cpx.biuld_x_y(bags2['inst'][i], X, y)
+            X_bag2 = scaler.transform(X_bag2)
+            percP = novo_perceptron.PPerceptron(n_jobs=4, tol=1.0)
+            poolPgsc.append(percP.fit(X_bag2, y_bags2))
+        for clf in poolrf:
+            calibrated = CalibratedClassifierCV(base_estimator=clf, cv='prefit')
+            calibrated.fit(X_valida, y_valida)
+            calibrated_poolBag.append(calibrated)
+
+        for clf in poolPgsc:
+            calibrated = CalibratedClassifierCV(base_estimator=clf, cv='prefit')
+            calibrated.fit(X_valida, y_valida)
+            calibrated_poolP.append(calibrated)
+
+        Pgsc_voting = EnsembleVoteClassifier(clfs=poolPgsc, voting='hard', refit=False)
+        Pgsc_voting = Pgsc_voting.fit(X_valida, y_valida)
+        P = Pgsc_voting.score(X_test, y_test)
+
+        B=rf.score(X_test,y_test)
+
+        metdb = METADES(calibrated_poolBag)
+        metdp = METADES(calibrated_poolP)
+
+
+        lcab = LCA(poolrf)
+        lcap = LCA(poolPgsc)
+        rankb = Rank(poolrf)
+        rankp = Rank(poolPgsc)
+        knorauB = KNORAU(poolrf)
+        knorauP = KNORAU(poolPgsc)
+        kneB = KNORAE(poolrf)
+        kneP = KNORAE(poolPgsc)
+        olaB = OLA(poolrf)
+        olaP = OLA(poolPgsc)
+        singleP = SingleBest(poolPgsc)
+        singleB = SingleBest(poolrf)
+
+        metdb.fit(X_valida, y_valida)
+        metdp.fit(X_valida, y_valida)
+        lcab.fit(X_valida, y_valida)
+        lcap.fit(X_valida, y_valida)
+        rankb.fit(X_valida, y_valida)
+        rankp.fit(X_valida, y_valida)
+
+        knorauB.fit(X_valida, y_valida)
+        knorauP.fit(X_valida, y_valida)
+        kneB.fit(X_valida, y_valida)
+        kneP.fit(X_valida, y_valida)
+        olaB.fit(X_valida, y_valida)
+        olaP.fit(X_valida, y_valida)
+
+        singleP.fit(X_valida, y_valida)
+        singleB.fit(X_valida, y_valida)
+        #print(lcap.score(X_test, y_test))
+        # exit(0)
+        accMetaB.append(metdb.score(X_test, y_test))
+        accMetaP.append(metdp.score(X_test, y_test))
+        accLCAB.append(lcab.score(X_test, y_test))
+        accLCAP.append(lcap.score(X_test, y_test))
+        accRankB.append(rankb.score(X_test, y_test))
+        accRankP.append(rankp.score(X_test, y_test))
+        accKUB.append(knorauB.score(X_test, y_test))
+        accKUP.append(knorauP.score(X_test, y_test))
+        accKEB.append(kneB.score(X_test, y_test))
+        accKEP.append(kneP.score(X_test, y_test))
+        accOLAB.append(olaB.score(X_test, y_test))
+        accOLAP.append(olaP.score(X_test, y_test))
+        accSBP.append(singleP.score(X_test, y_test))
+        accSBB.append(singleB.score(X_test, y_test))
+
+        accVotingBag.append(B)
+        accVotingPgsc.append(P)
+
+    lista_final_met = list(set(accMetaP) - set(accMetaB))
+    lista_final_vot = list(set(accVotingPgsc) - set(accVotingBag))
+    kp, ke = wilcoxon(accKEB, accKEP)
+    kp2, ku = wilcoxon(accKUB, accKUP)
+    op, ol = wilcoxon(accOLAB, accOLAP)
+    sp, sb = wilcoxon(accSBB, accSBP)
+    lca, lc = wilcoxon(accLCAB, accLCAP)
+    rk, rkb = wilcoxon(accRankB, accRankP)
+    if lista_final_met != []:
+        met, mt = wilcoxon(accMetaB, accMetaP)
+    else:
+        mt = met = 1000
+    if lista_final_vot != []:
+        vot, votc = wilcoxon(accVotingBag, accVotingPgsc)
+    else:
+        vot = votc = 1000
+    wil = [ku, ke, ol, sb, lc, rkb, mt, votc]
+    arq, arq1, arq2, arq3 = cria_arquivos(nome_arq)
+
+    arq1.write(
+        '{};{};{};{};{};{};{};{};{};{};{};{};{};{};{};{};{}\n'.format(nome_base, vot, votc, lca, lc, op, ol, rk, rkb,
+                                                                      kp, ke, kp2, ku, met, mt, sp, sb))
+    arq1.close()
+
+    string = monta_latex(wil, accVotingBag, accVotingPgsc, accLCAB, accLCAP, accOLAB, accOLAP, accRankB, accRankP,
+                         accKEB, accKEP,
+                         accKUB, accKUP, accMetaB, accMetaP, accSBB, accSBP)
+    arq3.write(string)
+    arq3.close()
+
+    monta_resultados(arq, arq2, accVotingBag, accVotingPgsc, accLCAB, accLCAP, accOLAB, accOLAP, accRankB, accRankP,
+                     accKEB, accKEP, accKUB, accKUP, accMetaB, accMetaP, accSBB, accSBP)
+    arq2.close()
+    arq.close()
+#selecao(nome_base,local, cpx_caminho,bags_ga,nome_arq,repeticao=21)
+selecao_RF(nome_base,local, cpx_caminho,bags_ga,nome_arq,repeticao=21)
+
+
 

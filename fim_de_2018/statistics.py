@@ -1,15 +1,15 @@
 import  Cpx, Marff, os, sys, csv, numpy as np
 from joblib import  Parallel, delayed
-local_dataset = "/media/marcos/Data/Tese/Bases4/Dataset/"
-local = "/media/marcos/Data/Tese/Bases4/"
-caminho_base = "/media/marcos/Data/Tese/Bases4/"
-cpx_caminho="/media/marcos/Data/Tese/Bases4/Bags/"
+local_dataset = "/media/marcos/Data/Tese/Joaquina2005/Bases3/Dataset/"
+local = "/media/marcos/Data/Tese/Joaquina2005/Bases3/"
+caminho_base = "/media/marcos/Data/Tese/Bases3/"
+cpx_caminho="/media/marcos/Data/Tese/Bases/Bags3/"
 #min_score=0
 ##############33jonathan########################
-nome_base='ds'
+nome_base='Lithuanian'
 #noe_base_test='features_dsfold1-40-test'
 #local="/media/marcos/Data/Tese/Bases4/Dataset/features_tcnn_breakhis"
-X,y=Cpx.open_data_jonathan(local_dataset,nome_base)
+#X,y=Cpx.open_data_jonathan(local_dataset,nome_base)
 ####################################################
 #nome_base=sys.argv[1]
 
@@ -20,9 +20,9 @@ X,y=Cpx.open_data_jonathan(local_dataset,nome_base)
 #########################################################################
 
 
-#arq_dataset = local + "Dataset/" + nome_base + ".arff"
-#arq_arff = Marff.abre_arff(arq_dataset)
-#X, y, _ = Marff.retorna_instacias(arq_arff)
+arq_dataset = local + "Dataset/" + nome_base + ".arff"
+arq_arff = Marff.abre_arff(arq_dataset)
+X, y, _ = Marff.retorna_instacias(arq_arff)
 _,val=Cpx.open_test_vali(local,nome_base,1)
 X_val, y_val= Cpx.biuld_x_y(val,X,y)
 
@@ -187,9 +187,9 @@ import time
 ini=time.time()
 voto,text, max, std=vote_complexity(X,y,grupos)
 #voto,texti, max, std=vote_jonathan(local,grupos)
+print(std)
 fim=time.time()
 print(fim-ini)
-exit(0)
 arq = open('Voto.txt', 'a')
 arq2 = open('Std.txt', 'a')
 
@@ -199,7 +199,7 @@ for i in voto:
 arq.write("\n")
 arq2.write("std ")
 for i in std:
-      arq2.write(str(i) + " ")
+      arq2.write(str(i))
 arq2.write("\n")
 arq.close()
 arq2.close()

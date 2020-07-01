@@ -23,8 +23,19 @@ def limpa_pasta():
          #for i in range(1,30):
              os.system ("rm -r /media/marcos/Data/Tese/Bases3/Bags/" + str(l)+"/P2*" )
 
-limpa_pasta()
+#limpa_pasta()
 
+#for i in range(1,21):
+#    os.system("mv /media/marcos/Data/Tese/Bases3/Bags/" + str(i) + "/"+str(i)+"/ " + "/media/marcos/Data/Tese/Joaquina2005/Bases3/Bags/" + str(i) + "/")
+
+for j in range(1,21):
+     nome = open("/media/marcos/Data/Tese/Joaquina2005/Bases3/Bags/"+str(j)+"/"+str(j)+"/nome.txt", "r")
+     nome2 = open("/media/marcos/Data/Tese/Joaquina2005/Bases3/Bags/"+str(j)+"/"+str(j)+"/nome2.txt", "r")
+     nome = nome.read().split('\n')
+     nome2 = nome2.read().split('\n')
+     for i in range(len(nome)):
+         os.system("mv /media/marcos/Data/Tese/Joaquina2005/Bases3/Bags/"+str(j)+"/"+nome[i] +" /media/marcos/Data/Tese/Joaquina2005/Bases3/Bags/"+str(j)+"/"+nome2[i])
+#     #print(nome[i])
 
 import os, sys, Marff, random
 # caminho1='/media/marcos/Marcos/PEREIRA/Exec_no/'
@@ -114,4 +125,4 @@ def arruma_cagada_andre_indices():
 
 #arruma_cagada_andre_indices()
 #os.system("mv /media/marcos/Marcos/fotos-videos/fotos-12-17-a-10-3-18/*.mp4 /media/marcos/Marcos/fotos-videos/videos-12-17-a-10-3-18/")
-limpa_pasta()
+#limpa_pasta()

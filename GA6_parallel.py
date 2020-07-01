@@ -6,7 +6,7 @@ from deap import creator
 from deap import tools
 import collections, Graficos_ga as graf
 from joblib import  Parallel, delayed
-import Cpx, sys, csv
+import Cpx, sys, csv, time
 
 
 def distancia(primeira=False, population=None):
@@ -14,10 +14,10 @@ def distancia(primeira=False, population=None):
     dist = dict()
     dist['nome'] = list()
     dist['dist'] = list()
-    dist['pred'] = list()
+    dist['diver'] = list()
     dist['score'] = list()
     dist['score_g'] = list()
-    if (primeira == True and geracao == 0):
+    if (primeira == True and generation == 0):
         dist['nome'] = pop
         print('primeira')
         r = Parallel(n_jobs=jobs)(delayed(parallel_distance2)(i, bags, grupo, tipos) for i in range(len(dist['nome'])))
@@ -27,13 +27,13 @@ def distancia(primeira=False, population=None):
     elif (primeira == False and population == None):
 
         print("diferente")
-        inicio = nome_individuo - nr_individuos
+        inicio = nome_individuo - nr_individual
         for i in range(inicio, nome_individuo):
             x = []
             x.append(i)
             dist['nome'].append(x)
         r = Parallel(n_jobs=jobs)(
-            delayed(parallel_distance2)(j, bags, grupo, tipos) for j in range(100, nr_individuos + 100))
+            delayed(parallel_distance2)(j, bags, grupo, tipos) for j in range(100, nr_individual + 100))
         c, score, pred, pool = zip(*r)
 
     elif (population != None):
@@ -53,7 +53,7 @@ def distancia(primeira=False, population=None):
     dist['dist'] = Cpx.dispersion_linear(c)
     dist['score'] = score
     d = diversidade(pred, y_vali)
-    dist['pred'] = Cpx.min_max_norm(d)
+    dist['diver'] = Cpx.min_max_norm(d)
     dist['score_g']=Cpx.voting_classifier(pool,X_vali,y_vali)
 
     return
@@ -144,7 +144,7 @@ def cruza(ind1, ind2):
     :param ind2:
     :return:
     '''
-    global nome_individuo, contador_cruzamento, nr_individuos, bags, dispersao
+    global nome_individuo, cont_crossover, nr_individual, bags, dispersao
 
     individual = False
     indx = bags['nome'].index(str(ind1[0]))
@@ -171,16 +171,16 @@ def cruza(ind1, ind2):
     nome_individuo += 1
 
     if (dispersao == True):
-        contador_cruzamento = contador_cruzamento + 1
+        cont_crossover = cont_crossover + 1
 
-        if (contador_cruzamento == nr_individuos + 1):
-            contador_cruzamento = 1
+        if (cont_crossover == nr_individual + 1):
+            cont_crossover = 1
             distancia(primeira=False, population=None)
 
     return creator.Individual(ind1), creator.Individual(ind2)
 
 def cruza2(ind1, ind2):
-    global nome_individuo, contador_cruzamento, nr_individuos, bags, dispersao
+    global nome_individuo, cont_crossover, nr_individual, bags, dispersao
 
     individual = False
     indx = bags['nome'].index(str(ind1[0]))
@@ -197,8 +197,6 @@ def cruza2(ind1, ind2):
 
 
     ###############################
-   # print((indx_bag1))
-   # print(indx_bag2)
     while (individual != True):
         ind_out1, _ = tools.cxMessyOnePoint(indx_bag1, indx_bag2)
         individual = verifica_data(ind_out1)
@@ -215,10 +213,10 @@ def cruza2(ind1, ind2):
     nome_individuo += 1
 
     if (dispersao == True):
-        contador_cruzamento = contador_cruzamento + 1
+        cont_crossover = cont_crossover + 1
 
-        if (contador_cruzamento == nr_individuos + 1):
-            contador_cruzamento = 1
+        if (cont_crossover == nr_individual + 1):
+            cont_crossover = 1
             distancia(primeira=False, population=None)
 
     return creator.Individual(ind1), creator.Individual(ind2)
@@ -246,7 +244,7 @@ def verifica_data(ind_out):
         return False
 
 def mutacao(ind):
-    global off, nome_individuo, contador_cruzamento, nr_individuos, bags, dispersao
+    global off, nome_individuo, cont_crossover, nr_individual, bags, dispersao
     print("mutacao")
     ind_out = []
     indx = bags['nome'].index(str(ind[0]))
@@ -255,7 +253,7 @@ def mutacao(ind):
     inst = 0
     inst2 = len(y_data)
 
-    if (geracao == 0 and off == []):
+    if (generation == 0 and off == []):
         ind2 = random.randint(0, 99)
 
     else:
@@ -282,9 +280,9 @@ def mutacao(ind):
     ind[0] = nome_individuo
     nome_individuo += 1
     if (dispersao == True):
-        contador_cruzamento = contador_cruzamento + 1
-        if (contador_cruzamento == nr_individuos + 1):
-            contador_cruzamento = 1
+        cont_crossover = cont_crossover + 1
+        if (cont_crossover == nr_individual + 1):
+            cont_crossover = 1
             distancia(primeira=False, population=None)
 
     return ind,
@@ -308,7 +306,7 @@ def fitness_dispercao_diver(ind1):
 
             ###########################
             score = dist["score"][i]
-            disv= dist["pred"][i]
+            disv= dist["diver"][i]
             #print(dist['nome'][i][0], dst, score)
             break
     ###############################
@@ -337,7 +335,7 @@ def fitness_dispercao_linear(ind1):
             dist2 = dist['dist'][i][1]
             ###########################
             #score = dist["score"][i]
-            diver=dist['pred'][i]
+            diver=dist['diver'][i]
             break
     ###############################
 
@@ -352,25 +350,26 @@ def sequencia():
 def the_function(population, gen, fitness):
 
     '''
-    responsavel por alterar a geracao, assim como zerar variaveis, alterar populacoes, e copiar arquivos
+    responsavel por alterar a generation, assim como zerar variaveis, alterar populacoes, e copiar arquivos
     :param population: populacao, retorna do DEAP
-    :param gen: geracao Retorna do DEAP
+    :param gen: generation Retorna do DEAP
     :param offspring: nova populacao
     :return:
     '''
 
-    global geracao, off, dispersao, nr_generation, bags, local, arquivo_de_saida, accuracia_ant, \
-        s, c, dist_temp, gen_temp, pop_temp, bags_temp
+    global generation, off, dispersao, nr_generation, bags, local, arquivo_de_saida, accuracia_ant, \
+        s, c, dist_temp, gen_temp, pop_temp, bags_temp, parada, salva_info
 
-    geracao = gen
+    generation = gen
     ###############################################333
-    #if repeticao == 1:
-     #   salva_informacoes_geracoes(geracao,fitness,c)
+    if salva_info:
+        if repeticao == 1:
+           salva_informacoes_geracoes(generation,fitness,c)
     ###################################################3
     print("the_fuction")
 
     off = []
-    base_name = nome_base + str(geracao)
+    base_name = nome_base + str(generation)
     bags_ant = bags
     bags = dict()
     bags['nome'] = list()
@@ -385,27 +384,29 @@ def the_function(population, gen, fitness):
 
     for i in range(len(population)):
         off.append(population[i][0])
-    print(fitness[0])
-    print(fitness[1])
-    exit(0)
-    max_distancia(fitness, geracao=geracao, population=off, bags=bags)
-    #max_acc(dist['score_g'], geracao=geracao, population=off, bags=bags)
 
-    if geracao == nr_generation:
-        print(geracao)
+    if parada=="maxdistance":
+        max_distancia(fitness, generation=generation, population=off, bags=bags)
+    elif parada =="maxacc":
+        max_acc(dist['score_g'], generation=generation, population=off, bags=bags)
 
-        #salva_bags(off,bags,base_name=base_name,tipo=0)
-        #salva_bags(pop_temp,bags_temp,gen_temp,base_name,tipo=1)
-        salva_bags(pop_temp, bags_temp, gen_temp, base_name=base_name, tipo=2)
+    if generation == nr_generation:
 
-    if (dispersao == True and geracao != nr_generation):
+        if parada=="maxdistance":
+            salva_bags(pop_temp, bags_temp, gen_temp, base_name, tipo=1)
+        elif parada=="maxacc":
+            salva_bags(pop_temp, bags_temp, gen_temp, base_name, tipo=2)
+        else:
+            salva_bags(off,bags,base_name=base_name,tipo=0)
+
+    if (dispersao == True and generation != nr_generation):
         distancia(population=population)
     return population
 
-def salva_informacoes_geracoes(geracao,fitness, complexidade):
+def salva_informacoes_geracoes(generation,fitness, complexidade):
     '''
 
-    :param geracao:
+    :param generation:
     :param fitness:
     :param complexidade:
     :return:
@@ -417,7 +418,7 @@ def salva_informacoes_geracoes(geracao,fitness, complexidade):
     temp = np.array(complexidade)
     temp=temp.T
     k = []
-    with open(nome_base +str(geracao)+ arquivo_de_saida+'.csv', 'a', newline='') as csvfile:
+    with open(nome_base +str(generation)+ arquivo_de_saida+'.csv', 'a', newline='') as csvfile:
           spamwriter = csv.writer(csvfile, delimiter=';')
           for i in range(len(complexidade)):
               k=complexidade[i]
@@ -449,11 +450,11 @@ def salva_informacoes_geracoes(geracao,fitness, complexidade):
               tem2.append(tem)
               spamwriter.writerow(tem)
               spamwriter.writerow('\n')
-          if geracao == nr_generation:
+          if generation == nr_generation:
               for i in tem2:
                   spamwriter.writerow(i)
 
-    graf.grafico_disper(nome_base, ["Dist", "Dist2"], fitness[0], fitness[1], repeticao, geracao, arquivo_de_saida)
+    graf.grafico_disper(nome_base, ["Disp complexity overlapping", "Disp complexity neighborhood", "Disp diversity"], fitness[0], fitness[1], valor3=fitness[2], legend="Lithuanian", i= repeticao, gr=generation,pasta= arquivo_de_saida)
     del tem, k, m1, m2, temp,m3, m4, m6, m7,m8, m9
 
 def salva_bags(pop_temp, bags_temp, gen_temp=None, base_name=None, tipo=0):
@@ -502,13 +503,13 @@ def salva_bags(pop_temp, bags_temp, gen_temp=None, base_name=None, tipo=0):
             name.extend(nm)
             Cpx.save_bag(name, 'bags', local + "/Bags", base_name + arquivo_de_saida, repeticao)
 
-def max_distancia(fitness, geracao=None, population=None, bags=None):
+def max_distancia(fitness, generation=None, population=None, bags=None):
     '''
 
     :param fit1: fittnes 1
     :param fit2:
     :param fit3:
-    :param geracao: geração atual
+    :param generation: geração atual
     :param population: popoluação atual geralmente o off
     :param bags: bags atuais
     :return:
@@ -518,22 +519,22 @@ def max_distancia(fitness, geracao=None, population=None, bags=None):
     global dist_temp, pop_temp, gen_temp, bags_temp
     if fitness[2]:
         dist_dist_media = np.mean(Cpx.dispersion(np.column_stack([fitness[0], fitness[1], fitness[2]])))
-        print(Cpx.dispersion2(np.column_stack([fitness[0], fitness[1], fitness[2]])))
+       # print(Cpx.dispersion2(np.column_stack([fitness[0], fitness[1], fitness[2]])))
     else:
         dist_dist_media = np.mean(Cpx.dispersion(np.column_stack([fitness[0], fitness[1]])))
     if dist_dist_media > dist_temp:
         dist_temp = dist_dist_media
         pop_temp = population
-        gen_temp = geracao
+        gen_temp = generation
         bags_temp = bags
 
-def max_acc(acc,geracao=None, population=None, bags=None):
+def max_acc(acc,generation=None, population=None, bags=None):
     '''
 
     :param fit1: fittnes 1
     :param fit2:
     :param fit3:
-    :param geracao: geração atual
+    :param generation: geração atual
     :param population: popoluação atual geralmente o off
     :param bags: bags atuais
     :return:
@@ -545,7 +546,7 @@ def max_acc(acc,geracao=None, population=None, bags=None):
     if acc > acc_temp:
         acc_temp = acc
         pop_temp = population
-        gen_temp = geracao
+        gen_temp = generation
         bags_temp = bags
 
 
@@ -577,35 +578,40 @@ cpx_caminho = "/media/marcos/Data/Tese/Bases3/Bags/"
 ########
 
 grupo = ["overlapping", 'neighborhood', '', '', '', '']
-tipos = ["F1", 'N1', '', '', '', '']
+tipos = ["F3", 'N3', '', '', '', '']
+
 dispersao = True
+
 fit_value1 = 1.0
 fit_value2 = 1.0
 fit_value3 = -1.0
-jobs = 2
+
 nr_generation = 19
+nr_individual = 100
+nr_pop=100
+
 proba_crossover = 0.99
 proba_mutation = 0.01
-nr_individuos = 100
-p=100
-nr_filhos=100
-contador_cruzamento = 1
-iteracoes=6
+
+nr_child=100
+cont_crossover = 1
+iteration=2
 dist_temp=0
 
-arquivo_de_saida = "apagar"
-# print("jobs = ", jobs, "\n", "nGr = ", nr_generation, "\n", "n_iterações = ", iteracoes, "\n", "nome_arquivo_saida = ",arquivo_de_saida)
-# confirma=input("confirme os vaores")
-# print(confirma)
-# if int(confirma)!=1:
-#         exit(0)
+jobs = 8
+parada="maxdistance"
+salva_info=False
 
-for t in range(1, iteracoes):
+
+arquivo_de_saida = "marcartempo"
+
+ini=time.time()
+for t in range(1, iteration):
 
     off = []
     nome_individuo = 100
     repeticao = t
-    geracao = 0
+    generation = 0
     seq = -1
     print("iteracao", t, nome_base)
     ######
@@ -616,21 +622,14 @@ for t in range(1, iteracoes):
     arq_arff = Marff.abre_arff(arq_dataset)
     X, y, _ = Marff.retorna_instacias(arq_arff)
     _, classes = Marff.retorna_classes_existentes(arq_arff)
-    #print(classes)
-    #exit(0)
-    #X,y=Cpx.open_data_jonathan(local_dataset,nome_base)
-    #classes=[0,1]
     if os.path.isfile(local + "Bags/" + str(repeticao) + "/" + nome_base + ".csv") == False:
         print("entrei")
         X_train, y_train, X_test, y_test, X_vali, y_vali = Cpx.routine_save_bags(local_dataset, local, nome_base,
                                                                                       repeticao)
-    #exit(0)
     else:
         _, validation = Cpx.open_test_vali(local , nome_base, repeticao)
         X_vali, y_vali = Cpx.biuld_x_y(validation, X, y)
         bags = Cpx.open_bag(cpx_caminho + str(repeticao) + "/", nome_base)
-   #  ######
-   # # ref_points = tools.uniform_reference_points(nobj=2, p=100)
     creator.create("FitnessMult", base.Fitness, weights=(fit_value1, fit_value2, fit_value3))
     creator.create("Individual", list, fitness=creator.FitnessMult)
     toolbox = base.Toolbox()
@@ -638,21 +637,18 @@ for t in range(1, iteracoes):
     toolbox.register("individual", tools.initRepeat, creator.Individual,
                       toolbox.attr_item, 1)
     population = toolbox.register("population", tools.initRepeat, list, toolbox.individual)
-    pop = toolbox.population(n=p)
-   #
+    pop = toolbox.population(n=nr_pop)
+
     if dispersao == True:
          distancia(primeira=True)
-   #
+
     toolbox.register("evaluate", fitness_dispercao_linear)
     toolbox.register("mate", cruza)
     toolbox.register("mutate", mutacao)
     toolbox.register("select", tools.selNSGA2)
-     # stats = tools.Statistics(key=lambda ind: ind.fitness.values)
-   #
-    pop = algorithms.eaMuPlusLambda(pop, toolbox, nr_filhos, nr_individuos, proba_crossover, proba_mutation,
+    ini = time.time()
+    pop = algorithms.eaMuPlusLambda(pop, toolbox, nr_child, nr_individual, proba_crossover, proba_mutation,
                                           nr_generation,
                                              generation_function=the_function)
-   #  #os.system("rm - r /tmp/Rtmp*")
-   #
-   # # if geracao>nr_generation or geracao==nr_generation:
-   #     # smd3.selecao(nome_base,local,cpx_caminho,arquivo_de_saida,arquivo_de_saida, repeticao)
+    fim = time.time()
+    print(fim - ini)

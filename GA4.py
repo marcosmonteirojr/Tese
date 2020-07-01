@@ -362,7 +362,7 @@ def populacao(populacao_total):
 off = []
 numero_individuo = 100
 contador_cruzamento = 1
-nome_base = "Haberman"
+nome_base = "Wine"
 
 nr_generation = 20
 proba_crossover = 0.99
@@ -370,9 +370,9 @@ proba_mutation = 0.01
 
 fit_value1 = 1.0
 fit_value2 = 1.0
-local_dataset = "/media/marcos/Data/Tese/Bases2/Dataset/"
+local_dataset = "/media/marcos/Data/Tese/Bases3/Dataset/"
 local = "/media/marcos/Data/Tese/Bases3"
-caminho_base = "/media/marcos/Data/Tese/Bases2/"
+caminho_base = "/media/marcos/Data/Tese/Bases3/"
 cpx_caminho="/media/marcos/Data/Tese/Bases3/Bags/"
 min_score=0
 
@@ -380,45 +380,57 @@ min_score=0
 #local = "/home/projeto/Marcos/Bases3"
 #caminho_base = "/home/projeto/Marcos/Bases2/"
 #cpx_caminho="home/projeto/Marcos/Bases3/Bags/"
-
+import time
+from sklearn.ensemble.bagging import BaggingClassifier
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import perceptron as perc
+arq_dataset = caminho_base + "Dataset/" + nome_base + ".arff"
+arq_arff = Marff.abre_arff(arq_dataset)
+X, y, _ = Marff.retorna_instacias(arq_arff)
+X_trein,Xjora,y_train,y_fora=train_test_split(X,y, test_size=0.5)
+inicio=time.time()
+bag=BaggingClassifier(base_estimator=perc.Perceptron(n_jobs=4,tol=1.0),
+                        n_estimators=10, random_state=0).fit(X_trein, y_train)
+fim=time.time()-inicio
+print(fim)
 ########
-dispersao = True
-for t in range(1, 21):
-    classes = []
-    off = []
-    nome_individuo = 100
-    repeticao = t
-    print("iteracao", t, nome_base)
-
-    geracao = 0
-    seq = -1
-    ##################Criar bags############################################
-    X_train, y_train, X_test, y_test, X_vali, y_vali, dic = Cpx.routine_save_bags(local_dataset, local, nome_base,
-                                                                                  repeticao)
-    #########################################################################
-    arq_dataset = caminho_base + "Dataset/" + nome_base + ".arff"
-    arq_arff = Marff.abre_arff(arq_dataset)
-    X, y, _ = Marff.retorna_instacias(arq_arff)
-    _,classes = Marff.retorna_classes_existentes(arq_arff)
-    bags = Cpx.open_bag(cpx_caminho + str(repeticao) + "/", nome_base)
-
-    creator.create("FitnessMax", base.Fitness, weights=(fit_value1,))
-    creator.create("Individual", list, fitness=creator.FitnessMax)
-
-    toolbox = base.Toolbox()
-    toolbox.register("attr_item", sequencia)
-    toolbox.register("individual", tools.initRepeat, creator.Individual,
-                     toolbox.attr_item, 1)
-    population = toolbox.register("population", tools.initRepeat, list, toolbox.individual)
-    pop = toolbox.population(n=100)
-
-    if dispersao == True:
-        distancia(primeira=True)
-
-    toolbox.register("evaluate", fitness_dispercao)
-    toolbox.register("mate", cruza)
-    toolbox.register("mutate", mutacao)
-    toolbox.register("select", tools.selRoulette)
-    algorithms.eaMuPlusLambda(pop, toolbox, 100, numero_individuo, proba_crossover, proba_mutation, nr_generation,
-                              generation_function=the_function, popu=populacao)
-
+# dispersao = True
+# for t in range(1, 21):
+#     classes = []
+#     off = []
+#     nome_individuo = 100
+#     repeticao = t
+#     print("iteracao", t, nome_base)
+#
+#     geracao = 0
+#     seq = -1
+#     ##################Criar bags############################################
+#     X_train, y_train, X_test, y_test, X_vali, y_vali, dic = Cpx.routine_save_bags(local_dataset, local, nome_base,
+#                                                                                   repeticao)
+#     #########################################################################
+#     arq_dataset = caminho_base + "Dataset/" + nome_base + ".arff"
+#     arq_arff = Marff.abre_arff(arq_dataset)
+#     X, y, _ = Marff.retorna_instacias(arq_arff)
+#     _,classes = Marff.retorna_classes_existentes(arq_arff)
+#     bags = Cpx.open_bag(cpx_caminho + str(repeticao) + "/", nome_base)
+#
+#     creator.create("FitnessMax", base.Fitness, weights=(fit_value1,))
+#     creator.create("Individual", list, fitness=creator.FitnessMax)
+#
+#     toolbox = base.Toolbox()
+#     toolbox.register("attr_item", sequencia)
+#     toolbox.register("individual", tools.initRepeat, creator.Individual,
+#                      toolbox.attr_item, 1)
+#     population = toolbox.register("population", tools.initRepeat, list, toolbox.individual)
+#     pop = toolbox.population(n=100)
+#
+#     if dispersao == True:
+#         distancia(primeira=True)
+#
+#     toolbox.register("evaluate", fitness_dispercao)
+#     toolbox.register("mate", cruza)
+#     toolbox.register("mutate", mutacao)
+#     toolbox.register("select", tools.selRoulette)
+#     algorithms.eaMuPlusLambda(pop, toolbox, 100, numero_individuo, proba_crossover, proba_mutation, nr_generation,
+#                               generation_function=the_function, popu=populacao)
+#
