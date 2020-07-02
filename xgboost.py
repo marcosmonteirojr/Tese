@@ -9,6 +9,6 @@ from sklearn.model_selection import cross_val_score, GridSearchCV, KFold, Random
 X,y=load_breast_cancer(return_X_y=True)
 print(y)
 
-xgb_model = xgboost.XGBClassifier\
+xgb_model = xgboost.
     (objective="binary:logistic", random_state=42)
 xgb_model.fit(X, y)

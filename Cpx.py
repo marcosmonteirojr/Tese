@@ -1,5 +1,5 @@
 from sklearn.model_selection import train_test_split
-from sklearn.linear_model import perceptron
+from sklearn.linear_model import Perceptron
 from deslib.static.oracle import Oracle
 from deslib.util import diversity, datasets
 from sklearn.utils import check_random_state
@@ -13,7 +13,7 @@ import numpy as np
 import Marff, subprocess
 import csv, random, os
 
-os.environ['R_HOME'] = '/home/marcos/anaconda3/envs/tese2/lib/R'
+os.environ['R_HOME'] = '/home/marcos/miniconda3/envs/bck/lib/R'
 #os.environ['R_HOME'] = '/home/projeto/anaconda3/envs/Tese/lib/R'
 
 import pandas as pd
@@ -160,11 +160,12 @@ def complexity_data3(X_data, y_data, grupo, tipo=None):
     # print(grupo,tipo)
     complex = np.array([])
     if grupo[0] == 'overlapping':
-        over = ecol.overlapping(dfx, dfy, measures=tipo[0])
+        over = ecol.featurebased(dfx, dfy, measures=tipo[0], summary="mean")
         over = np.asarray(over)
         complex = np.append(complex, over[0])
     if grupo[1] == "neighborhood":
         nei = ecol.neighborhood(dfx, dfy, measures=tipo[1])
+
         nei = np.asarray(nei)
         complex = np.append(complex, nei[0])
     if grupo[2] == "linearity":
@@ -294,7 +295,7 @@ def biuld_classifier(X_train, y_train, X_val, y_val, X_test=None, y_test=None, s
     :return: classificador, accuracia, lista de predicao
     '''
     # constroi os classificadores, e retorna classificador, score e predict
-    perc = perceptron.Perceptron(n_jobs=4, max_iter=100, tol=1.0)
+    perc = Perceptron(n_jobs=4, max_iter=100, tol=1.0)
     perc.fit(X_train, y_train)
     score = perc.score(X_val, y_val)
     if X_test!=None and y_test!=None and score_train==False:
