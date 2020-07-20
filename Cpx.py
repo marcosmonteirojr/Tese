@@ -13,7 +13,7 @@ import numpy as np
 import Marff, subprocess
 import csv, random, os
 
-os.environ['R_HOME'] = '/home/marcos/miniconda3/envs/bck/lib/R'
+os.environ['R_HOME'] = '/home/marcos/miniconda3/envs/l/lib/R'
 #os.environ['R_HOME'] = '/home/projeto/anaconda3/envs/Tese/lib/R'
 
 import pandas as pd
@@ -25,14 +25,6 @@ import rpy2.robjects.packages as rpackages
 ecol = rpackages.importr('ECoL')
 import rpy2.robjects as robjects
 
-
-# os.environ['R_HOME'] = '/home/marcos/anaconda3/envs/tese2/lib/R'
-
-
-
-
-# base_name="Haberman"
-# local_data="/media/marcos/Data/Tese/Bases2/Dataset/"
 
 def open_data(base_name, local_data):
     dataset_file = Marff.abre_arff(local_data + base_name + ".arff")
@@ -154,13 +146,14 @@ def complexity_data2(X_data, y_data):
     return complex
 
 def complexity_data3(X_data, y_data, grupo, tipo=None):
+
     # complex=[]
     dfx = pd.DataFrame(X_data, copy=False)
     dfy = robjects.IntVector(y_data)
     # print(grupo,tipo)
     complex = np.array([])
     if grupo[0] == 'overlapping':
-        over = ecol.featurebased(dfx, dfy, measures=tipo[0], summary="mean")
+        over = ecol.overlapping(dfx, dfy, measures=tipo[0])
         over = np.asarray(over)
         complex = np.append(complex, over[0])
     if grupo[1] == "neighborhood":

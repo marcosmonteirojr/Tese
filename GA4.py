@@ -6,7 +6,7 @@ from deap import creator
 from deap import tools
 import numpy as np
 import collections
-from sklearn.externals.joblib import Parallel, delayed
+import joblib
 
 #os.environ['R_HOME'] = '/home/marcos/anaconda3/envs/tese2/lib/R'
 
@@ -381,7 +381,7 @@ min_score=0
 #caminho_base = "/home/projeto/Marcos/Bases2/"
 #cpx_caminho="home/projeto/Marcos/Bases3/Bags/"
 import time
-from sklearn.ensemble.bagging import BaggingClassifier
+from sklearn.ensemble import BaggingClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import perceptron as perc
 arq_dataset = caminho_base + "Dataset/" + nome_base + ".arff"
@@ -390,7 +390,7 @@ X, y, _ = Marff.retorna_instacias(arq_arff)
 X_trein,Xjora,y_train,y_fora=train_test_split(X,y, test_size=0.5)
 inicio=time.time()
 bag=BaggingClassifier(base_estimator=perc.Perceptron(n_jobs=4,tol=1.0),
-                        n_estimators=10, random_state=0).fit(X_trein, y_train)
+                        n_estimators=10, random_state=0)
 fim=time.time()-inicio
 print(fim)
 ########

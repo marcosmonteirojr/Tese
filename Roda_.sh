@@ -7,6 +7,6 @@
 
 while read i;
 do
-	~/anaconda3/envs/tese3/bin/python ./smd3.py $i
+	~/miniconda3/envs/l/bin/python ./smd3.py $i
 
 done < ./bases27

@@ -4,7 +4,7 @@ import novo_perceptron
 from deslib.static.single_best import SingleBest
 from sklearn.preprocessing import StandardScaler
 from sklearn.calibration import CalibratedClassifierCV
-from sklearn.linear_model import perceptron as perc
+from sklearn.linear_model import Perceptron as perc
 from deslib.des.knora_u import KNORAU
 from deslib.des.knora_e import KNORAE
 from deslib.dcs.ola import OLA
@@ -19,8 +19,8 @@ from mlxtend.classifier import EnsembleVoteClassifier
 from sklearn.ensemble import RandomForestClassifier
 import pds_pool4
 #from imblearn.metrics import geometric_mean_score
-nome_base="P2"
-#nome_base=sys.argv[1]
+#nome_base="Lithuanian"
+nome_base=sys.argv[1]
 #print(nome_base)
 #bags_ga=sys.argv[2]
 #print(bags_ga.split(','))
@@ -31,10 +31,10 @@ local = "/media/marcos/Data/Tese/Bases3/"
 #cpx_caminho="/home/marcosmonteiro/Marcos/Bases3/Bags/"
 #nome_base="P2"
 #local = "/media/marcos/Data/Tese/Bases3/"
-cpx_caminho="/media/marcos/Data/Tese/Bases3-old/Bags/"
+cpx_caminho="/media/marcos/Data/Tese/Bases3/Bags/"
 
-bags_ga="_distdiverlinear_teste_parada_dist"
-nome_arq="rf_parada_dist_scaller"
+bags_ga="_distdiverlinear_teste_parada_acc"
+nome_arq="resultadosrf_acc_rf"
 
 
 
@@ -223,8 +223,8 @@ def selecao(nome_base,local, cpx_caminho,bags_ga,nome_arq,repeticao):
             X_bag = scaler.transform(X_bag)
             X_bag2 = scaler.transform(X_bag2)
 
-            percB = perc.Perceptron(n_jobs=4,tol=1.0)
-            percP = perc.Perceptron(n_jobs=4,tol=1.0)
+            percB = perc(n_jobs=4,tol=1.0)
+            percP = perc(n_jobs=4,tol=1.0)
 
             poolBag.append(percB.fit(X_bag, y_bag))
             poolPgsc.append(percP.fit(X_bag2, y_bags2))
@@ -835,7 +835,7 @@ def selecao_RF(nome_base,local, cpx_caminho,bags_ga,nome_arq,repeticao):
                      accKEB, accKEP, accKUB, accKUP, accMetaB, accMetaP, accSBB, accSBP)
     arq2.close()
     arq.close()
-#selecao(nome_base,local, cpx_caminho,bags_ga,nome_arq,repeticao=21)
+#selecao_ada(nome_base,local, cpx_caminho,bags_ga,nome_arq,repeticao=21)
 selecao_RF(nome_base,local, cpx_caminho,bags_ga,nome_arq,repeticao=21)
 
 
