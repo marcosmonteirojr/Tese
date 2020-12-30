@@ -9,12 +9,22 @@ from sklearn.naive_bayes import GaussianNB
 from mlxtend.classifier import EnsembleVoteClassifier
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.ensemble import VotingClassifier
+from sklearn.tree import DecisionTreeClassifier
 import numpy as np
 import Marff, subprocess
-import csv, random, os
+import csv, random, os, sys
+
+
+
 
 os.environ['R_HOME'] = '/home/marcos/miniconda3/envs/l/lib/R'
+#env = os.environ.copy()
+#env['R_HOME'] = '/home/marcos/miniconda3/envs/l/lib/R'
+
 #os.environ['R_HOME'] = '/home/projeto/anaconda3/envs/Tese/lib/R'
+#os.environ['R_HOME'] = '/home/marcosmonteiro/miniconda2/envs/Tese/lib/R'
+
+
 
 import pandas as pd
 from rpy2.robjects import pandas2ri
@@ -24,6 +34,12 @@ import rpy2.robjects.packages as rpackages
 
 ecol = rpackages.importr('ECoL')
 import rpy2.robjects as robjects
+
+def mapr(o,n):
+
+    x=[["F1,N1","F1,N2","F1,N3","F1,N4","F1,T1","F1,LSC"],["F1v,N1","F1v,N2","F1v,N3","F1v,N4","F1v,T1","F1v,LSC"],
+       ["F2,N1","F2,N2","F2,N3","F2,N4","F2,T1","F2,LSC"],["F3,N1","F3,N2","F3,N3","F3,N4","F3,T1","F3,LSC"],["F4,N1","F4,N2","F4,N3","F4,N4","F4,T1","F4,LSC"]]
+    return x[o:n]
 
 
 def open_data(base_name, local_data):
@@ -150,61 +166,17 @@ def complexity_data3(X_data, y_data, grupo, tipo=None):
     # complex=[]
     dfx = pd.DataFrame(X_data, copy=False)
     dfy = robjects.IntVector(y_data)
-    # print(grupo,tipo)
     complex = np.array([])
     if grupo[0] == 'overlapping':
-        over = ecol.overlapping(dfx, dfy, measures=tipo[0])
-        over = np.asarray(over)
+        over = ecol.overlapping(dfx, dfy, measures=tipo[0], summary="mean")
+        #over = np.asarray(over)
         complex = np.append(complex, over[0])
     if grupo[1] == "neighborhood":
-        nei = ecol.neighborhood(dfx, dfy, measures=tipo[1])
-
-        nei = np.asarray(nei)
+        nei = ecol.neighborhood(dfx, dfy, measures=tipo[1], summary="mean")
+        #nei = np.asarray(nei)
         complex = np.append(complex, nei[0])
-    if grupo[2] == "linearity":
-        line = ecol.linearity(dfx, dfy, measures=tipo[2])
-        line = np.asarray(line)
-        complex = np.append(complex, line[0])
-    if grupo[3] == "dimensionality":
-        # print('entrei')
-        dim = ecol.dimensionality(dfx, dfy, measures=tipo[3])
-        dim = np.asarray(dim)
-        complex = np.append(complex, dim[0])
-    if grupo[4] == "balance":
-        bal = ecol.balance(dfx, dfy, measures=tipo[4])
-        bal = np.asarray(bal)
-        complex = np.append(complex, bal[0])
-    if grupo[5] == "network":
-        net = ecol.network(dfx, dfy, measures=tipo[5])
-        net = np.asarray(net)
-        complex = np.append(complex, net[0])
 
-    # if over !=None:
-    #      over = np.asarray(over)
-    #     # print(over)
-    #      complex = np.append(complex, over[0])
-    # if nei !=None:
-    #      nei=np.asarray(nei)
-    #      complex = np.append(complex, nei[0])
-    # if line !=None:
-    #      line=np.asarray(line)
-    #      complex = np.append(complex, line[0])
-    # #
-    # if dim!=None:
-    #     dim=np.asarray(dim)
-    #     complex = np.append(complex, dim[0])
-    # #
-    # if bal!=None:
-    #      bal=np.asarray(bal)
-    #      complex = np.append(complex, bal[0])
-    # #
-    # if net !=None:
-    #      net = np.asarray(net)
-    #      complex = np.append(complex, net[0])
     complex = complex.tolist()
-    # print(complex)
-    # print (complex)
-    # exit(0)
     del dfx, dfy
     return complex
 
@@ -215,21 +187,79 @@ def complexity_data4(X_data, y_data, grupo):
     :param grupo:
     :return: retorna todas as complexidades dos grupos escolhidos
     """
+    over=nei=0
     dfx = pd.DataFrame(X_data, copy=False)
     dfy = robjects.IntVector(y_data)
     complex = np.array([])
-    if grupo[0] == 'overlapping':
-        over = ecol.overlapping(dfx, dfy)
+    if grupo == 'overlapping':
+        over = ecol.overlapping(dfx, dfy, summary="mean")
         over = np.asarray(over)
         complex = np.append(complex, over)
-    if grupo[1] == "neighborhood":
-        nei = ecol.neighborhood(dfx, dfy)
+
+    if grupo == "neighborhood":
+        nei = ecol.neighborhood(dfx, dfy, summary="mean")
         nei = np.asarray(nei)
         complex = np.append(complex, nei)
+
     del nei, over, dfx, dfy
     complex = complex.tolist()
     return complex
 
+def calc_measure_next_genration(X_data,y_data,grupo):
+    overlapping=[]
+    neighboorhood=[]
+        # complex=[]
+    dfx = pd.DataFrame(X_data, copy=False)
+    dfy = robjects.IntVector(y_data)
+
+    if grupo[0] == 'overlapping':
+        over = ecol.overlapping(dfx, dfy, summary="mean")
+        over=np.array(over)
+        over=over.flatten()
+        overlapping=np.append(overlapping,over)
+
+    if grupo[1] == "neighborhood":
+        nei = ecol.neighborhood(dfx, dfy, summary="mean")
+        nei = np.array(nei)
+        nei = nei.flatten()
+        neighboorhood=np.append(neighboorhood,nei)
+
+    del dfx, dfy
+    neighboorhood=np.squeeze(neighboorhood)
+    #neighboorhood=neighboorhood.T
+
+    overlapping=np.squeeze(overlapping)
+
+    #overlapping=overlapping.T
+    #print(overlapping)
+    return overlapping, neighboorhood
+
+def PolyArea(x,y): # fórmula Shoelace
+    temp=[]
+    area=[]
+    x=np.array(x)
+    x=x.T
+    y=np.array(y)
+    y=y.T
+    cont=0
+    tem3=0
+    temp2=0
+    for i in range(len(x)):
+            for j in range(len(y)):
+                #print(x[i])
+                cont=cont+1
+                np.append(0.5*np.abs(np.dot(x[i],np.roll(y[j],1))-np.dot(y[j],np.roll(x[i],1))),temp)
+                if cont ==len(y):
+                    temp=[]
+                    np.append(area,temp)#ver pq nao está salvando
+                    cont=0
+    for i in range(len(area)):
+        if tem3<i.argmax(area[i]):
+            temp2=i
+            tem3=i.argmax(area[i])
+
+
+    return area, temp2, tem3
 def paralell_process(process):
     y = []
     x = os.popen('Rscript {}'.format(process)).read()
@@ -275,10 +305,41 @@ def p2_problem():
     Marff.cria_arff(info, data, ["0.0", "1.0"], "/media/marcos/Data/Tese/Bases4/Dataset/", "P2")
     return data
 
+def biuld_classifier_tree(X_train, y_train, X_val, y_val, X_test=None, y_test=None, score_train=False):
+    '''
+    se score_train false, retorna o score sobre o proprio treino, e a predicao sobre a validacao, caso contrario,
+    retorna duas acuracias, treino e validacao mais a predicao sobre a validacao
+    retorna um perceptron com sua acuracia e com a lista de predicao
+    :param X_train: X do treino
+    :param y_train: y do treino
+    :param X_val: X valida ou teste
+    :param y_val: y valida, ou teste
+    :param X_test: retorna o predict e o segundo score
+    :return: classificador, accuracia, lista de predicao
+    '''
+    # constroi os classificadores, e retorna classificador, score e predict
+    tree = DecisionTreeClassifier()
+    tree.fit(X_train, y_train)
+    score = tree.score(X_val, y_val)
+    if X_test!=None and y_test!=None and score_train==False:
+
+        predict = tree.predict(X_test)
+
+        return tree, score, predict
+
+    elif (score_train):
+        score2 = tree.score(X_test, y_test)
+        predict = tree.predict(X_test)
+        return tree, score, score2, predict
+
+    else:
+
+        return tree, score
+
 def biuld_classifier(X_train, y_train, X_val, y_val, X_test=None, y_test=None, score_train=False):
     '''
-    se score_train false, retorna o score sobre o próprio treino, e a predição sobre a validação, caso contrário,
-    retorna duas acurácias, treino e validação mais a predição sobre a validação
+    se score_train false, retorna o score sobre o proprio treino, e a predicao sobre a validacao, caso contrario,
+    retorna duas acuracias, treino e validacao mais a predicao sobre a validacao
     retorna um perceptron com sua acuracia e com a lista de predicao
     :param X_train: X do treino
     :param y_train: y do treino
@@ -340,7 +401,7 @@ def biuld_classifier_over(X, y, X_val, y_val, tam):
     :param y_train: y do treino
     :param X_val: X valida ou teste
     :param y_val: y valida, ou teste
-    :param tam: tamanho da divisâo do dataset de treino
+    :param tam: tamanho da divisao do dataset de treino
     :return: classificador*, accuracia*, lista de predicao*
     a acuracia e o classificador sao referentes a parte do dataset de treino
     '''
@@ -353,7 +414,7 @@ def biuld_classifier_over(X, y, X_val, y_val, tam):
         X_train.append(X[i])
         y_train.append(y[i])
     # constroi os classificadores, e retorna classificador, score e predict
-    perc = perceptron.Perceptron(n_jobs=7, max_iter=100, tol=10.0)
+    perc = Perceptron(n_jobs=7, max_iter=100, tol=10.0)
     perc.fit(X_train, y_train)
     score = perc.score(X_val, y_val)
     predict = perc.predict(X_val)
@@ -420,7 +481,7 @@ def dispersion(complexity):
 
 def dispersion2(complexity):
     """
-    Atenção, foi refeita e não testada dia 3-10-2019
+    Atencao, foi refeita e nao testada dia 3-10-2019
     :param complexity: listas de complexidades
     :return: media das distancias feitas de forma manual
     """
@@ -455,7 +516,7 @@ def dispersion_linear(complexity):
 
     complexity = list(complexity)
     complexity = np.array(complexity)
-    # print((complexity))
+    print((complexity))
     n = (len(complexity)) - 1
     complexity = complexity.T
 
@@ -496,7 +557,7 @@ def diversitys(y_test, predicts):
             else:
                 #  q.append(diversity.Q_statistic(y_test,predicts[i],predicts[j]))
                 db.append(diversity.double_fault(y_test, predicts[i], predicts[j]))
-                #coloquei um paramentro novo na função de retorno _process_predictions
+                #coloquei um paramentro novo na funcao de retorno _process_predictions
         double_faults.append(np.mean(db))
 
     return double_faults
@@ -583,7 +644,7 @@ def oracle(poll, X, y, X_test, y_test):
     return orc.score(X_test, y_test)
 
 def routine_save_bags(local_dataset, local, base_name, iteration):
-    # rotina para criar treino teste e validaçao alem dos 100 bags, local e onde esta o dataset orig
+    # rotina para criar treino teste e validcao alem dos 100 bags, local e onde esta o dataset orig
     X_data,y_data=open_data_jonathan(local_dataset,base_name)
     #X_data, y_data, dataset, dic = open_data(base_name, local_dataset)
     X_train, y_train, X_test, y_test, X_vali, y_vali, id_train, id_test, id_vali = split_data(X_data, y_data)
@@ -664,17 +725,19 @@ def open_data_jonathan(local,name):
     y = np.array(y)
     return X,y
 
-
+import Marff as mf
 def main():
     #p2_problem()
-    comp = []
+    #comp = []
     # p2_problem()
-   # import Marff as mf
-    # for i in range(10):
-    #    wine=mf.abre_arff("/home/marcos/Documentos/wine.arff")
-    #   X,y,_=mf.retorna_instacias(wine,True)
-    #  grupo = ["overlapping", 'neighborhood', '', '', '', '']
-    # comp.append(complex_data4(X,y,grupo))
+
+
+    #wine=mf.abre_arff("/media/marcos/Data/Tese/Bases3/Dataset/Wine.arff")
+   # X,y,data=mf.retorna_instacias(wine,False)
+
+    #t=pd.DataFrame(X, copy=False)
+    #proc = subprocess.Popen(['Rscript /media/marcos/Data/Tese/cr.R c(1,2,3,4,55)'],
+     #                       stdout=subprocess.PIPE, shell=True)
     # x=[[.0, .2, 1.],[.3,2,1],[.5,1,3],[1.,5,6]]
     # x=np.array(x)
     # x=x.T
@@ -686,17 +749,7 @@ def main():
     # print(min_max_norm(i))
 
     # #import time
-    # base_name='Wine'
-    # x=[]
-    # repeticao="4/"
-    # local_dataset = "/media/marcos/Data/Tese/Bases2/Dataset/"
-    # #local = "/media/marcos/Data/Tese/Bases3/"
-    # #caminho_base = "/media/marcos/Data/Tese/Bases2/"
-    # #cpx_caminho = "/media/marcos/Data/Tese/Bases3/Bags/"
-    # X_data, y_data, dataset, dic =open_data(base_name,local_dataset)
-    # result=complexity_data3(X_data,y_data,["overlapping",'neighborhood','','','',''],["F4",'N1','','','',''])
-    #
-    # #print(result)
+     x=0
     # x=[[1,2],[7,5],[3,5]]
     # print(dispersion2(x),dispersion(x))
 

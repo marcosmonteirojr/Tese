@@ -6,7 +6,7 @@ from deap import creator
 from deap import tools
 import collections, Graficos_ga as graf
 from joblib import  Parallel, delayed
-import Cpx, sys, csv, time
+import Cpx, csv, time, sys
 
 
 def distancia(primeira=False, population=None):
@@ -21,9 +21,10 @@ def distancia(primeira=False, population=None):
         dist['nome'] = pop
         print('primeira')
         r = Parallel(n_jobs=jobs)(delayed(parallel_distance2)(i, bags, grupo, tipos) for i in range(len(dist['nome'])))
-        c, score,  pred, pool = zip(*r)
-
-
+        o, n, score,  pred, pool = zip(*r)
+        print(o)
+        area=Cpx.PolyArea(o,n)
+        exit(0)
     elif (primeira == False and population == None):
 
         print("diferente")
@@ -64,15 +65,6 @@ def diversidade(pred, y):
     d =Cpx.diversitys(y, pred)
     return d
 
-def parallel_distance(i, bags):
-
-    indx_bag1 = bags['inst'][i]
-    X_bag, y_bag = monta_arquivo(indx_bag1)
-    cpx = (Cpx.complexity_data2(X_bag, y_bag))
-    _, score, _ = Cpx.biuld_classifier(X_bag, y_bag, X_vali, y_vali)
-
-    return cpx, score
-
 def parallel_distance2(i, bags, grupo, tipos):
     """
 
@@ -85,35 +77,18 @@ def parallel_distance2(i, bags, grupo, tipos):
 
     indx_bag1 = bags['inst'][i]
     X_bag, y_bag = monta_arquivo(indx_bag1)
-    cpx = (Cpx.complexity_data3(X_bag, y_bag, grupo, tipos))
-
+    #cpx = (Cpx.complexity_data3(X_bag, y_bag, grupo, tipos))
+    o,n = (Cpx.calc_measure_next_genration(X_bag, y_bag, grupo))
     #######################################################################
     ############usando o treino para avaliar o fitness################3####
    # _, score, _ = Cpx.biuld_classifier(X_bag, y_bag, X_bag, y_bag)
-    perc, score, pred = Cpx.biuld_classifier(X_bag, y_bag, X_bag, y_bag,X_vali,y_vali)
-    #######################################################################
-    return cpx,  score,  pred, perc
-
-def parallel_distance3(i, bags, grupo, tipos):
-    """
-
-    :param i: lista de indices do bag a ser testado
-    :param bags: lista com todos os bags
-    :param grupo: lista com o nome dos grupos de complexidades ex: [overllaping,,,,,]
-    :param tipos: lista com o nome da complexidade
-    :return: listas de complexidade, score sobre a validacao, e a predicao sobre a validacao
-    """
-
-    indx_bag1 = bags['inst'][i]
-    X_bag, y_bag = monta_arquivo(indx_bag1)
-    cpx = (Cpx.complexity_data3(X_bag, y_bag, grupo, tipos))
+    if classificador=="classifier":
+        classifier, score, pred = Cpx.biuld_classifier(X_bag, y_bag, X_bag, y_bag,X_vali,y_vali)
+    elif classificador=="tree":
+        classifier, score, pred = Cpx.biuld_classifier(X_bag, y_bag, X_bag, y_bag, X_vali, y_vali)
 
     #######################################################################
-    ############usando o treino para avaliar o fitness################3####
-    #_, score, _ = Cpx.biuld_classifier(X_bag, y_bag, X_bag, y_bag)
-    _, score_val, pred = Cpx.biuld_classifier(X_bag, y_bag, X_vali, y_vali)
-    #######################################################################
-    return cpx, score_val, pred
+    return o,n,  score,  pred, classifier
 
 def parallel_score(i, bags):
 
@@ -287,17 +262,6 @@ def mutacao(ind):
 
     return ind,
 
-def fitness_andre(ind1):
-    global dist, min_score
-    for i in range(len(dist['nome'])):
-        if (dist['nome'][i][0] == ind1[0]):
-            dst = dist['dist'][i]
-            ###########################
-            score = dist["score"][i]
-            break
-    out = dst + score
-    return out,
-
 def fitness_dispercao_diver(ind1):
     global dist, min_score
     for i in range(len(dist['nome'])):
@@ -410,7 +374,7 @@ def salva_informacoes_geracoes(generation,fitness, complexidade):
     :param fitness:
     :param complexidade:
     :return:
-    sava em arquivo todos os dados da geração, o ultimo comando salva um grafíco dos 2 primeiros fitness (1d) com o nome do arquivo de saida
+    sava em arquivo todos os dados da geracao, o ultimo comando salva um grafíco dos 2 primeiros fitness (1d) com o nome do arquivo de saida
     '''
 
     global nome_base
@@ -460,11 +424,11 @@ def salva_informacoes_geracoes(generation,fitness, complexidade):
 def salva_bags(pop_temp, bags_temp, gen_temp=None, base_name=None, tipo=0):
     '''
 
-    :param pop_temp: população a ser gravada, geralmente o off
+    :param pop_temp: populacao a ser gravada, geralmente o off
     :param bags_temp: bags a serem gravados, geralmente os bags da the function ou bags da max (bags_temp)
-    :param gen_temp: geração atual, ou a geração escolhida (melhor geração) isso soma no nome do arquivo final
-    :param base_name: nesse caso o número geração junto ao nome da base (isso soma no arquivo de saida (nome do arquivo final))
-    :param tipo: primeiro tipo (0) a população final tradicional, tipo (1) população da distancia média, tipo (2) população da acurácia global
+    :param gen_temp: geracao atual, ou a geracao escolhida (melhor geracao) isso soma no nome do arquivo final
+    :param base_name: nesse caso o numero geracao junto ao nome da base (isso soma no arquivo de saida (nome do arquivo final))
+    :param tipo: primeiro tipo (0) a populacao final tradicional, tipo (1) populacao da distancia media, tipo (2) populacao da acuracia global
     :return:
     '''
     global nome_base, arquivo_de_saida, repeticao
@@ -479,7 +443,7 @@ def salva_bags(pop_temp, bags_temp, gen_temp=None, base_name=None, tipo=0):
             Cpx.save_bag(name, 'bags', local + "/Bags", base_name + arquivo_de_saida, repeticao)
 
     elif(tipo==1):
-        x = open("geração_dist.csv", "a")
+        x = open("geracao_tree_dist.csv", "a")
         x.write(nome_base + ";" + str(gen_temp) + "\n")
         x.close()
         for j in pop_temp:
@@ -488,11 +452,13 @@ def salva_bags(pop_temp, bags_temp, gen_temp=None, base_name=None, tipo=0):
             nm = bags_temp['inst'][indx]
             name.append(bags_temp['nome'][indx])
             name.extend(nm)
-
-            Cpx.save_bag(name, 'bags', local + "/Bags", base_name + arquivo_de_saida, repeticao)
+            if classificador=="perc":
+                Cpx.save_bag(name, 'bags', local + "/Bags", base_name + arquivo_de_saida, repeticao)
+            elif classificador=="tree":
+                Cpx.save_bag(name, 'bags', local + "/tree/Bags", base_name + arquivo_de_saida, repeticao)
 
     elif tipo==2:
-        x = open("geração_acc.csv", "a")
+        x = open("geracao_tree_acc.csv", "a")
         x.write(nome_base + ";" + str(gen_temp) + "\n")
         x.close()
         for j in pop_temp:
@@ -501,19 +467,21 @@ def salva_bags(pop_temp, bags_temp, gen_temp=None, base_name=None, tipo=0):
             nm = bags_temp['inst'][indx]
             name.append(bags_temp['nome'][indx])
             name.extend(nm)
-            Cpx.save_bag(name, 'bags', local + "/Bags", base_name + arquivo_de_saida, repeticao)
-
+            if classificador == "perc":
+                Cpx.save_bag(name, 'bags', local + "/Bags", base_name + arquivo_de_saida, repeticao)
+            elif classificador == "tree":
+                Cpx.save_bag(name, 'bags', local + "/tree/Bags", base_name + arquivo_de_saida, repeticao)
 def max_distancia(fitness, generation=None, population=None, bags=None):
     '''
 
     :param fit1: fittnes 1
     :param fit2:
     :param fit3:
-    :param generation: geração atual
-    :param population: popoluação atual geralmente o off
+    :param generation: geracao atual
+    :param population: popoluacaoo atual geralmente o off
     :param bags: bags atuais
     :return:
-    salva em varial global a melhor populaçao de acordo com a disperção para 3 objetivos
+    salva em varial global a melhor populacao de acordo com a dispercao para 3 objetivos
     ideal para distancia linear
     '''
     global dist_temp, pop_temp, gen_temp, bags_temp
@@ -559,7 +527,7 @@ nome_base = 'Wine'
 local_dataset = "/media/marcos/Data/Tese/Bases3/Dataset/"
 local = "/media/marcos/Data/Tese/Bases3/"
 cpx_caminho = "/media/marcos/Data/Tese/Bases3/Bags/"
-#min_score = 0
+min_score = 0
 
 #nome_base=sys.argv[1]
 #tipos=sys.argv[2]
@@ -578,7 +546,7 @@ cpx_caminho = "/media/marcos/Data/Tese/Bases3/Bags/"
 ########
 
 grupo = ["overlapping", 'neighborhood', '', '', '', '']
-tipos = ["F3", 'N3', '', '', '', '']
+tipos = ["F1", 'N4', '', '', '', '']
 
 dispersao = True
 
@@ -586,7 +554,7 @@ fit_value1 = 1.0
 fit_value2 = 1.0
 fit_value3 = -1.0
 
-nr_generation = 19
+nr_generation = 3
 nr_individual = 100
 nr_pop=100
 
@@ -599,11 +567,12 @@ iteration=2
 dist_temp=0
 
 jobs = 8
-parada="maxdistance"
+parada="maxdistance"#maxacc
+classificador="tree"#tree,perc
 salva_info=False
 
 
-arquivo_de_saida = "marcartempo"
+arquivo_de_saida = "teste"
 
 ini=time.time()
 for t in range(1, iteration):
@@ -650,5 +619,6 @@ for t in range(1, iteration):
     pop = algorithms.eaMuPlusLambda(pop, toolbox, nr_child, nr_individual, proba_crossover, proba_mutation,
                                           nr_generation,
                                              generation_function=the_function)
+    os.system("rm -r /tmp/Rtmp*")
     fim = time.time()
     print(fim - ini)

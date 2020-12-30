@@ -1,7 +1,7 @@
 import os,sys
-caminho1='/media/marcos/OS/Users/marca/Documents/Minhas-Imagens/xiaomi/Camera/'
-caminho2=' /media/marcos/OS/Users/marca/Documents/Minhas-Imagens/Fotos-videosMiguel/xiaomi/2019/'
-caminho3=' /media/marcos/OS/Users/marca/Documents/Minhas-Imagens/Fotos-videosMiguel/xiaomi/2020/'
+caminho1=' /media/marcos/OS/Users/marca/Pictures/Fotos-videosMiguel/ate21122020/'
+caminho2='/media/marcos/OS/Users/marca/Pictures/Fotos-videosMiguel/ate21122020/'
+caminho3='/media/marcos/OS/Users/marca/Pictures/Fotos-videosMiguel/21-12-2020-marcos/2020/'
 #nome_base=sys.argv[1]
 #nome_base="ILPD"
 
@@ -9,86 +9,83 @@ caminho3=' /media/marcos/OS/Users/marca/Documents/Minhas-Imagens/Fotos-videosMig
 #     if (os.path.exists(caminho2+"/"+str(i)) == False):
 #         os.system("mkdir -p " + caminho2+"/"+str(i))
 #
-x=open(caminho1+'testev.txt')
+x=open(caminho2+'teste.txt')
+#for i in x:
+#
+ #    print("mv  " + caminho1 + i  + caminho3 + "12/" + i )
+# exit(0)
+
+
+# print(i[8:10])
 #for i in range(4,13):
-#    os.system("mv -n -u" +caminho2 +str(i)+"/*.mp4 "+caminho2+str(i)+"-v/")
+#    os.system("mv -n -f" +caminho2 +str(i)+"/*.mp4 "+caminho2+str(i)+"-v/")
 # for i in x:
 #
 # #
 
 for i in x:
 
-    if i[6:10] =="2019":
-       # print(i[10:12])
-        if i[10:12]=="04":
-             os.system("mv  "+ caminho1 +i[2:-1]+" " +caminho2+"4-v/")
-        if i[10:12] == "05":
-             os.system("mv  " + caminho1 + i[2:-1] +" " + caminho2 + "5-v/" )
-        if i[10:12] == "06":
-            os.system("mv  -v " + caminho1 + i[2:-1] +" " + caminho2 + "6-v/" )
-        if i[10:12] == "07":
-            os.system("mv  -v " + caminho1 + i[2:-1] +" " + caminho2 + "7-v/" )
-        if i[10:12] == "08":
-            os.system("mv  -v " + caminho1 + i[2:-1] +" " + caminho2 + "8-v/" )
-        if i[10:12] == "09":
-            os.system("mv   -v " + caminho1 + i[2:-1] +" " + caminho2 + "9-v/")
-        if i[10:12] == "10":
-            os.system("mv   -v " + caminho1 + i[2:-1] + " " +caminho2 + "10-v/")
-        if i[10:12] == "11":
-            os.system("mv   -v " + caminho1 + i[2:-1] + " " +caminho2 + "11-v/")
-        if i[10:12] == "12":
-            os.system("mv   -v " + caminho1 + i[2:-1] + " " +caminho2 + "12-v/")
-
-    if i[6:10] == "2020":
-        if i[10:12] == "01":
+    if i[4:8] == "2020":
+        if i[8:10] == "01":
             print(2020)
-            os.system("mv   -v " + caminho1 + i[2:-1] + " " + caminho3 + "1-v/" )
-        if i[10:12] == "05":
-            os.system("mv   -v " + caminho1 + i[2:] + " " + caminho2 + "05/" + i[2:])
-        if i[10:12] == "06":
-            os.system("mv   -v " + caminho1 + i[2:] + " " + caminho2 + "06/" + i[2:])
-        if i[10:12] == "07":
-            os.system("mv   -v " + caminho1 + i[2:] + " " + caminho2 + "07/" + i[2:])
-        if i[10:12] == "08":
-            os.system("mv   -v " + caminho1 + i[2:] + " " + caminho2 + "08/" + i[2:])
-        if i[10:12] == "09":
-            os.system("mv   -v " + caminho1 + i[2:] + " " + caminho2 + "09/" + i[2:])
-        if i[10:12] == "10":
-            os.system("mv   -v " + caminho1 + i[2:] + " " + caminho2 + "10/" + i[2:])
-        if i[10:12] == "11":
-            os.system("mv   -v " + caminho1 + i[2:] + " " + caminho2 + "11/" + i[2:])
-        if i[10:12] == "12":
-            os.system("mv   -v " + caminho1 + i[2:] + " " + caminho2 + "12/" + i[2:])
+            print('a')
+            print(i[8:10])
+            exit(0)
+            os.system("mv -f " + caminho1 + i[:-1]+ " "+ caminho3 + '1/' )
+
+        if i[8:10] == "02":
+            os.system("mv -f " + caminho1 + i[:-1]+ " " + caminho3 + "2/" )
+        if i[8:10] == "03":
+            os.system("mv -f " + caminho1 + i[:-1]+ " " + caminho3 + "3/" )
+        if i[8:10] == "04":
+            os.system("mv -f " + caminho1 + i[:-1]+ " " + caminho3 + "4/" )
+        if i[8:10] == "05":
+            os.system("mv -f " + caminho1 + i[:-1]+ " " +'/media/marcos/OS/Users/marca/Pictures/Fotos-videosMiguel/4-2019ate01-2020-marcos/2020/5/' )
+        #exit(0)
+        if i[8:10] == "06":
+            os.system("mv " + caminho1 + i[:-1]+" "+ caminho3 + "6/" )
+        if i[8:10] == "07":
+            os.system("mv -f " + caminho1 + i[:-1]+ " " + caminho3 + "7/" )
+        if i[8:10] == "08":
+            os.system("mv -f " + caminho1 + i[:-1]+ " " + caminho3 + "8/" )
+        if i[8:10] == "09":
+            os.system("mv -f " + caminho1 + i[:-1]+ " " + caminho3 + "9/")
+        if i[8:10] == "10":
+            os.system("mv -f " + caminho1 + i[:-1]+ " " + caminho3 + "10/")
+        if i[8:10] == "11":
+            os.system("mv -f " + caminho1 + i[:-1]+ " " + caminho3 + "11/")
+        if i[8:10] == "12":
+            os.system("mv -f " + caminho1 + i[:-1]+ " " + caminho3 + "12/")
         #exit(0)
 #         c=i.split("\n")[0]
 #         if c[-1]=="4":
-#             os.system("mv -n -u" + caminho1 + c + caminho3 )
+#             os.system("mv -n -f" + caminho1 + c + caminho3 )
 #         #exit(0)
 #         print(c[4:6])
 #         if c[4:6]=="01":
-#             os.system("mv -n -u "+caminho1+c+caminho2+ "1/")
+#             os.system("mv -n -f "+caminho1+c+caminho2+ "1/")
 #         elif c[4:6] == "02":
-#             os.system("mv -n -u " + caminho1 + c + caminho2 + "2/")
+#             os.system("mv -n -f " + caminho1 + c + caminho2 + "2/")
 #         if c[4:6]=="03":
-#             os.system("mv -n -u "+caminho1+c+caminho2+ "3/")
+#             os.system("mv -n -f "+caminho1+c+caminho2+ "3/")
 #         if c[4:6]=="04":
-#             os.system("mv -n -u "+caminho1+c+caminho2+ "4/")
+#             os.system("mv -n -f "+caminho1+c+caminho2+ "4/")
 #         if c[4:6]=="05":
-#             os.system("mv -n -u "+caminho1+c+caminho2+ "5/")
+#             os.system("mv -n -f "+caminho1+c+caminho2+ "5/")
 #         if c[4:6]=="06":
-#             os.system("mv -n -u "+caminho1+c+caminho2+ "6/")
+#             os.system("mv -n -f "+caminho1+c+caminho2+ "6/")
 #         if c[4:6]=="07":
-#             os.system("mv -n -u "+caminho1+c+caminho2+ "7/")
+#             os.system("mv -n -f "+caminho1+c+caminho2+ "7/")
 #         if c[4:6]=="08":
-#             os.system("mv -n -u "+caminho1+c+caminho2+ "8/")
+#             os.system("mv -n -f "+caminho1+c+caminho2+ "8/")
 #         if c[4:6]=="09":
-#             os.system("mv -n -u "+caminho1+c+caminho2+ "9/")
+#             os.system("mv -n -f "+caminho1+c+caminho2+ "9/")
 #         if c[4:6]=="10":
-#             os.system("mv -n -u "+caminho1+c+caminho2+ "10/")
+#             os.system("mv -n -f "+caminho1+c+caminho2+ "10/")
 #         if c[4:6]=="11":
-#             os.system("mv -n -u "+caminho1+c+caminho2+ "11/")
+#             os.system("mv -n -f "+caminho1+c+caminho2+ "11/")
 #         if c[4:6]=="12":
-#             os.system("mv -n -u "+caminho1+c+caminho2+ "12/")
+#             os.system("mv -n -f "+caminho1+c+caminho2+ "12/")
 # #print(c[0])
 # #c=x.split("\n")
 #
